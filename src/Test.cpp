@@ -6,6 +6,7 @@
 #include "Matrix.h"
 #include "NumDifferential.h"
 #include "Solver.h"
+#include "FuncRepository.h"
 
 int main(int argc,char* argv[])
 {
@@ -29,9 +30,20 @@ int main(int argc,char* argv[])
 	// mat(0,1) = 2;
 	// std::cout<<mat(0,1)<<std::endl;
 	// std::cout<<vec[0]<<' '<<v[-1]<<" Hello World!"<<std::endl;
-	COPT::QuadFunction<double> cf(1.0,-2.0);
+	COPT::QuadFunction<double> cf(1.0,-2.0); 
 	COPT::RootSolver<COPT::ScalarFunction<double> > rs(cf);
 	std::cout<<rs.solve(); 
+	// typedef COPT::Vector<double> Vector;
+
+	// COPT::Vector<double> vec(2);
+	// vec[0] = 1.0;
+	// vec[1] = 2.0;
+	// COPT::VectorCosineFunction<Vector> cf(vec);
+	// Vector v(2);
+	// v[0] = 1.57;
+	// v[1] = 0;
+	// std::cout<<cf(v)<<std::endl;
+	// std::cout<<cf.gradient(v)<<std::endl; 
 	// std::cout<<rs.
 	// std::cout<<cf(1.57)<<std::endl;
 	// COPT::ScalarDifferential<COPT::CosineFunction<double> > diff(cf);	

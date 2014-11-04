@@ -1,0 +1,11 @@
+Damand 
+A open source for optimization algorithms
+
+First thing:
+	The definition of vector
+	A few feature: template for different type (double or float)
+	The definition of matrix
+
+	General solver
+
+	General function
