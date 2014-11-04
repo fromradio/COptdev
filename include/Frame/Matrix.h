@@ -53,7 +53,7 @@ public:
 		__data(new FT[mat.rows()*mat.cols()])
 	{
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
-			__data[i] = mat.data[i];
+			__data[i] = mat.data(i);
 	}
 
 	~Matrix()
