@@ -6,69 +6,82 @@
 #include "Matrix.h"
 // #include "BasicMath.h"
 // #include "FuncPara.h"
+#include "NumDifferential.h"
 
 /*
 	Second version of 'Functions' classes
 */
 namespace COPT{
-/*
-	Scalar function
-		input: scalar x
-		output: scalar y
-	template
-		T stands for the float type that is used, for example double or float
 
-*/
+/*
+ *	Scalar function
+ *		input: scalar x
+ *		output: scalar y
+ *	template
+ *		T stands for the float type that is used, for example double or float
+ *
+ */
 template<class T>
 class ScalarFunction{
 protected:
-	// whether the function has true differential
-	bool		__truediff;
+
 public:
-	typedef T FT;
-	ScalarFunction (  ):__truediff(false){}
+	typedef 		T 			 FT;
+	ScalarFunction (  ){}
+	// the deconstructor
 	virtual ~ScalarFunction() {}
 	// basic operation computing the value of the function
 	virtual FT operator() 	( FT x ) const = 0;
 	// basic operation computing the differential of the function
-	virtual FT diff  		( FT x ) const = 0;
-	// whethre the function has accurate difference
-	bool		diffable	() const {return __truediff;}
+	virtual FT diff  		( FT x ) const {
+		return ScalarDifferential<ScalarFunction>(*this).diff(x);
+	}
+	virtual FT sDiff 		( FT x ) const {
+		return ScalarDifferential<ScalarFunction>(*this).sDiff(x);
+	}
 };
 
-template <class FT>
-class CosineFunction:public ScalarFunction<FT>{
-private:
-	FT __l;
+/*
+ *	'VectorFunction' returns a scalar value of a function defined on a vector
+ *	call statement:
+ *		double value = VectorFunction(vec):
+ *			\param 'vec': input type Vector
+ *			Returns the result of the function
+ *		Vector diff = VectorFunction.gradient(vec):
+ *			\param 'vec': input type Vector
+ *			Returns the gradient of the function
+ *		Matrix hessian = VectorFunction.hessian(vec):
+ *			\param 'vec': input type Vector
+ *			Returns the Hessian matrix of the function
+ */
+template<class VT>
+class VectorFunction{
+protected:
+	// the dimension of the problem
+	int 		__dim;
 public:
-	CosineFunction( FT l ):__l(l){}
-	FT operator() ( FT x ) const {return cos(__l*x);}
-	FT diff(FT x) const {return -__l*sin(__l*x);}
-};
+	typedef 		VT 						Vector;
+	typedef 		typename Vector::FT 	FT;
 
-template<class FT>
-class LinearFunction:public ScalarFunction<FT>{
-private:
-	FT __a;
-	FT __b;
-public:
-	LinearFunction(FT a,FT b):__a(a),__b(b){}
-	FT operator() ( FT x ) const {return __a*x+__b;}
-	FT diff(FT x) const {return __a;}
-};
+	VectorFunction ( ):__dim(0) {}
 
-template<class FT>
-class QuadFunction:public ScalarFunction<FT>{
-private:
-	FT __a;
-	FT __b;
-public:
-	QuadFunction(FT a,FT b):__a(a),__b(b){}
-	FT operator() ( FT x ) const {return cos(x)-x*x*x;}
-	FT diff(FT x) const {return -sin(x)-3*x*x;}
+	virtual ~VectorFunction() {}
+
+	int 				dimension () {return __dim;}
+
+	virtual FT 			operator() (const Vector& vec ) const = 0;
+
+	virtual Vector 		gradient (const Vector& vec ) const{
+		return VectorDifferential<VectorFunction>(*this).gradient(vec);
+	}
+
+	virtual Matrix<FT> 	hessian (const Vector& vec ) const {
+		return Matrix<FT>();
+	}
 };
 
 };
+
 /*
 	parameters of functions
 		a double vector with a few functionalities
