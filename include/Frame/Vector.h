@@ -16,16 +16,19 @@
 
 namespace COPT
 {
-template <class FT>
+template <class T>
 class Vector{
 private:
 	//	length of vector
 	int					__length;
 	//	float array
-	FT*					__data;
+	T*					__data;
 	
 
 public:
+
+	// the type of float number
+	typedef 		T			FT;
 	// Constructor
 
 	/*
@@ -105,6 +108,7 @@ public:
 	/*
 		obtain the i-th element of the vector
 	*/
+
 	FT& operator[] ( int i ){
 
 		if ( i < 0 ){
@@ -132,6 +136,7 @@ public:
 		resize the Vector with specific length
 			the value of each element is set as zero
 	*/
+
 	void resize( int length ){
 		SAFE_DELETE_ARRAY(__data);
 		__length = length;
@@ -158,7 +163,7 @@ public:
 	*/
 
 	// dot operation
-	FT dot(const Vector& vec){
+	FT dot(const Vector& vec) const{
 		if(__length!=vec.size()) throw COException("Vector error: the length of two vectors do not equal to each other");
 		else{
 			FT sum = 0;
@@ -188,7 +193,39 @@ public:
 		}
 		return result;
 	}
+
+	// overload of stream
+	friend std::ostream& operator<<(std::ostream& os,const Vector& vec){
+		os<<"[ ";
+		for ( int i = 0 ; i< vec.size()-1 ; ++ i ){
+			os<<vec[i]<<" , ";
+		}
+		os<<vec[vec.size()-1]<<" ]";
+		return os;
+	}
 };
+
+
+/*
+ *			compute the l2 norm of a vector
+ */
+// template<Vector>
+// FT norm( const Vector& vec,2){
+// 	FT result = 0;
+// 	for ( int i = 0 ; i < vec.size() ; ++ i ){
+// 		result += vec[i]*vec[i];
+// 	}
+// 	return sqrt(result);
+// }
+// template<Vector>
+// FT norm( const Vector& vec,1){
+// 	FT result = 0;
+// 	for ( int i = 0 ; i < vec.size() ; ++ i ){
+// 		result += fabs(vec[i]);
+// 	}
+// 	return result;
+// }
+
 };
 
 #endif
