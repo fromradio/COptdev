@@ -5,6 +5,7 @@
 #define SOLVER_H
 
 #include "BasicOperation.h"
+#include <list>
 /*
 	A framework for a general Solver class
 */
@@ -84,15 +85,91 @@ public:
 template<class VT,class FT>
 class Output
 {
-private:
+protected:
 	// 		'true': the algorithm converges
 	// 		'false': the algorithm does not converge
 	bool		__converged;
 	//		the result of a certain algorithm
 	VT 			__result;
+	//		the number of final iteration
+	int 		__final_iter_num;
+	//		the distance between last two iterations
+	FT 			__final_error;
+	//		the list that stores error in each step
+	std::list<FT>
+				__error_list;
+
 public:
+	Output():__converged(false),__final_iter_num(0) {}
+
+	virtual ~Output(){}
+
+
+	/*
+			the getter of element of 'Output'
+	*/
+	//		whether the problem converges
+
+	bool converged() {return __converged;}
+
+	//		the result of the algorithm
+
+	const VT&	result() {return __result;}
+
+	//		get the list stores error
+
+	const std::list<FT>& 	errorList() {return __error_list;}
+
+	//		the total number of iteration
+
+	int 	iterationNumber() {return __final_iter_num;}
+
+	//		basic operation:
+	//			append error
+
+	void 	append( FT error ) {
+		++ __final_iter_num;
+		__error_list.push_back(error);
+	}
+
+	// algorithm ends
+	//		compute the final error
+
+	void algoEnd(){
+		__final_error = __error_list.back();
+	}
+
+	// set the result
+
+	void setResult( const VT& result ,bool converged ){
+		__result = result;
+		__converged = converged;
+	}
+
+	void printInfo() {
+		if ( __converged )
+			std::cout<<"Algorithm converges ";
+		else
+			std::cout<<"Algorithm fails to converge ";
+	}
+
 };
 
+template<class VT,class FT>
+class FullOutput 
+	: public Output<VT,FT>
+{
+private:
+	// a list storing every 
+	std::list<VT>		__allvecs;
+public:
+
+	void append(const VT& vec,FT error){
+		++ this->__final_iter_num;
+		this->__error_list.push_back(error);
+		__allvecs.push_back(vec);
+	}
+};
 
 
 /*
@@ -117,7 +194,9 @@ public:
 	typedef			VT 			VaType;
 
 	Solver(){}
+	
 	virtual ~Solver(){}
+
 	virtual const VT& solve( const Para& p = Para()) = 0;
 };
 
@@ -146,7 +225,7 @@ public:
 	//			compute the root of SFunc
 	const FT& solve( const Para& p = Para() ){
 		/*
-			Netwon method
+			simple Netwon method
 		*/
 		FT xf = this->__para.initGuess();
 		while ( fabs(__func.diff(xf))<ZERO_THRESH ){
@@ -155,13 +234,23 @@ public:
 		FT xn = xf-__func(xf)/__func.diff(xf);
 		FT error = fabs(xf-xn);
 		int iternum = 0;
+
+		/*
+			the iteration terminals if the error is less than a threshold
+				or the iteration number is larger than a threshold
+		*/
 		while ( error > this->__para.errorThreshold() && iternum < this->__para.maximumIteration() ){
 			xf = xn;
 			xn = xf-__func(xf)/__func.diff(xf);
 			error = fabs(xf-xn);
 			++ iternum;
+			this->__output.append(error);
 		}
+		this->__output.setResult(xn,true);
+		this->__output.algoEnd();
+		this->__output.printInfo();
 		this->__variable = xn;
+
 		return this->__variable;
 	}
 };
