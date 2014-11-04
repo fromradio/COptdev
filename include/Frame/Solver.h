@@ -75,12 +75,18 @@ public:
 		return __errorthresh;
 	}
 
+	Parameter& operator= ( const Parameter& para){
+		__initguess 	= para.initGuess();
+		__maxiteration	= para.maximumIteration();
+		__errorthresh	= para.errorThreshold();
+	}
+
 };
 
 
 /*
-	class for output of a solver
-*/
+ *			class for output of a solver
+ */
 
 template<class VT,class FT>
 class Output
@@ -189,18 +195,53 @@ protected:
 	Para		__para;
 	// output
 	Output 		__output;
+
+	/*
+	 *			implementation of solve
+	 */
+	virtual 	const VT& doSolve (const Para& p ) = 0;
 public:
 	// the type of variable
 	typedef			VT 			VaType;
 
 	Solver(){}
-	
+
 	virtual ~Solver(){}
 
-	virtual const VT& solve( const Para& p = Para()) = 0;
+	/*
+	 *			set the paramter
+	 */
+	void	setParameter( const Para& para ){
+		__para = para;
+	}
+
+
+	/*
+	 *
+	 */
+	const VT& solve( const Para& p = Para()){
+		return doSolve(p);
+	}
 };
 
-
+/*
+ *		an example of least square method
+ *			least mean square is used
+ */
+template<class VT>
+class LeastMeanSquare
+	: public Solver<VT,Parameter<VT,typename VT::FT>, Output<VT,typename VT::FT> >
+{
+private:
+	typedef Parameter<VT,typename VT::FT> Para;
+	/*
+	 *				Least square method is equal to a 
+	 *
+	 */
+	virtual VT& doSolve(const Para& para){return VT();}
+public:
+	// const VT& solve( const Para& p )
+};
 /*
 	an example for scalar root solver
 	find x that satisfies that f(x)=0
@@ -214,16 +255,8 @@ private:
 	typedef				Parameter<FT,FT>				Para;
 	//		reference to the target function
 	const SFunc& 		__func;
-public:
-	//
-	RootSolver(const SFunc& func)
-		:
-		__func(func)
-	{
-	}
 
-	//			compute the root of SFunc
-	const FT& solve( const Para& p = Para() ){
+	virtual const FT& doSolve(const Para& para){
 		/*
 			simple Netwon method
 		*/
@@ -236,9 +269,9 @@ public:
 		int iternum = 0;
 
 		/*
-			the iteration terminals if the error is less than a threshold
-				or the iteration number is larger than a threshold
-		*/
+		 *	the iteration terminals if the error is less than a threshold
+		 *		or the iteration number is larger than a threshold
+		 */
 		while ( error > this->__para.errorThreshold() && iternum < this->__para.maximumIteration() ){
 			xf = xn;
 			xn = xf-__func(xf)/__func.diff(xf);
@@ -252,6 +285,14 @@ public:
 		this->__variable = xn;
 
 		return this->__variable;
+	}
+public:
+	//
+	RootSolver(const SFunc& func)
+		:
+		__func(func)
+	{
+
 	}
 };
 };
