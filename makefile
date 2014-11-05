@@ -3,7 +3,7 @@
 # powered by 'MathU'
 # copyright@MathU
 
-DIR_INC += -I./libs/Eigen -I./include/Frame -I./include/LeastSquares -I./include/FunctionRepository
+DIR_INC += -I./libs/Eigen -I./include/Frame -I./include/LeastSquares -I./include/FunctionRepository -I./include/Algorithms
 DIR_SRC += ./src/Frame ./src/LeastSquares ./src
 DIR_OBJ = ./obj
 DIR_BIN = ./bin

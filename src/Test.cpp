@@ -1,15 +1,37 @@
 #include <iostream>
-#include "BasicMath.h"
-#include "LeastSquares.h"
+#include <cmath>
 #include "Function.h"
 #include "Vector.h"
 #include "Matrix.h"
 #include "NumDifferential.h"
 #include "Solver.h"
 #include "FuncRepository.h"
+#include "Conjugate.h"
+
+typedef double 			FT;
+typedef COPT::Vector<FT>			Vector;
+typedef COPT::Matrix<FT>			Matrix;
 
 int main(int argc,char* argv[])
 {
+	/*
+	 * conjugate gradient method test
+	 */
+	Vector b(3),x(3);
+	Matrix A(3,3);
+	A(0,0) = 1;
+	A(1,1) = 1;
+	A(2,2) = 1;
+
+	b(0) = 1;b(1) = 1;b(2) = 1;
+
+	int iters = 100;
+	FT tol = 1e-6;
+	std::cout<<x<<std::endl;
+	COPT::conjugateGradientWithoutPrecondition(A,b,x,iters,tol);
+	std::cout<<"iteration used: "<<iters<<std::endl;
+	std::cout<<"final error estimated "<<tol<<std::endl;
+	std::cout<<x<<std::endl;
 	// double* data = new double[10];
 	// for ( int i = 0 ; i < 10 ; ++ i )
 	// 	data[i] =  1.0;
@@ -30,9 +52,9 @@ int main(int argc,char* argv[])
 	// mat(0,1) = 2;
 	// std::cout<<mat(0,1)<<std::endl;
 	// std::cout<<vec[0]<<' '<<v[-1]<<" Hello World!"<<std::endl;
-	COPT::QuadFunction<double> cf(1.0,-2.0); 
-	COPT::RootSolver<COPT::ScalarFunction<double> > rs(cf);
-	std::cout<<rs.solve(); 
+	// COPT::QuadFunction<double> cf(1.0,-2.0); 
+	// COPT::RootSolver<COPT::ScalarFunction<double> > rs(cf);
+	// std::cout<<rs.solve();
 	// typedef COPT::Vector<double> Vector;
 
 	// COPT::Vector<double> vec(2);

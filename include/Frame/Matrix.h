@@ -8,12 +8,12 @@ namespace COPT
 	Class of 'Matrix'
 		the data is stored column by column
 */
-template<class ScalarType>
+template<class FT>
 class Matrix{
 public:
-	
+
 	// the scalar type
-	typedef 			ScalarType 				ScalarType;
+	typedef 			FT				ScalarType;
 private:
 	// the size of rows
 	int			__rows;
@@ -156,7 +156,7 @@ public:
 
 	// multiply
 	// need to be tested
-	Vector<ScalarType> operator* ( const Vector<ScalarType>& vec ){
+	Vector<ScalarType> operator* ( const Vector<ScalarType>& vec ) const{
 		if ( __cols != vec.size() )
 			throw COException("Matrix multiply error: the size of matrix and vector are not consistent!");
 		Vector<ScalarType> result(__rows);
@@ -167,7 +167,7 @@ public:
 		return result;
 	}
 	// need to be tested
-	Matrix<ScalarType> operator* ( const Matrix<ScalarType>& mat ){
+	Matrix<ScalarType> operator* ( const Matrix<ScalarType>& mat ) const{
 		if ( __cols != mat.rows() )
 			throw COException("Matrix multiply error: the size of two matrices are not consistent!");
 		Matrix<ScalarType> result (__rows,mat.cols());

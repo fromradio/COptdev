@@ -1,3 +1,7 @@
+//		This file is part of open library COPT
+//		Copyright (c) MathU
+//		Written by Ruimin Wang, ruimin.wang13@gmail.com
+
 #ifndef VECTOR_H
 #define VECTOR_H
 
@@ -18,7 +22,7 @@ namespace COPT
 {
 template <class FT>
 class Vector{
-
+public:
 	// the type of float number
 	typedef 		FT			ScalarType;
 private:
@@ -162,7 +166,16 @@ public:
 	/*
 		Mathematical operations
 	*/
-
+	/*
+	 * 			Square norm of the vector
+	 */
+	ScalarType squaredNorm() const{
+		ScalarType result = 0;
+		for ( int i = 0 ; i < __length ; ++ i ){
+			result += __data[i]*__data[i];
+		}
+		return result;
+	}
 	// dot operation
 	ScalarType dot(const Vector& vec) const{
 		if(__length!=vec.size()) throw COException("Vector error: the length of two vectors do not equal to each other");
@@ -175,8 +188,25 @@ public:
 		}
 	}
 
+	// multiply with a scalar
+	Vector operator* (ScalarType s){
+		Vector result(__length);
+		for ( int i = 0 ; i < __length ; ++ i ){
+			result[i] = s*__data[i];
+		}
+		return result;
+	}
+
+	friend Vector operator* (ScalarType s,const Vector& vec){
+		Vector result(vec.size());
+		for ( int i = 0 ; i < vec.size() ; ++ i ){
+			result[i] = s*vec[i];
+		}
+		return result;
+	}
+
 	// summation operation
-	Vector operator+ (const Vector& vec){
+	Vector operator+ (const Vector& vec) const{
 		if(__length!=vec.size()) throw COException("Vector error: the length of two vectors do not equal to each other");
 		Vector<ScalarType> result(__length);
 		for ( int i = 0 ; i < __length ; ++ i ){
@@ -186,11 +216,20 @@ public:
 	}
 
 	//subtraction operation
-	Vector operator- (const Vector& vec){
+	Vector operator- (const Vector& vec) const{
 		if(__length!=vec.size()) throw COException("Vector error: the length of two vectors do not equal to each other");
 		Vector<ScalarType> result(__length);
 		for ( int i = 0 ; i < __length ; ++ i ){
 			result[i] = __data[i]-vec[i];
+		}
+		return result;
+	}
+
+	// 
+	Vector operator- () const{
+		Vector<ScalarType> result(__length);
+		for ( int i = 0 ; i < __length ; ++ i ){
+			result[i] = -__data[i];
 		}
 		return result;
 	}
@@ -205,7 +244,6 @@ public:
 		return os;
 	}
 };
-
-}
+}	// end of namespace COPT
 
 #endif
