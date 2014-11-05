@@ -17,7 +17,7 @@ private:
 	 *				the list of vector functions that are used
 	 *				
 	 */
-	std::list<VectorFunction<VT> >				__vfs;
+	std::list<VectorFunction<VT> *>				__vfs;
 
 	/*
 	 *				non-linear square solver
