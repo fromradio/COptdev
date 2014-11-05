@@ -3,7 +3,7 @@
 # powered by 'MathU'
 # copyright@MathU
 
-DIR_INC += -I/usr/local/Cellar/Eigen/3.2.1/include/eigen3 -I./include/Frame -I./include/LeastSquares -I./include/FunctionRepository
+DIR_INC += -I./libs/Eigen -I./include/Frame -I./include/LeastSquares -I./include/FunctionRepository
 DIR_SRC += ./src/Frame ./src/LeastSquares ./src
 DIR_OBJ = ./obj
 DIR_BIN = ./bin

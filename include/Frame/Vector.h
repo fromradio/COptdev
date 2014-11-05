@@ -16,19 +16,20 @@
 
 namespace COPT
 {
-template <class T>
+template <class FT>
 class Vector{
+
+	// the type of float number
+	typedef 		FT			ScalarType;
 private:
 	//	length of vector
 	int					__length;
 	//	float array
-	T*					__data;
+	ScalarType*					__data;
 	
 
 public:
 
-	// the type of float number
-	typedef 		T			FT;
 	// Constructor
 
 	/*
@@ -45,12 +46,12 @@ public:
 			if data is NULL, a zero vector is constructed
 	*/
 
-	Vector( int length , FT* data = NULL )
+	Vector( int length , ScalarType* data = NULL )
 		:
 		__length(length),
-		__data(new FT[length])
+		__data(new ScalarType[length])
 	{
-		// __data = new FT [__length];
+		// __data = new ScalarType [__length];
 		if ( data ){
 			for ( int i = 0 ; i < __length ; ++ i )
 				__data[i] = data[i];
@@ -66,7 +67,7 @@ public:
 	*/
 	Vector ( const Vector& vec )
 		:__length(vec.size()),
-		__data(new FT[vec.size()])
+		__data(new ScalarType[vec.size()])
 	{
 		for ( int i = 0 ; i < __length ; ++ i ){
 			__data[i] = vec[i];
@@ -78,12 +79,12 @@ public:
 		API with vector in stdlib
 	*/
 
-	Vector(const std::vector<FT>& vec)
+	Vector(const std::vector<ScalarType>& vec)
 		:
 		__length(static_cast<int>(vec.size())),
-		__data(new FT [vec.size()])
+		__data(new ScalarType [vec.size()])
 	{
-		// __data = new FT [__length];
+		// __data = new ScalarType [__length];
 		for ( int i = 0 ; i < __length ; ++ i )
 			__data[i] = vec[i];
 	}
@@ -109,7 +110,7 @@ public:
 		obtain the i-th element of the vector
 	*/
 
-	FT& operator[] ( int i ){
+	ScalarType& operator[] ( int i ){
 
 		if ( i < 0 ){
 			// index less than zero
@@ -122,13 +123,13 @@ public:
 		else
 			return __data[i];
 	}
-	const FT& operator[] ( int i ) const {
+	const ScalarType& operator[] ( int i ) const {
 		return const_cast<Vector&>(*this).operator[](i);
 	}
-	FT& operator() ( int i ){
+	ScalarType& operator() ( int i ){
 		return operator[](i);
 	}
-	const FT& operator() ( int i ) const {
+	const ScalarType& operator() ( int i ) const {
 		return operator[](i);
 	}
 
@@ -140,7 +141,7 @@ public:
 	void resize( int length ){
 		SAFE_DELETE_ARRAY(__data);
 		__length = length;
-		__data = new FT[__length];
+		__data = new ScalarType[__length];
 		for ( int i = 0 ; i < __length ; ++ i) __data[i] = 0.0;
 	}
 
@@ -151,7 +152,7 @@ public:
 	Vector& operator= (const Vector& vec ){
 		__length = vec.size();
 		SAFE_DELETE_ARRAY(__data);
-		__data = new FT[__length];
+		__data = new ScalarType[__length];
 		for ( int i = 0 ; i < __length ; ++ i ){
 			__data[i] = vec[i];
 		}
@@ -163,10 +164,10 @@ public:
 	*/
 
 	// dot operation
-	FT dot(const Vector& vec) const{
+	ScalarType dot(const Vector& vec) const{
 		if(__length!=vec.size()) throw COException("Vector error: the length of two vectors do not equal to each other");
 		else{
-			FT sum = 0;
+			ScalarType sum = 0;
 			for ( int i = 0 ; i < __length ; ++ i ){
 				sum += __data[i]*vec[i];
 			}
@@ -177,7 +178,7 @@ public:
 	// summation operation
 	Vector operator+ (const Vector& vec){
 		if(__length!=vec.size()) throw COException("Vector error: the length of two vectors do not equal to each other");
-		Vector<FT> result(__length);
+		Vector<ScalarType> result(__length);
 		for ( int i = 0 ; i < __length ; ++ i ){
 			result[i] = __data[i]+vec[i];
 		}
@@ -187,7 +188,7 @@ public:
 	//subtraction operation
 	Vector operator- (const Vector& vec){
 		if(__length!=vec.size()) throw COException("Vector error: the length of two vectors do not equal to each other");
-		Vector<FT> result(__length);
+		Vector<ScalarType> result(__length);
 		for ( int i = 0 ; i < __length ; ++ i ){
 			result[i] = __data[i]-vec[i];
 		}
@@ -205,6 +206,6 @@ public:
 	}
 };
 
-};
+}
 
 #endif

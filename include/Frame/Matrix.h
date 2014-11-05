@@ -8,15 +8,19 @@ namespace COPT
 	Class of 'Matrix'
 		the data is stored column by column
 */
-template<class FT>
+template<class ScalarType>
 class Matrix{
+public:
+	
+	// the scalar type
+	typedef 			ScalarType 				ScalarType;
 private:
 	// the size of rows
 	int			__rows;
 	// the size of columns
 	int			__cols;
 	// the array storing the data
-	FT*			__data;
+	ScalarType*			__data;
 public:
 	// default constructor
 	Matrix()
@@ -27,11 +31,11 @@ public:
 	{
 
 	}
-	Matrix(int m,int n,FT* data=NULL)
+	Matrix(int m,int n,ScalarType* data=NULL)
 		:
 		__rows(m),
 		__cols(n),
-		__data(new FT[m*n])
+		__data(new ScalarType[m*n])
 	{
 		if(data){
 			for ( int i = 0 ; i < m*n ; ++ i )
@@ -46,11 +50,11 @@ public:
 	/*
 		Copy assignment
 	*/
-	Matrix(const Matrix<FT>& mat)
+	Matrix(const Matrix<ScalarType>& mat)
 		:
 		__rows(mat.rows()),
 		__cols(mat.cols()),
-		__data(new FT[mat.rows()*mat.cols()])
+		__data(new ScalarType[mat.rows()*mat.cols()])
 	{
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
 			__data[i] = mat.data(i);
@@ -73,7 +77,7 @@ public:
 		get the element of the matrix
 	*/
 
-	FT& operator() (int i , int j){
+	ScalarType& operator() (int i , int j){
 		if(i<0||j<0)
 			throw COException("Matrix error: index is less than zero!");
 		else if (i>=__rows||j>=__cols)
@@ -81,13 +85,13 @@ public:
 		else
 			return __data[j*__cols+i];
 	}
-	const FT& operator() (int i,int j) const {
+	const ScalarType& operator() (int i,int j) const {
 		return const_cast<Matrix&>(*this).operator()(i,j);
 	}
 
 	// get the element using array
 
-	const FT& data( int i ) const{
+	const ScalarType& data( int i ) const{
 		if ( i < 0 )
 			throw COException("Matrix error: index is less that zero!");
 		else if ( i >= __rows*__cols )
@@ -98,7 +102,7 @@ public:
 
 	// set element using array
 
-	void set ( int i , FT value ){
+	void set ( int i , ScalarType value ){
 		if ( i < 0 )
 			throw COException("Matrix error: index is less that zero!");
 		else if ( i >= __rows*__cols )
@@ -110,12 +114,12 @@ public:
 	/*
 		Copy operation
 	*/
-	Matrix& operator= ( const Matrix<FT>& mat ) {
+	Matrix& operator= ( const Matrix<ScalarType>& mat ) {
 		if( __rows != mat.rows() || __cols != mat.cols() ){
 			__rows = mat.rows();
 			__cols = mat.cols();
 			SAFE_DELETE_ARRAY(__data);
-			__data = new FT[__rows*__cols];
+			__data = new ScalarType[__rows*__cols];
 		}
 
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
@@ -130,10 +134,10 @@ public:
 	// summation
 	// need to be tested
 		
-	Matrix operator+ (const Matrix<FT>& mat) {
+	Matrix operator+ (const Matrix<ScalarType>& mat) {
 		if ( __rows != mat.rows() || __cols != mat.cols() ) 
 			throw COException("Matrix summation error: the size of two matrices are not consistent!");
-		Matrix<FT> result(__rows,__cols);
+		Matrix<ScalarType> result(__rows,__cols);
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
 			result.set(i,__data[i]+mat.data(i));
 		return result;
@@ -141,10 +145,10 @@ public:
 
 	// subtraction
 	// need to be tested
-	Matrix operator- (const Matrix<FT>& mat) {
+	Matrix operator- (const Matrix<ScalarType>& mat) {
 		if ( __rows != mat.rows() || __cols != mat.cols() ) 
 			throw COException("Matrix subtraction error: the size of two matrices are not consistent!");
-		Matrix<FT> result(__rows,__cols);
+		Matrix<ScalarType> result(__rows,__cols);
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
 			result.set(i,__data[i]-mat.data(i));
 		return result;
@@ -152,10 +156,10 @@ public:
 
 	// multiply
 	// need to be tested
-	Vector<FT> operator* ( const Vector<FT>& vec ){
+	Vector<ScalarType> operator* ( const Vector<ScalarType>& vec ){
 		if ( __cols != vec.size() )
 			throw COException("Matrix multiply error: the size of matrix and vector are not consistent!");
-		Vector<FT> result(__rows);
+		Vector<ScalarType> result(__rows);
 		for ( int i = 0 ; i < __rows ; ++ i ){
 			for ( int j = 0 ; j < __cols ; ++ j )
 				result[i]+= operator()(i,j)*vec[j];
@@ -163,10 +167,10 @@ public:
 		return result;
 	}
 	// need to be tested
-	Matrix<FT> operator* ( const Matrix<FT>& mat ){
+	Matrix<ScalarType> operator* ( const Matrix<ScalarType>& mat ){
 		if ( __cols != mat.rows() )
 			throw COException("Matrix multiply error: the size of two matrices are not consistent!");
-		Matrix<FT> result (__rows,mat.cols());
+		Matrix<ScalarType> result (__rows,mat.cols());
 		for ( int i = 0 ; i < __rows ; ++ i )
 			for ( int j = 0 ; j < mat.cols() ; ++ j )
 				for ( int k = 0 ; k < __cols ; ++ k )
