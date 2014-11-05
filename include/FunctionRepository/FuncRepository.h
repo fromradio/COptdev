@@ -53,9 +53,10 @@ class VectorCosineFunction
 	: public VectorFunction<VT>
 {
 private:
-	typedef 	typename VectorFunction<VT>::Vector 	Vector;
-	typedef		typename VectorFunction<VT>::FT 		FT;
-	VT 			__weight;
+	typedef 	VectorFunction<VT>				Function;
+	typedef 	typename Function::Vector 				Vector;
+	typedef		typename Function::FT 					FT;
+	Vector 			__weight;
 public:
 	VectorCosineFunction(const Vector& w):__weight(w){this->__dim = w.size();}
 	FT operator() (const Vector& vec) const {
@@ -65,6 +66,47 @@ public:
 		}
 		return cos(__weight.dot(vec));
 	}
+};
+
+template<class VT>
+class TestQuadFunction
+	: public VectorFunction<VT>
+{
+private:
+	typedef VectorFunction<VT> Function;
+	typedef 	typename Function::Vector 				Vector;
+	typedef		typename Function::FT 					FT;
+
+public:
+	TestQuadFunction() {}
+	FT operator() (const Vector& vec) const{
+		return (vec[0]-50)*(vec[0]-50) + (vec[1]-10)*(vec[1]-20);
+	}
+
+};
+
+
+template<class VT>
+class TestQuadFunctionWithDiff
+	: public VectorFunction<VT>
+{
+private:
+	typedef VectorFunction<VT> Function;
+	typedef 	typename Function::Vector 				Vector;
+	typedef		typename Function::FT 					FT;
+
+public:
+	TestQuadFunctionWithDiff() {}
+	FT operator() (const Vector& vec) const{
+		return (vec[0]-50)*(vec[0]-50) + (vec[1]-10)*(vec[1]-20);
+	}
+	Vector gradient(const Vector& vec) const{
+		Vector result(2);
+		result[0] = 2*vec[0]-100;
+		result[1] = 2*vec[1]-30;
+		return result;
+	}
+
 };
 
 };

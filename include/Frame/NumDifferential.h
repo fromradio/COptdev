@@ -94,7 +94,7 @@ template<class VFunc>
 class VectorDifferential{
 private:
 	typedef typename VFunc::Vector 					Vector;
-	typedef typename Vector::FT 					FT;
+	typedef typename Vector::ScalarType 					FT;
 	/*
 	 *		const reference to the function
 	 */

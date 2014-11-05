@@ -31,7 +31,6 @@ void conjugateGradientWithoutPrecondition(const Matrix& mat,const Vector& rhs,Ve
 
 	int maxIter = iters;
 
-	// int n = rhs.size();
 	Vector residual(mat*x-rhs);
 	Vector p(-residual);
 

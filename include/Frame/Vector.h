@@ -154,11 +154,18 @@ public:
 	*/
 
 	Vector& operator= (const Vector& vec ){
-		__length = vec.size();
-		SAFE_DELETE_ARRAY(__data);
-		__data = new ScalarType[__length];
-		for ( int i = 0 ; i < __length ; ++ i ){
-			__data[i] = vec[i];
+		if( __length != vec.size()){
+			__length = vec.size();
+			SAFE_DELETE_ARRAY(__data);
+			__data = new ScalarType[__length];
+			for ( int i = 0 ; i < __length ; ++ i ){
+				__data[i] = vec[i];
+			}
+		}
+		else{
+			for ( int i = 0 ; i < __length ; ++ i ){
+				__data[i] = vec[i];
+			}
 		}
 		return *this;
 	}

@@ -60,8 +60,8 @@ protected:
 	// the dimension of the problem
 	int 		__dim;
 public:
-	typedef 		VT 						Vector;
-	typedef 		typename Vector::FT 	FT;
+	typedef 		VT 								Vector;
+	typedef 		typename Vector::ScalarType 	FT;
 
 	VectorFunction ( ):__dim(0) {}
 

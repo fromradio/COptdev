@@ -7,6 +7,9 @@
 #include "Solver.h"
 #include "FuncRepository.h"
 #include "Conjugate.h"
+#include "LineSearch.h"
+
+#include <time.h>
 
 typedef double 			FT;
 typedef COPT::Vector<FT>			Vector;
@@ -17,21 +20,59 @@ int main(int argc,char* argv[])
 	/*
 	 * conjugate gradient method test
 	 */
-	Vector b(3),x(3);
-	Matrix A(3,3);
-	A(0,0) = 1;
-	A(1,1) = 1;
-	A(2,2) = 1;
+	// Vector b(3),x(3);
+	// Matrix A(3,3);
+	// A(0,0) = 1;
+	// A(1,1) = 1;
+	// A(2,2) = 1;
 
-	b(0) = 1;b(1) = 1;b(2) = 1;
+	// b(0) = 1;b(1) = 1;b(2) = 1;
 
-	int iters = 100;
-	FT tol = 1e-6;
-	std::cout<<x<<std::endl;
-	COPT::conjugateGradientWithoutPrecondition(A,b,x,iters,tol);
-	std::cout<<"iteration used: "<<iters<<std::endl;
-	std::cout<<"final error estimated "<<tol<<std::endl;
-	std::cout<<x<<std::endl;
+	// int iters = 100;
+	// FT tol = 1e-6;
+	// std::cout<<x<<std::endl;
+	// COPT::conjugateGradientWithoutPrecondition(A,b,x,iters,tol);
+	// std::cout<<"iteration used: "<<iters<<std::endl;
+	// std::cout<<"final error estimated "<<tol<<std::endl;
+	// std::cout<<x<<std::endl;
+
+
+	/*
+	 * steepest descent method test
+	 */
+	COPT::TestQuadFunction<Vector> qf;
+	COPT::TestQuadFunctionWithDiff<Vector> qfwd;
+	
+	// Vector gradient = qf.gradient(x0);
+	// Vector direction = -gradient;
+
+	clock_t one, two;
+	one = clock();
+	// COPT::findStepLengthBackTracking(qf,x0,gradient,direction,0.5,0.7,alpha,iters);
+	for ( int i = 0 ; i < 10000 ; ++ i ){
+		Vector x0(2);
+		FT tol = 1e-6;
+		int iters = 100;
+		// FT alpha = 1.0;
+		COPT::steepestDescentUsingBackTracking(qf,0.5,0.7,x0,tol,iters);
+	}
+	two= clock();
+	std::cout << "Runtime： " << (double)(two-one) * 1000.0 / CLOCKS_PER_SEC << " ms!" << std::endl;
+	one = clock();
+	// COPT::findStepLengthBackTracking(qf,x0,gradient,direction,0.5,0.7,alpha,iters);
+	for ( int i = 0 ; i < 10000 ; ++ i ){
+		Vector x0(2);
+		FT tol = 1e-6;
+		int iters = 100;
+		// FT alpha = 1.0;
+		COPT::steepestDescentUsingBackTracking(qfwd,0.5,0.7,x0,tol,iters);
+	}
+	two= clock();
+	std::cout << "Runtime： " << (double)(two-one) * 1000.0 / CLOCKS_PER_SEC << " ms!" << std::endl;
+	// std::cout<<"final error is "<<tol <<std::endl;;
+	// std::cout<<"final iteration is "<<iters<<std::endl;
+	// std::cout<<"result is "<<x0<<std::endl;
+
 	// double* data = new double[10];
 	// for ( int i = 0 ; i < 10 ; ++ i )
 	// 	data[i] =  1.0;
