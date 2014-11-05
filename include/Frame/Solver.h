@@ -14,7 +14,7 @@ namespace COPT{
 
 /*
 	Parameter class
-		the class contains basic information a solver needs
+		the class contains basic information a solver might need
 */
 
 template<class FT,class VT = FT>
@@ -75,6 +75,10 @@ public:
 		return __errorthresh;
 	}
 
+	/*
+	 *			Copy assignment
+	 *
+	 */
 	Parameter& operator= ( const Parameter& para){
 		__initguess 	= para.initGuess();
 		__maxiteration	= para.maximumIteration();
@@ -115,7 +119,6 @@ public:
 			the getter of element of 'Output'
 	*/
 	//		whether the problem converges
-
 	bool converged() {return __converged;}
 
 	//		the result of the algorithm
@@ -130,9 +133,10 @@ public:
 
 	int 	iterationNumber() {return __final_iter_num;}
 
-	//		basic operation:
-	//			append error
-
+	/*
+	 *		basic operation:
+	 *			append a new value of error
+	 */
 	void 	append( FT error ) {
 		++ __final_iter_num;
 		__error_list.push_back(error);
@@ -179,12 +183,12 @@ public:
 
 
 /*
-	A general solver for solving problems
-		template:
-		VT: the input type of variable, like single variable double, vector variable Vector or matrix variable
-		Para: the type of variable
-		Output: the type of output containing output information
-*/
+ *	A general solver for solving problems
+ *		template:
+ *		VT: the input type of variable, like single variable double, vector variable Vector or matrix variable
+ *		Para: the type of variable
+ *		Output: the type of output containing output information
+ */
 
 template<class VT,class Para,class Output>
 class Solver{
@@ -240,12 +244,14 @@ private:
 	 */
 	virtual VT& doSolve(const Para& para){return VT();}
 public:
-	// const VT& solve( const Para& p )
 };
+
+
+
 /*
-	an example for scalar root solver
-	find x that satisfies that f(x)=0
-*/
+ *	an example for scalar root solver
+ *	find x that satisfies that f(x)=0
+ */
 
 template<class SFunc>
 class RootSolver:public Solver<typename SFunc::FT,Parameter<typename SFunc::FT,typename SFunc::FT>,Output<typename SFunc::FT,typename SFunc::FT> >

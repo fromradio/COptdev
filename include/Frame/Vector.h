@@ -205,27 +205,6 @@ public:
 	}
 };
 
-
-/*
- *			compute the l2 norm of a vector
- */
-// template<Vector>
-// FT norm( const Vector& vec,2){
-// 	FT result = 0;
-// 	for ( int i = 0 ; i < vec.size() ; ++ i ){
-// 		result += vec[i]*vec[i];
-// 	}
-// 	return sqrt(result);
-// }
-// template<Vector>
-// FT norm( const Vector& vec,1){
-// 	FT result = 0;
-// 	for ( int i = 0 ; i < vec.size() ; ++ i ){
-// 		result += fabs(vec[i]);
-// 	}
-// 	return result;
-// }
-
 };
 
 #endif
