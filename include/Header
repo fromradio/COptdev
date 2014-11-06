@@ -1,0 +1,25 @@
+// Copyright (C) Ruimin Wang ruimin.wang13@gmail.com
+// Copyright (C) MathU
+
+#ifndef HEADER
+
+#include "BasicOperation.h"
+#include "Array.h"
+#include <iostream>
+#include <cmath>
+#include "Function.h"
+#include "Vector.h"
+#include "Matrix.h"
+#include "NumDifferential.h"
+#include "Solver.h"
+#include "FuncRepository.h"
+#include "Conjugate.h"
+#include "LineSearch.h"
+
+#include <time.h>
+#include <complex>
+#include <cblas.h>
+#include "Traits.h"
+#include "CBlasWrapper.h"
+
+#endif

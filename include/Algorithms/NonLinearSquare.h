@@ -32,6 +32,6 @@ public:
 	 */
 	NonlinearSquare();
 };
-};
+} // End of namespace COPT
 
 #endif

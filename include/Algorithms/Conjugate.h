@@ -24,8 +24,13 @@ namespace COPT{
  *			estimated error is computed as residual.squareNorm()/rhs.squaredNorm()
  */
 template <class Matrix,class Vector>
-void conjugateGradientWithoutPrecondition(const Matrix& mat,const Vector& rhs,Vector& x, int& iters,typename Vector::ScalarType& tol_error){
-
+void conjugateGradientWithoutPrecondition(
+	const Matrix& mat,
+	const Vector& rhs,
+	Vector& x, 
+	int& iters,
+	typename Vector::ScalarType& tol_error)
+{
 	using std::sqrt;
 	typedef typename Vector::ScalarType			ScalarType;
 
@@ -53,7 +58,17 @@ void conjugateGradientWithoutPrecondition(const Matrix& mat,const Vector& rhs,Ve
 
 	tol_error = sqrt(residualnorm2/rhsnorm2);
 }
-}
+
+/*			conjugate gradient method for non-linear problem
+ */
+// template<class Function class Vector>
+// void nonlinearConjugateGradient(
+// 	const Function& func,
+// 	Vector& x)
+// {
+
+// }
+} // End of namespace COPT
 
 
 

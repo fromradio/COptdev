@@ -11,14 +11,14 @@ namespace COPT
 
 /*
  *		Backtracking method to inexactly find the step length
- *		/params func 		the given function
- *		/params x 			current iteration point
- *		/params gradient	the gradient of function at current point
- *		/params direction	the descent direction at the point
- *		/params rho			the shrink ratio
- *		/params c 			the constant ratio
- *		/params alpha		the initial alpha on input and estimated step length on output
- *		/params iters 		the max iteration number on input and final iteration number on output
+ *		/param func 		the given function
+ *		/param x 			current iteration point
+ *		/param gradient		the gradient of function at current point
+ *		/param direction	the descent direction at the point
+ *		/param rho			the shrink ratio
+ *		/param c 			the constant ratio
+ *		/param alpha		the initial alpha on input and estimated step length on output
+ *		/param iters 		the max iteration number on input and final iteration number on output
  */
 template<class Function,class Vector>
 void findStepLengthBackTracking(const Function& func,const Vector& x,const Vector& gradient,const Vector& direction,typename Vector::ScalarType rho,typename Vector::ScalarType c,typename Vector::ScalarType& alpha,int& iters)
@@ -39,6 +39,15 @@ void findStepLengthBackTracking(const Function& func,const Vector& x,const Vecto
 }
 
 
+/*
+ *		Steepest Descent approach solving non-linear problem
+ *		/param func 		input function
+ *		/param rho 			ratio for finding step length
+ *		/param c 			the constant ration
+ *		/param x 			the inital x on input and optimized x on output
+ *		/param tol_error	the tolerance on input and estimated error on output
+ *		/param iters		maximum iteration number on input and real iterations on output 
+ */
 template<class Function,class Vector>
 void steepestDescentUsingBackTracking( const Function& func , typename Vector::ScalarType rho, typename Vector::ScalarType c , Vector& x ,typename Vector::ScalarType& tol_error, int& iters )
 {
