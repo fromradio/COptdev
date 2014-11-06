@@ -3,7 +3,7 @@
 # powered by 'MathU'
 # copyright@MathU
 
-DIR_INC += -I./libs/Eigen -I./include/Frame -I./include/LeastSquares -I./include/FunctionRepository -I./include/Algorithms
+DIR_INC += -I./libs/Eigen -I./include/Base -I./include/LeastSquares -I./include/FunctionRepository -I./include/Algorithms -I./include/ThirdParty
 DIR_SRC += ./src/Frame ./src/LeastSquares ./src
 DIR_OBJ = ./obj
 DIR_BIN = ./bin
@@ -31,10 +31,10 @@ vpath %.cpp ./src
 
 
 $(BIN_TARGET):$(OBJ)
-	$(CC) $(OBJ) -o $@
+	$(CC) $(OBJ) -o $@ -lcblas
 
 $(DIR_OBJ)/%.o:%.cpp
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@ -lcblas
 
 .PHONY:clean
 clean:
