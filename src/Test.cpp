@@ -3,7 +3,8 @@
 
 
 typedef double 				FT;
-typedef Array<FT> 			Array;
+typedef COPT::Array<FT> 			Array;
+typedef COPT::Vector<FT>			Vector;
 // typedef double 			FT;
 // typedef COPT::Vector<FT>			Vector;
 // typedef COPT::Matrix<FT>			Matrix;
@@ -41,10 +42,42 @@ typedef Array<FT> 			Array;
 /*
  *		Array test
  */
+// int main(int argc,char* argv[])
+// {
+// 	Array arr1(5);
+// 	Array arr2(5);
+// 	std::cout<<arr2<<std::endl;
+// 	arr1[0] = 1.0;
+// 	arr1[1] = 2.0;
+// 	arr1[2] = 3.0;
+// 	arr1[3] = 4.0;
+// 	arr1[4] = 5.0;
+// 	arr1.swap(arr2);
+// 	std::cout<<"array 1 "<<arr1<<std::endl;
+// 	std::cout<<"array 2 "<<arr2<<std::endl;
+// 	arr1.copy(arr2);
+// 	std::cout<<"array 1 "<<arr1<<std::endl;
+// }
+
+/*
+ *			Vector test
+ *
+ */
 int main(int argc,char* argv[])
 {
-	FT *x = new double[5];
-	
+	Vector vec1(5);
+	Vector vec2(5);
+	std::cout<<vec1<<std::endl;
+	vec1[0] = 1.0;
+	vec1[1] = 2.0;
+	vec1[2] = 3.0;
+	vec1[3] = 4.0;
+	vec1[4] = 5.0;
+	vec1.swap(vec2);
+	std::cout<<"Vector 1 "<<vec1<<std::endl;
+	std::cout<<"Vector 2 "<<vec2<<std::endl;
+	vec1.copy(vec2);
+	std::cout<<"Vector 1 "<<vec1<<std::endl;
 }
 
 // int main(int argc,char* argv[])

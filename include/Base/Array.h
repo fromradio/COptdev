@@ -15,6 +15,15 @@ public:
 protected:
 	size_t 							__size; 		// the size of the array
 	ScalarType*						__data_ptr;		// the pointer to the data itself
+
+
+	/* 				 protected functions
+	 */
+	void setData(int size,const ScalarType* data)
+	{
+		resize(size);
+		blas::copt_blas_copy(__size,data,1,__data_ptr,1);
+	}
 	
 public:
 
@@ -80,7 +89,7 @@ public:
 	 * 			the size(length) of the array
 	 *
 	 */
-	size_t size() const{
+	const size_t& size() const{
 		return __size;
 	}
 	/*
@@ -100,8 +109,39 @@ public:
 	 *			The array is valid if and only if the template is valid scalar type:
 	 *			'float', 'double', 'std::complex<float>' or 'std::complex<double>'
 	 */
-	bool 			isValid(){
-		return {is_scalar<ScalarType>::value;}
+	bool 			isValid() const{
+		return is_scalar<ScalarType>::value;
+	}
+
+	/*
+	 *
+	 *
+	 */
+	ScalarType& operator[] ( int i ){
+		if ( i < 0 ){
+			// index less than zero
+			throw COException("Vector error, index less than zero.");
+		}
+		else if ( i >= __size ){
+			// out of range
+			throw COException("Vector error, index larger than the length.");
+		}
+		else
+			return __data_ptr[i];
+	}
+	const ScalarType& operator[] ( int i ) const {
+		return const_cast<Array&>(*this).operator[](i);
+	}
+
+	/*			overloaded stream
+	 */
+	friend std::ostream& operator<<(std::ostream& os,const Array& arr){
+		os<<"[ ";
+		for ( int i = 0 ; i< arr.size()-1 ; ++ i ){
+			os<<arr[i]<<" , ";
+		}
+		os<<arr[arr.size()-1]<<" ]";
+		return os;
 	}
 };
 

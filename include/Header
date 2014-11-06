@@ -3,12 +3,23 @@
 
 #ifndef HEADER
 
-#include "BasicOperation.h"
-#include "Array.h"
+
 #include <iostream>
 #include <cmath>
-#include "Function.h"
+
+
+#include "COException.h"
+#include <complex>
+#include "Traits.h"
+#include <cblas.h>
+#include "CBlasWrapper.h"
+#include "BasicOperation.h"
+#include "Array.h"
+
 #include "Vector.h"
+
+
+#include "Function.h"
 #include "Matrix.h"
 #include "NumDifferential.h"
 #include "Solver.h"
@@ -17,9 +28,5 @@
 #include "LineSearch.h"
 
 #include <time.h>
-#include <complex>
-#include <cblas.h>
-#include "Traits.h"
-#include "CBlasWrapper.h"
 
 #endif
