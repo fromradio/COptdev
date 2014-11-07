@@ -108,28 +108,25 @@ public:
 	ScalarType dot(const Vector& vec) const{
 		if(this->__size!=vec.size()) throw COException("Vector error: the length of two vectors do not equal to each other");
 		else{
-			ScalarType sum = 0;
-			for ( int i = 0 ; i < this->__size ; ++ i ){
-				sum += this->__data_ptr[i]*vec[i];
-			}
+			ScalarType sum = blas::copt_blas_dot(this->__size,this->__data_ptr,1,vec.dataPtr(),1);
 			return sum;
 		}
 	}
 
+	// scale with a special length
+	void scale(ScalarType s){
+		blas::copt_blas_scal(this->__size,s,this->__data_ptr,1);
+	}
 	// multiply with a scalar
 	Vector operator* (ScalarType s){
-		Vector result(this->__size);
-		for ( int i = 0 ; i < this->__size ; ++ i ){
-			result[i] = s*this->__data_ptr[i];
-		}
+		Vector result(*this);
+		result.scale(s);
 		return result;
 	}
 
 	friend Vector operator* (ScalarType s,const Vector& vec){
-		Vector result(vec.size());
-		for ( int i = 0 ; i < vec.size() ; ++ i ){
-			result[i] = s*vec[i];
-		}
+		Vector result(vec);
+		result.scale(s);
 		return result;
 	}
 
