@@ -1,7 +1,11 @@
 #ifndef MATRIX_H
 #define MATRIX_H
 
-#include "Vector.h"
+// #include "Vector.h"
+/*
+ *				class 'Matrix'
+ *					dervied from base class 'Array'
+ */
 namespace COPT
 {
 /*
@@ -9,42 +13,37 @@ namespace COPT
 		the data is stored column by column
 */
 template<class FT>
-class Matrix{
+class Matrix
+	: public Array<FT>
+{
 public:
 
 	// the scalar type
-	typedef 			FT				ScalarType;
+	typedef 			Array<FT>			Array;
+	typedef typename	Array::ScalarType 	ScalarType;
+
+
 private:
 	// the size of rows
-	int			__rows;
+	int					__rows;
 	// the size of columns
-	int			__cols;
-	// the array storing the data
-	ScalarType*			__data;
+	int					__cols;
 public:
 	// default constructor
 	Matrix()
 		:
+		Array(),
 		__rows(0),
-		__cols(0),
-		__data(NULL)
+		__cols(0)
 	{
 
 	}
 	Matrix(int m,int n,ScalarType* data=NULL)
 		:
+		Array(m*n,data),
 		__rows(m),
-		__cols(n),
-		__data(new ScalarType[m*n])
+		__cols(n)
 	{
-		if(data){
-			for ( int i = 0 ; i < m*n ; ++ i )
-				__data[i] = data[i];
-		}
-		else{
-			for ( int i = 0 ; i < m*n ; ++ i )
-				__data[i] = 0.0;
-		}
 	}
 
 	/*
@@ -52,17 +51,14 @@ public:
 	*/
 	Matrix(const Matrix<ScalarType>& mat)
 		:
+		Array(mat.rows()*mat.cols(),mat.dataPtr()),
 		__rows(mat.rows()),
-		__cols(mat.cols()),
-		__data(new ScalarType[mat.rows()*mat.cols()])
+		__cols(mat.cols())
 	{
-		for ( int i = 0 ; i < __rows*__cols ; ++ i )
-			__data[i] = mat.data(i);
 	}
 
 	~Matrix()
 	{
-		SAFE_DELETE_ARRAY(__data);
 	}
 
 	/*
@@ -82,8 +78,9 @@ public:
 			throw COException("Matrix error: index is less than zero!");
 		else if (i>=__rows||j>=__cols)
 			throw COException("Matrix error: index is out of range!");
-		else
-			return __data[j*__cols+i];
+		else{
+			return this->__data_ptr[j*__rows+i];
+		}
 	}
 	const ScalarType& operator() (int i,int j) const {
 		return const_cast<Matrix&>(*this).operator()(i,j);
@@ -97,7 +94,7 @@ public:
 		else if ( i >= __rows*__cols )
 			throw COException("Matrix error: index is out of range!");
 		else
-			return __data[i];
+			return this->__data_ptr[i];
 	}
 
 	// set element using array
@@ -108,7 +105,7 @@ public:
 		else if ( i >= __rows*__cols )
 			throw COException("Matrix error: index is out of range!");
 		else
-			__data[i] = value;
+			this->__data_ptr[i] = value;
 	}
 
 	/*
@@ -118,12 +115,12 @@ public:
 		if( __rows != mat.rows() || __cols != mat.cols() ){
 			__rows = mat.rows();
 			__cols = mat.cols();
-			SAFE_DELETE_ARRAY(__data);
-			__data = new ScalarType[__rows*__cols];
+			SAFE_DELETE_ARRAY(this->__data_ptr);
+			this->__data_ptr = new ScalarType[__rows*__cols];
 		}
 
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
-			__data[i] = mat.data(i);
+			this->__data_ptr[i] = mat.data(i);
 		return *this;
 	}
 
@@ -139,7 +136,7 @@ public:
 			throw COException("Matrix summation error: the size of two matrices are not consistent!");
 		Matrix<ScalarType> result(__rows,__cols);
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
-			result.set(i,__data[i]+mat.data(i));
+			result.set(i,this->__data_ptr[i]+mat.data(i));
 		return result;
 	}
 
@@ -150,7 +147,7 @@ public:
 			throw COException("Matrix subtraction error: the size of two matrices are not consistent!");
 		Matrix<ScalarType> result(__rows,__cols);
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
-			result.set(i,__data[i]-mat.data(i));
+			result.set(i,this->__data_ptr[i]-mat.data(i));
 		return result;
 	}
 

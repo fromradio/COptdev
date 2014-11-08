@@ -2,9 +2,10 @@
 // #include <omp.h>
 
 
-typedef std::complex<double> 				FT;
+typedef double		 				FT;
 typedef COPT::Array<FT> 			Array;
 typedef COPT::Vector<FT>			Vector;
+typedef COPT::Matrix<FT>			Matrix;
 // typedef double 			FT;
 // typedef COPT::Vector<FT>			Vector;
 // typedef COPT::Matrix<FT>			Matrix;
@@ -68,18 +69,21 @@ int main(int argc,char* argv[])
 	Vector vec1(5);
 	Vector vec2(5);
 	std::cout<<vec1<<std::endl;
-	vec1[0].imag( 1.0 );
-	vec1[1].real(2.0 );
-	vec1[2].real(3.0);
-	vec1[3].imag(4.0);
-	vec1[4].real(5.0);
+	vec1[0] = 1.0;
+	vec1[1] = 2.0;
+	vec1[2] = 3.0;
+	vec1[3] = 4.0;
+	vec1[4] = 5.0;
 	vec1.swap(vec2);
 	std::cout<<"Vector 1 "<<vec1<<std::endl;
 	std::cout<<"Vector 2 "<<vec2<<std::endl;
 	vec1.copy(vec2);
 	std::cout<<"Vector 1 "<<vec1<<std::endl;
 	std::cout<<vec1.dot(vec2)<<std::endl;
-	std::cout<<2.0*vec1<<std::endl;
+	std::cout<<2.0*vec1<<std::endl; 
+	Matrix mat(2,5);
+	mat(0,0) = 1.0;
+	std::cout<<mat*vec1<<std::endl;
 }
 
 // int main(int argc,char* argv[])
