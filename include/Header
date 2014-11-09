@@ -12,16 +12,15 @@
 #include <complex>
 #include "Traits.h"
 #include <cblas.h>
+
+
 #include "CBlasWrapper.h"
 #include "BasicOperation.h"
 #include "Array.h"
-
 #include "Vector.h"
-
-
-#include "Function.h"
 #include "Matrix.h"
 #include "NumDifferential.h"
+#include "Function.h"
 #include "Solver.h"
 #include "FuncRepository.h"
 #include "Conjugate.h"

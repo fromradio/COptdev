@@ -10,6 +10,13 @@ namespace COPT
 {
 
 /*
+ *		judge Wolfe Condition
+ *
+ */
+
+template<class FT>
+void 
+/*
  *		Backtracking method to inexactly find the step length
  *		/param func 		the given function
  *		/param x 			current iteration point

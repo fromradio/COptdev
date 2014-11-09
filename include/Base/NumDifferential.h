@@ -1,12 +1,65 @@
 #ifndef NUM_DIFFERENTIAL_H
 #define NUM_DIFFERENTIAL_H
 
-#include "Matrix.h"
+// #include "Matrix.h"
 /*
 	compute the differential of functions
 */
 namespace COPT{
 
+/*		Fast but inaccurate method to compute differential
+ *		The main thought is to use a small step length to compute differential quantities
+ *		The method is described in Chapter 8 in 'Numerical Optimization' 
+ *		/param func:		the input function
+ *		/param x:			current point
+ *		/param episilon: 	the step length
+ *		return value: the approximating difference of the scalar function at x.
+ */
+template<class SFunc>
+SFunc::ScalarType fastDifference(const SFunc& func,const SFunc::ScalarType x,const SFunc::ScalarType episilon)
+{
+	return (func(x+episilon)-func(x-episilon)/(2*episilon));
+}
+
+/*		Fast computaton of partial difference of a vector function
+ *		/param func:		the input function
+ *		/param i:			the index of the partial variable
+ *		/param x:			the input point
+ *		/param episilon:	the step length
+ *		return value: the approximating partial difference of the vector function at x
+ */
+template<class VFunc>
+VFunc::ScalarType fastPartialDifference(const VFunc& func,const int i,const VFunc::Vector x,const VFunc::ScalarType episilon)
+{
+	typedef VFunc::Vector 			Vector;
+	Vector e = Vector::vecE(x.size(),i,episilon)
+	return (func(x+e)-func(x-e))/(2*episilon);
+}
+
+/*		Fast computation of gradient of a vector function at certian point
+ *		/param func:		the input function
+ *		/param x:			the input point
+ *		/param episilon:	the step length
+ *		return value: the approximating gradient of a vector function at x
+ */
+template<class VFunc>
+VFunc::Vector fastGradient(const VFunc& func,const VFunc::Vector x,const VFunc::ScalarType episilon)
+{
+	typedef VFunc::Vector 			Vector;
+	Vector g(x.size());
+	for ( int i = 0 ; i < x.size() ; ++ i )
+	{
+		g[i] = fastPartialDifference(func,i,x,episilon);
+	}
+	return g;
+}
+
+
+
+/*		class 'ScalarDifferential' taking scalar function as its template
+ *
+ *
+ */
 template<class SFunc>
 class ScalarDifferential{
 private:
@@ -90,6 +143,9 @@ public:
 };
 
 
+/*			class 'VectorDifferential' is desigend to compute difference of a vector function
+ *
+ */
 template<class VFunc>
 class VectorDifferential{
 private:

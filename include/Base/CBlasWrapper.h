@@ -1,9 +1,16 @@
+//				Copyright (C) 2014 Ruimin Wang, ruimin.wang13@gmail.com
+//				Copyright (C) 2014 MathU
+
+
+
 #ifndef CBLAS_WRAPPER_H
 #define CBLAS_WRAPPER_H
 
+// 		This file defines C++ wrapper for library cblas
 #ifdef COPT_USE_BLAS
 #endif
 namespace blas{
+//		level 1
 template<class eT>
 void copt_blas_copy( const int N,eT* X,const int incX, eT* Y)
 {
@@ -117,7 +124,10 @@ void copt_blas_scal(const int N,const double alpha,std::complex<double>* X,const
 /*				summation
 */
 
-
+//			level 2
+/*				multipliation
+ */
+// void copt_blas_gemm()
 
 
 }// End of namespace blas

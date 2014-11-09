@@ -80,7 +80,7 @@ int main(int argc,char* argv[])
 	vec1.copy(vec2);
 	std::cout<<"Vector 1 "<<vec1<<std::endl;
 	std::cout<<vec1.dot(vec2)<<std::endl;
-	std::cout<<2.0*vec1<<std::endl; 
+	std::cout<<2.0*vec1<<std::endl;
 	Matrix mat(2,5);
 	mat(0,0) = 1.0;
 	std::cout<<mat*vec1<<std::endl;

@@ -168,7 +168,27 @@ public:
 		os<<vec[vec.size()-1]<<" ]";
 		return os;
 	}
+
+
+	/*		Generate special vectors
+	 *
+	 */
+	static Vector vecE(size_t size,int i)
+	{
+		if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
+		Vector vec(size);
+		vec[i] = 1.0;
+		return vec;
+	}
+	static Vector vecE(size_t size,int i,const ScalarType s)
+	{
+		if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
+		Vector vec(size);
+		vec[i] = s;
+		return vec;
+	}
 };
+
 }	// end of namespace COPT
 
 #endif

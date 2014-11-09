@@ -1,13 +1,9 @@
+//		Copyright (C) Ruimin Wang, ruimin.wang13@gmail.com
+//		Copyright (C) MathU
+
 // Function.h
 #ifndef FUNCTION_H
 #define FUNCTION_H
-
-#include "Vector.h"
-#include "Matrix.h"
-// #include "BasicMath.h"
-// #include "FuncPara.h"
-#include "NumDifferential.h"
-
 /*
 	Second version of 'Functions' classes
 */
@@ -26,7 +22,8 @@ class ScalarFunction{
 protected:
 
 public:
-	typedef 		T 			 FT;
+	typedef 		T 				ScalarType;
+	typedef 		T 			 	FT;
 	ScalarFunction (  ){}
 	// the deconstructor
 	virtual ~ScalarFunction() {}
@@ -61,6 +58,7 @@ protected:
 	int 		__dim;
 public:
 	typedef 		VT 								Vector;
+	typedef 		typename Vector::ScalarType 	ScalarType;
 	typedef 		typename Vector::ScalarType 	FT;
 
 	VectorFunction ( ):__dim(0) {}
