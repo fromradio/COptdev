@@ -15,7 +15,10 @@ namespace COPT
  */
 
 template<class FT>
-void 
+void judgeWolfeCondition()
+{
+	
+}
 /*
  *		Backtracking method to inexactly find the step length
  *		/param func 		the given function

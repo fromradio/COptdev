@@ -1,6 +1,6 @@
 //		This file is part of open library COPT
-//		Copyright (c) MathU
-//		Written by Ruimin Wang, ruimin.wang13@gmail.com
+//		Copyright (C) Ruimin Wang, ruimin.wang13@gmail.com
+//		Copyright (C) MathU
 
 #ifndef VECTOR_H
 #define VECTOR_H
@@ -159,7 +159,8 @@ public:
 		return result;
 	}
 
-	// overload of stream
+	/* overload of stream
+	 */
 	friend std::ostream& operator<<(std::ostream& os,const Vector& vec){
 		os<<"[ ";
 		for ( int i = 0 ; i< vec.size()-1 ; ++ i ){
@@ -171,7 +172,10 @@ public:
 
 
 	/*		Generate special vectors
-	 *
+	 */
+	/*			Generate e vector = [0,0,...,1,0,...]
+	 *			/param size:		the size of the vector
+	 *			/param i:			the index of non-zero element
 	 */
 	static Vector vecE(size_t size,int i)
 	{
@@ -180,6 +184,11 @@ public:
 		vec[i] = 1.0;
 		return vec;
 	}
+	/*			Generate e vector = [0,0,...,s,0,...]
+	 *			/param size:		the size of the vector
+	 *			/param i:			the index of non-zero element
+	 *			/param s:			the value of non-zero element
+	 */
 	static Vector vecE(size_t size,int i,const ScalarType s)
 	{
 		if ( i < 0 || i >= size ) throw COException("Index error: out of range!");

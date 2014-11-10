@@ -1,3 +1,6 @@
+//		Copyright (C) Ruimin Wang, ruimin.wang13@gmail.com
+//		Copyright (C) MathU
+
 #ifndef MATRIX_H
 #define MATRIX_H
 
@@ -173,6 +176,27 @@ public:
 				for ( int k = 0 ; k < __cols ; ++ k )
 					result(i,j) += operator()(i,k)*mat(k,j);
 		return result;
+	}
+
+	// transpose
+	Matrix transpose() const{
+		Matrix result(__cols,__rows);
+		for ( int i = 0 ; i < __cols ; ++ i )
+			for ( int j = 0 ; j < __rows ; ++ j )
+				result(i,j) = this->operator()(j,i);
+		return result;
+	}
+
+	/*				overload of ostream
+	 */
+	friend std::ostream operator<<(std::ostream& os,const Matrix& mat)
+	{
+		for ( int i = 0 ; i < mat.rows() ; ++ i ){
+			for ( int j = 0 ; j < mat.cols() ; ++ j )
+				os<<mat(i,j)<<' ';
+			os<<std::endl;
+		}
+		os<<std::endl;
 	}
 };
 

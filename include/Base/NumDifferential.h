@@ -16,9 +16,21 @@ namespace COPT{
  *		return value: the approximating difference of the scalar function at x.
  */
 template<class SFunc>
-SFunc::ScalarType fastDifference(const SFunc& func,const SFunc::ScalarType x,const SFunc::ScalarType episilon)
+typename SFunc::ScalarType fastDifference(const SFunc& func,const typename SFunc::ScalarType x,const typename SFunc::ScalarType epsilon)
 {
-	return (func(x+episilon)-func(x-episilon)/(2*episilon));
+	return (func(x+epsilon)-func(x-epsilon)/(2*epsilon));
+}
+
+/*		Fast computation of second order difference
+ *		/param func:		the input function
+ *		/param x:			the input point
+ *		/param epsilon:		the step length
+ *			f''(x) = (f(x+h)+f(x-h)-f(x))/h^2
+ */
+template<class SFunc>
+typename SFunc::ScalarType fastSecondDifference( const SFunc& func, const typename SFunc::ScalarType x,const typename SFunc::ScalarType epsilon)
+{
+	return (func(x+epsilon)+func(x-epsilon)-2*func(x))/(epsilon*epsilon);
 }
 
 /*		Fast computaton of partial difference of a vector function
@@ -29,11 +41,11 @@ SFunc::ScalarType fastDifference(const SFunc& func,const SFunc::ScalarType x,con
  *		return value: the approximating partial difference of the vector function at x
  */
 template<class VFunc>
-VFunc::ScalarType fastPartialDifference(const VFunc& func,const int i,const VFunc::Vector x,const VFunc::ScalarType episilon)
+typename VFunc::ScalarType fastPartialDifference(const VFunc& func,const int i,const typename VFunc::Vector x,const typename VFunc::ScalarType epsilon)
 {
-	typedef VFunc::Vector 			Vector;
-	Vector e = Vector::vecE(x.size(),i,episilon)
-	return (func(x+e)-func(x-e))/(2*episilon);
+	typedef typename VFunc::Vector 			Vector;
+	Vector e = Vector::vecE(x.size(),i,epsilon);
+	return (func(x+e)-func(x-e))/(2*epsilon);
 }
 
 /*		Fast computation of gradient of a vector function at certian point
@@ -43,17 +55,30 @@ VFunc::ScalarType fastPartialDifference(const VFunc& func,const int i,const VFun
  *		return value: the approximating gradient of a vector function at x
  */
 template<class VFunc>
-VFunc::Vector fastGradient(const VFunc& func,const VFunc::Vector x,const VFunc::ScalarType episilon)
+typename VFunc::Vector fastGradient(const VFunc& func,const typename VFunc::Vector x,const typename VFunc::ScalarType epsilon)
 {
-	typedef VFunc::Vector 			Vector;
+	typedef typename VFunc::Vector 			Vector;
 	Vector g(x.size());
 	for ( int i = 0 ; i < x.size() ; ++ i )
 	{
-		g[i] = fastPartialDifference(func,i,x,episilon);
+		g[i] = fastPartialDifference(func,i,x,epsilon);
 	}
 	return g;
 }
+/*		Fast computation of second order partial difference
+ *
+ *
+ */
+template<class VFunc>
+typename VFunc::ScalarType fastSecondPartialDifference(const VFunc& func,const int i,const int j,const typename VFunc::Vector x,const typename VFunc::ScalarType epsilon)
+{
+	typedef typename VFunc::Vector 			Vector;
+	Vector e1 = Vector::vecE(x.size(),i,epsilon);
+	Vector e2 = Vector::vecE(x.size(),j,epsilon);
+	return (func(x+e1+e2)-func(x+e1)-func(x+e2)+func(x))/(epsilon*epsilon);
+}
 
+// template<class VFunc>
 
 
 /*		class 'ScalarDifferential' taking scalar function as its template

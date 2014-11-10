@@ -9,10 +9,12 @@
 // 		This file defines C++ wrapper for library cblas
 #ifdef COPT_USE_BLAS
 #endif
+
+#ifdef CBLAS
 namespace blas{
 //		level 1
 template<class eT>
-void copt_blas_copy( const int N,eT* X,const int incX, eT* Y)
+void copt_blas_copy( const int N,const eT* X,const int incX, eT* Y,const int incY)
 {
 }
 
@@ -131,5 +133,22 @@ void copt_blas_scal(const int N,const double alpha,std::complex<double>* X,const
 
 
 }// End of namespace blas
+
+#else
+/*					simple blas operations
+ */
+namespace blas{
+template<class eT>
+void copt_blas_copy( const int N,const eT* X,const int incX, eT* Y,const int incY)
+{
+	for ( int i = 0 ; i < N ; ++ i ){
+		Y[i*incY] = X[i*incX];
+	}
+}
+}
+
+// End of ifdef CBLAS
+#endif
+
 
 #endif

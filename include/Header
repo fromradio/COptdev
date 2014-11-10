@@ -3,6 +3,7 @@
 
 #ifndef HEADER
 
+#define CBLAS 1
 
 #include <iostream>
 #include <cmath>
