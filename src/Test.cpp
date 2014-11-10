@@ -90,11 +90,36 @@ typedef COPT::Matrix<FT>			Matrix;
 /*
  *			Matrix test
  */
+// int main(int argc,char* argv[])
+// {
+// 	Matrix iden = Matrix::identity(5,5);
+// 	Vector vec(5);
+// 	std::cout<<iden.solve(vec)<<std::endl;  
+// }
+/*
+ *			Gradient method test
+ */
 int main(int argc,char* argv[])
-{
-	Matrix iden = Matrix::identity(5,5);
-	Vector vec(5);
-	std::cout<<iden.solve(vec)<<std::endl;  
+{ 
+	COPT::RosenbrockFunction<Vector> func;
+	Vector vec(2);
+	vec[0] = 1.0;
+	vec[1] = 0.0;
+	std::cout<<func(vec)<<std::endl;
+	std::cout<<func.gradient(vec)<<std::endl;
+	std::cout<<func.hessian(vec)<<std::endl; 
+	Vector x(2);
+	double tol = 1e-4;
+	int iter_max = 100000;
+	COPT::steepestDescentUsingBackTracking(
+		func,
+		0.7,
+		1e-4,
+		x,
+		tol,
+		iter_max
+		);
+	std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
 }
 
 // int main(int argc,char* argv[])

@@ -98,7 +98,7 @@ public:
 
 	Vector& operator= (const Vector& vec ){
 		this->resize(vec.size());
-		setData(vec.size(),vec.dataPtr());
+		this->setData(vec.size(),vec.dataPtr());
 		return *this;
 	}
 

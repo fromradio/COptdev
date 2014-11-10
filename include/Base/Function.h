@@ -74,8 +74,8 @@ public:
 		return VectorDifferential<VectorFunction>(*this).gradient(vec);
 	}
 
-	virtual Matrix<FT> 	hessian (const Vector& vec ) const {
-		return Matrix<FT>();
+	virtual Matrix 	hessian (const Vector& vec ) const {
+		return VectorDifferential<VectorFunction>(*this).hessian(vec);
 	}
 };
 

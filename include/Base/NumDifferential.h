@@ -90,6 +90,7 @@ typename VFunc::Matrix fastHessianMatrix(
 	for ( int i = 0 ; i < x.size() ; ++ i )
 		for ( int j = 0 ; j < x.size() ; ++ j )
 			result(i,j) = fastSecondPartialDifference(func,i,j,x,epsilon);
+	return result;
 }
 
 
@@ -185,6 +186,11 @@ public:
  */
 template<class VFunc>
 class VectorDifferential{
+public:
+	enum Type{
+		FAST,		// fast computation
+		ACC 		// more accurate computation
+	};
 private:
 	typedef typename VFunc::Vector 					Vector;
 	typedef typename VFunc::Matrix 					Matrix;
@@ -242,10 +248,7 @@ private:
 	// }
 public:
 
-	enum Type{
-		FAST,
-		ACC
-	};
+	
 
 	VectorDifferential(const VFunc& func,FT epsilon = 1e-5,Type t=FAST) 
 		: 
@@ -259,30 +262,44 @@ public:
 	Vector gradient(const Vector& vec,FT h = 1e-4){
 		switch(__type){
 		case FAST:
+		{
 			return fastGradient(__vfunc,vec,h);
+		}
 			break;
 		case ACC:
+		{
 			Vector result(vec.size());
 	 		for ( int i = 0 ; i < vec.size() ; ++ i ){
 	 			result[i] = computeDiff(vec,i,h);
 	 		}
 	 		return result;
+	 	}
 	 		break;
 	 	default:
+	 	{
 	 		throw COException("Unknown type in difference computation!");
+	 	}
+	 		break;
 		}
 	 }
 
-	 Matrix hessian(const Vector& vec,FT h = 1e-4){
+	 Matrix hessian(const Vector& vec,FT h = 1e-5){
 	 	switch(__type){
 	 	case FAST:
+	 	{
 	 		return fastHessianMatrix(__vfunc,vec,h);
+	 	}
 	 		break;
 	 	case ACC:
+	 	{
 	 		throw COException("No algorithm for accurate compuation of hessian matrix yet");
+	 	}
 	 		break;
 	 	default:
+	 	{
 	 		throw COException("Unknown type in difference computation!");
+	 	}
+	 		break;
 	 	}
 	 }
 };

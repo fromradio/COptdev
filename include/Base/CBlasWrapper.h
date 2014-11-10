@@ -158,7 +158,6 @@ template<class eT>
 eT copt_blas_dot(const int N,const eT* X,const int incX,const eT* Y,const int incY)
 {
 	eT t(0.0);
-	std::cout<<"used"<<std::endl;
 	for ( int i = 0 ; i < N ; ++ i ){
 		t += X[i*incX]*Y[i*incY];
 	}
