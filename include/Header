@@ -3,16 +3,26 @@
 
 #ifndef HEADER
 
-#define CBLAS 1
+//#define CBLAS 0
 
 #include <iostream>
 #include <cmath>
 
 
-#include "COException.h"
 #include <complex>
-#include "Traits.h"
 #include <cblas.h>
+#include <algorithm>
+
+
+#define EIGEN 1
+
+#ifdef EIGEN
+#include <Eigen/Dense>
+#endif
+
+
+#include "COException.h"
+#include "Traits.h"
 
 
 #include "CBlasWrapper.h"

@@ -73,6 +73,17 @@ public:
 			this->__data_ptr[i] = vec[i];
 	}
 
+#ifdef EIGEN
+	Vector(const Eigen::Matrix<ScalarType,Eigen::Dynamic,1>& vec)
+		:
+		Array(vec.size())
+	{
+		for ( int i = 0 ; i < this->__size ; ++ i ){
+			this->__data_ptr[i]  =vec(i);
+		}
+	}
+#endif
+
 	/*
 		Deconstructor
 	*/

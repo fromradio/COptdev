@@ -145,6 +145,32 @@ void copt_blas_copy( const int N,const eT* X,const int incX, eT* Y,const int inc
 		Y[i*incY] = X[i*incX];
 	}
 }
+template<class eT>
+void copt_blas_swap (const int N,eT* X,const int incX,eT* Y,const int incY)
+{
+	for ( int i = 0 ; i < N ; ++ i ){
+		eT t = X[i*incX];
+		X[i*incX] = Y[i*incY];
+		Y[i*incY] = t;
+	}
+}
+template<class eT>
+eT copt_blas_dot(const int N,const eT* X,const int incX,const eT* Y,const int incY)
+{
+	eT t(0.0);
+	std::cout<<"used"<<std::endl;
+	for ( int i = 0 ; i < N ; ++ i ){
+		t += X[i*incX]*Y[i*incY];
+	}
+	return t;
+}
+template<class eT>
+void copt_blas_scal(const int N,const eT alpha,eT* X,const int incX)
+{
+	for (int i = 0 ; i < N ; ++ i ){
+		X[i*incX] = X[i*incX]*alpha;
+	}
+}
 }
 
 // End of ifdef CBLAS

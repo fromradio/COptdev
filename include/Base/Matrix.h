@@ -28,9 +28,9 @@ public:
 
 private:
 	// the size of rows
-	int					__rows;
+	size_t					__rows;
 	// the size of columns
-	int					__cols;
+	size_t 					__cols;
 public:
 	// default constructor
 	Matrix()
@@ -41,7 +41,7 @@ public:
 	{
 
 	}
-	Matrix(int m,int n,ScalarType* data=NULL)
+	Matrix(size_t m,size_t n,ScalarType* data=NULL)
 		:
 		Array(m*n,data),
 		__rows(m),
@@ -68,9 +68,9 @@ public:
 		basic getters
 	*/
 	// get the number of rows
-	int		rows() const {return __rows;}
+	size_t		rows() const {return __rows;}
 	// get the number of columns
-	int		cols() const {return __cols;}
+	size_t 		cols() const {return __cols;}
 
 	/*
 		get the element of the matrix
@@ -196,7 +196,44 @@ public:
 				os<<mat(i,j)<<' ';
 			os<<std::endl;
 		}
-		os<<std::endl;
+		return os;
+	}
+
+	/*				solve linear system
+	 *
+	 */
+#ifdef EIGEN
+	Vector<ScalarType> solve(const Vector<ScalarType>& vec){
+		// currently we use eigen to solve it
+		Eigen::Matrix<ScalarType,Eigen::Dynamic,Eigen::Dynamic> matrix(__rows,__cols);
+		for ( int i = 0 ; i < __rows ; ++ i )
+		{
+			for ( int j = 0 ;  j < __cols ; ++ j )
+			{
+				matrix(i,j) = this->operator()(i,j);
+			}
+		}
+		Eigen::Matrix<ScalarType,Eigen::Dynamic,1> vector(vec.size());
+		for ( int i = 0 ; i < vec.size() ; ++ i )
+		{
+			vector(i) = vec[i];
+		}
+		matrix.ldlt().solve(vector);
+		return Vector<ScalarType>(vector);
+	}
+#endif
+
+
+	/*			Special matrix
+	 *
+	 */
+	static Matrix identity(size_t m,size_t n){
+		Matrix result(m,n);
+		// std::cout<<result<<std::endl;
+		size_t min = std::min(m,n);
+		for ( int i = 0 ; i < min ; ++ i )
+			result(i,i) = static_cast<ScalarType>(1.0);
+		return result;
 	}
 };
 

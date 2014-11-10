@@ -34,7 +34,7 @@ public:
 	{
 	}
 
-	Array( size_t size , ScalarType* data = NULL)
+	Array( size_t size , const ScalarType* data = NULL)
 		:
 		__size(size),
 		__data_ptr(new ScalarType[size])
