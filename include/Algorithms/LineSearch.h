@@ -10,15 +10,75 @@ namespace COPT
 {
 
 /*
- *		judge Wolfe Condition
- *
+ *		judge whether wolfe condition is satisfied
+ *		first condition is that
+ *			f(x+alpha*p)<=f(x)+c1*alpha*\nablaf(x).dot(p)
+ *		second condition is that
+ *			\nablaf(x+alpha*p).dot(p)>=c2*\nablaf(x).dot(p)
+ *		/param func:			the function
+ *		/param x:				current point
+ *		/param alpha:			the step length
+ *		/param p:				the direction
+ *		/param gradient:		the direction of gradient
+ *		/param c1:				the first constant
+ *		/param c2:				the second constant
+ */
+template<class VFunc>
+bool judgeWolfeCondition(
+	const VFunc& func,
+	const typename VFunc::Vector& x,
+	const typename VFunc::ScalarType alpha,
+	const typename VFunc::Vector& p,
+	const typename VFunc::Vector& gradient,
+	const typename VFunc::ScalarType c1,
+	const typename VFunc::ScalarType c2 )
+{
+	typename VFunc::ScalarType dot = gradient.dot(p);
+	if(func(x+alpha*p)<=func(x)+c1*alpha*dot)
+		if(func.gradient(x+alpha*p).dot(p)>=dot)
+			return true;
+		else
+			return false;
+	else
+		return false;
+}
+
+/*
+ *		judge whether strong Wolfe condition is satisfied
+ *		first condition is that
+ *			f(x+alpha*p)<=f(x)+c1*alpha*\nablaf(x).dot(p)
+ *		second condition is that
+ *			abs(\nablaf(x+alpha*p).dot(p))>=abs(c2*\nablaf(x).dot(p))
+ *		/param func:			the function
+ *		/param x:				current point
+ *		/param alpha:			the step length
+ *		/param p:				the direction
+ *		/param gradient:		the direction of gradient
+ *		/param c1:				the first constant
+ *		/param c2:				the second constant
  */
 
-template<class FT>
-void judgeWolfeCondition()
+template<class VFunc>
+bool judgeStrongWolfeCondition(
+	const VFunc& func,
+	const typename VFunc::Vector& x,
+	const typename VFunc::ScalarType alpha,
+	const typename VFunc::Vector& p,
+	const typename VFunc::Vector& gradient,
+	const typename VFunc::ScalarType c1,
+	const typename VFunc::ScalarType c2)
 {
-	
+	typename VFunc::ScalarType dot = gradient.dot(p);
+	if(func(x+alpha*p)<=func(x)+c1*alpha*dot)
+		if(std::abs(func.gradient(x+alpha*p).dot(p))<=c2*std::abs(dot))
+			return true;
+		else
+			return false;
+	else
+		return false;
 }
+
+
 /*
  *		Backtracking method to inexactly find the step length
  *		/param func 		the given function
@@ -31,7 +91,15 @@ void judgeWolfeCondition()
  *		/param iters 		the max iteration number on input and final iteration number on output
  */
 template<class Function,class Vector>
-void findStepLengthBackTracking(const Function& func,const Vector& x,const Vector& gradient,const Vector& direction,typename Vector::ScalarType rho,typename Vector::ScalarType c,typename Vector::ScalarType& alpha,int& iters)
+void findStepLengthBackTracking(
+	const Function& func,
+	const Vector& x,
+	const Vector& gradient,
+	const Vector& direction,
+	typename Vector::ScalarType rho,
+	typename Vector::ScalarType c,
+	typename Vector::ScalarType& alpha,
+	int& iters)
 {
 	typedef typename Vector::ScalarType 		ScalarType;
 
@@ -59,7 +127,13 @@ void findStepLengthBackTracking(const Function& func,const Vector& x,const Vecto
  *		/param iters		maximum iteration number on input and real iterations on output 
  */
 template<class Function,class Vector>
-void steepestDescentUsingBackTracking( const Function& func , typename Vector::ScalarType rho, typename Vector::ScalarType c , Vector& x ,typename Vector::ScalarType& tol_error, int& iters )
+void steepestDescentUsingBackTracking( 
+	const Function& func , 
+	const typename Vector::ScalarType rho, 
+	const typename Vector::ScalarType c , 
+	Vector& x ,
+	typename Vector::ScalarType& tol_error, 
+	int& iters )
 {
 	using std::sqrt;
 	typedef typename Vector::ScalarType 			ScalarType;
@@ -85,6 +159,8 @@ void steepestDescentUsingBackTracking( const Function& func , typename Vector::S
 
 	tol_error = sqrt(error);
 }
+
+// template<class
 };
 
 #endif

@@ -57,9 +57,10 @@ protected:
 	// the dimension of the problem
 	int 		__dim;
 public:
-	typedef 		VT 								Vector;
-	typedef 		typename Vector::ScalarType 	ScalarType;
-	typedef 		typename Vector::ScalarType 	FT;
+	typedef 			VT 								Vector;
+	typedef typename 	Vector::ScalarType 				ScalarType;
+	typedef 			Matrix<ScalarType>				Matrix;
+	typedef typename 	Vector::ScalarType 				FT;
 
 	VectorFunction ( ):__dim(0) {}
 

@@ -70,7 +70,7 @@ typename VFunc::Vector fastGradient(const VFunc& func,const typename VFunc::Vect
  *
  */
 template<class VFunc>
-typename VFunc::ScalarType fastSecondPartialDifference(const VFunc& func,const int i,const int j,const typename VFunc::Vector x,const typename VFunc::ScalarType epsilon)
+typename VFunc::ScalarType fastSecondPartialDifference(const VFunc& func,const int i,const int j,const typename VFunc::Vector& x,const typename VFunc::ScalarType epsilon)
 {
 	typedef typename VFunc::Vector 			Vector;
 	Vector e1 = Vector::vecE(x.size(),i,epsilon);
@@ -78,7 +78,19 @@ typename VFunc::ScalarType fastSecondPartialDifference(const VFunc& func,const i
 	return (func(x+e1+e2)-func(x+e1)-func(x+e2)+func(x))/(epsilon*epsilon);
 }
 
-// template<class VFunc>
+template<class VFunc>
+typename VFunc::Matrix fastHessianMatrix(
+	const VFunc& func,
+	const typename VFunc::Vector& x,
+	const typename VFunc::ScalarType epsilon)
+{
+	typedef typename VFunc::Vector 			Vector;
+	typedef typename VFunc::Matrix 			Matrix;
+	Matrix result(x.size(),x.size());
+	for ( int i = 0 ; i < x.size() ; ++ i )
+		for ( int j = 0 ; j < x.size() ; ++ j )
+			result(i,j) = fastSecondPartialDifference(func,i,j,x,epsilon);
+}
 
 
 /*		class 'ScalarDifferential' taking scalar function as its template
@@ -175,6 +187,7 @@ template<class VFunc>
 class VectorDifferential{
 private:
 	typedef typename VFunc::Vector 					Vector;
+	typedef typename VFunc::Matrix 					Matrix;
 	typedef typename Vector::ScalarType 					FT;
 	/*
 	 *		const reference to the function
@@ -184,6 +197,8 @@ private:
 	FT 												__epsilon;
 	//
 	int 											__iterused;
+	//			the type of algorithm
+	Type 											__type;
 
 	/*
 	 *				Private Function
@@ -226,20 +241,49 @@ private:
 	// 	vp[i] +
 	// }
 public:
-	VectorDifferential(const VFunc& func,FT epsilon = 1e-5) 
+
+	enum Type{
+		FAST,
+		ACC
+	};
+
+	VectorDifferential(const VFunc& func,FT epsilon = 1e-5,Type t=FAST) 
 		: 
 		__vfunc(func),
-		__epsilon(epsilon)
+		__epsilon(epsilon),
+		__type(t)
 		{}
 	/*
 	 *			Main function, compute the gradient of '__func'
 	 */
-	Vector gradient(const Vector& vec,FT h = 0.01){
-	 	Vector result(vec.size());
-	 	for ( int i = 0 ; i < vec.size() ; ++ i ){
-	 		result[i] = computeDiff(vec,i,h);
+	Vector gradient(const Vector& vec,FT h = 1e-4){
+		switch(__type){
+		case FAST:
+			return fastGradient(__vfunc,vec,h);
+			break;
+		case ACC:
+			Vector result(vec.size());
+	 		for ( int i = 0 ; i < vec.size() ; ++ i ){
+	 			result[i] = computeDiff(vec,i,h);
+	 		}
+	 		return result;
+	 		break;
+	 	default:
+	 		throw COException("Unknown type in difference computation!");
+		}
+	 }
+
+	 Matrix hessian(const Vector& vec,FT h = 1e-4){
+	 	switch(__type){
+	 	case FAST:
+	 		return fastHessianMatrix(__vfunc,vec,h);
+	 		break;
+	 	case ACC:
+	 		throw COException("No algorithm for accurate compuation of hessian matrix yet");
+	 		break;
+	 	default:
+	 		throw COException("Unknown type in difference computation!");
 	 	}
-	 	return result;
 	 }
 };
 };
