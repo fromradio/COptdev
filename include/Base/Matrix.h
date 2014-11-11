@@ -118,7 +118,7 @@ public:
 		if( __rows != mat.rows() || __cols != mat.cols() ){
 			__rows = mat.rows();
 			__cols = mat.cols();
-			SAFE_DELETE_Arr(this->__data_ptr);
+			SAFE_DELETE_ARRAY(this->__data_ptr);
 			this->__data_ptr = new ScalarType[__rows*__cols];
 		}
 

@@ -65,27 +65,27 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
  *			Vector test
  *
  */
-int main(int argc,char* argv[])
-{
-	Vector vec1(5);
-	Vector vec2(5);
-	std::cout<<vec1<<std::endl;
-	vec1[0] = 1.0;
-	vec1[1] = 2.0;
-	vec1[2] = 3.0;
-	vec1[3] = 4.0;
-	vec1[4] = 5.0;
-	vec1.swap(vec2);
-	std::cout<<"Vector 1 "<<vec1<<std::endl;
-	std::cout<<"Vector 2 "<<vec2<<std::endl;
-	vec1.copy(vec2);
-	std::cout<<"Vector 1 "<<vec1<<std::endl;
-	std::cout<<vec1.dot(vec2)<<std::endl;
-	std::cout<<2.0*vec1<<std::endl;
-	Matrix mat(2,5);
-	mat(0,0) = 1.0;
-	std::cout<<mat*vec1<<std::endl;
-}
+//int main(int argc,char* argv[])
+//{
+//	Vector vec1(5);
+//	Vector vec2(5);
+//	std::cout<<vec1<<std::endl;
+//	vec1[0] = 1.0;
+//	vec1[1] = 2.0;
+//	vec1[2] = 3.0;
+//	vec1[3] = 4.0;
+//	vec1[4] = 5.0;
+//	vec1.swap(vec2);
+//	std::cout<<"Vector 1 "<<vec1<<std::endl;
+//	std::cout<<"Vector 2 "<<vec2<<std::endl;
+//	vec1.copy(vec2);
+//	std::cout<<"Vector 1 "<<vec1<<std::endl;
+//	std::cout<<vec1.dot(vec2)<<std::endl;
+//	std::cout<<2.0*vec1<<std::endl;
+//	Matrix mat(2,5);
+//	mat(0,0) = 1.0;
+//	std::cout<<mat*vec1<<std::endl;
+//}
 
 /*
  *			Matrix test
@@ -222,3 +222,43 @@ int main(int argc,char* argv[])
 // 	// std::cout<<cf.diff(1.57)<<' '<<diff.diff(1.57)<<' '<<fabs(cf.diff(1.57)-diff.diff(1.57))<<std::endl;
 // 	// COPT::SAFE_DELETE(data);
 // }
+
+
+int main(){
+	Matrix A(3,3);
+	A(0,0)=1;
+	A(1,1)=1;
+	A(2,2)=1;
+	Vector b(3);
+	b[0]=1;
+	b[1]=3;
+	b[2]=7;
+	double rho=1;
+	Vector u(3);
+	Vector z(3);
+	Vector x(3);
+	int number=1000;
+	double e=0.0001;
+	COPT::LeastAbsoluteDeviationMethod(A,b,rho,u,x,z,number,e);
+}
+//int main(int argc,char* argv[])
+//{
+//	Vector vec1(5);
+//	Vector vec2(5);
+//	std::cout<<vec1<<std::endl;
+//	vec1[0] = 1.0;
+//	vec1[1] = 2.0;
+//	vec1[2] = 3.0;
+//	vec1[3] = 4.0;
+//	vec1[4] = 5.0;
+//	vec1.swap(vec2);
+//	std::cout<<"Vector 1 "<<vec1<<std::endl;
+//	std::cout<<"Vector 2 "<<vec2<<std::endl;
+//	vec1.copy(vec2);
+//	std::cout<<"Vector 1 "<<vec1<<std::endl;
+//	std::cout<<vec1.dot(vec2)<<std::endl;
+//	std::cout<<2.0*vec1<<std::endl;
+//	Matrix mat(2,5);
+//	mat(0,0) = 1.0;
+//	std::cout<<mat*vec1<<std::endl;
+//}

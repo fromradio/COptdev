@@ -37,6 +37,7 @@
 #include "FuncRepository.h"
 #include "Conjugate.h"
 #include "LineSearch.h"
+#include "AlternatingDirectionMethodOfMultipliers.h"
 
 #include <time.h>
 
