@@ -179,9 +179,6 @@ void newtonMethod(
 	while(error>tol){
 		Matrix hessian = func.hessian(x);
 		direction = hessian.solve(gradient);
-		std::cout<<"direction "<<direction<<std::endl;
-		std::cout<<hessian<<std::endl;
-		std::cout<<hessian*direction<<std::endl;
 		x = x - direction;
 		gradient = func.gradient(x);
 		++ iters;
@@ -189,6 +186,13 @@ void newtonMethod(
 		if ( iters >=  maxIter)
 			break;
 	}
+}
+
+template<class VFunc>
+void BFGSMethod(
+	)
+{
+	
 }
 };
 

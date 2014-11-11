@@ -112,7 +112,7 @@ public:
 		else{
 			Vector result(__cols);
 			for ( int i = 0 ; i < __cols ; ++ i ){
-				result[i] = this->operator(num,i);
+				result[i] = this->operator()(num,i);
 			}
 			return result;
 		}
@@ -128,7 +128,7 @@ public:
 		else{
 			Vector result(__rows);
 			for ( int i = 0 ; i < __rows ; ++ i ){
-				result[i] = this->operator(i,num);
+				result[i] = this->operator()(i,num);
 			}
 			return result;
 		}
