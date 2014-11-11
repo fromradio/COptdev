@@ -31,6 +31,7 @@
 #include "Vector.h"
 #include "Matrix.h"
 #include "NumDifferential.h"
+
 #include "Function.h"
 #include "Solver.h"
 #include "FuncRepository.h"

@@ -2,8 +2,8 @@
 // #include <omp.h>
 
 
-typedef double		 				FT;
-typedef COPT::Array<FT> 			Array;
+typedef double		 					 FT;
+typedef COPT::Array<FT> 				Array;
 typedef COPT::VectorBase<FT>			Vector;
 typedef COPT::MatrixBase<FT>	 		Matrix;
 
