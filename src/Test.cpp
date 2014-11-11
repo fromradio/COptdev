@@ -235,26 +235,42 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 
 int main(){
 	Matrix A(3,3);
-	A(0,0)=1;
-	A(1,1)=1;
-	A(2,2)=1;
+	A(0,0)=rand();
+	A(0,1)=rand();
+	A(0,2)=rand();
+	A(1,0)=rand();
+	A(1,1)=rand();
+	A(1,2)=rand();
+	A(2,0)=rand();
+	A(2,1)=rand();
+	A(2,2)=rand();
 	Vector b(3);
-	b[0]=1;
-	b[1]=3;
-	b[2]=7;
+	b[0]=rand();
+	b[1]=rand(); 
+	b[2]=rand();
 	double rho=1;
 	Vector u(3);
+	u[0]=8;
+	u[1]=397;
+	u[2]=15;
 	Vector z(3);
 	Vector x(3);
-	int number=1000;
-	double e=0.0001;
+	int number=1000000;
+	double e=1e-12;
 	COPT::LeastAbsoluteDeviationMethod(A,b,rho,u,x,z,number,e);
+	std::cout<<"x= "<<x<<std::endl;
+	std::cout<<"z= "<<z<<std::endl;
+	std::cout<<"u= "<<u<<std::endl;
+	std::cout<<"number="<<number<<std::endl;
+	std::cout<<"A= "<<A<<std::endl;
+	std::cout<<"b= "<<b<<std::endl;
+
 }
 //int main(int argc,char* argv[])
 //{
 //	Vector vec1(5);
 //	Vector vec2(5);
-//	std::cout<<vec1<<std::endl;
+//	std::cout <<vec1<<std::endl;
 //	vec1[0] = 1.0;
 //	vec1[1] = 2.0;
 //	vec1[2] = 3.0;
