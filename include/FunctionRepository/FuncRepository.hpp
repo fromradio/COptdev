@@ -1,12 +1,8 @@
-/*
-	Powered by ‘MathU'
-		Copyright@MathU
-*/
+//		Copyright (C) Ruimin Wang, ruimin.wang13@gmail.com
+//		Copyright (C) MathU
 
 #ifndef FUNC_REPOSITORY_H
 #define FUNC_REPOSITORY_H
-
-#include "Function.h"
 
 namespace COPT
 {

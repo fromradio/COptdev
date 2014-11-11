@@ -6,6 +6,8 @@
 #define CBLAS 1
 #include <typeinfo>
 #include <iostream>
+#include <vector>
+#include <list>
 #include <cmath>
 
 
@@ -21,25 +23,25 @@
 #endif
 
 
-#include "Base/COException.h"
-#include "Base/Traits.h"
+#include "Base/COException.hpp"
+#include "Base/Traits.hpp"
 
 
-#include "Base/CBlasWrapper.h"
-#include "Base/BasicOperation.h"
-#include "Base/Array.h"
-#include "Base/Vector.h"
-#include "Base/VectorImpl.h"
-#include "Base/Matrix.h"
-#include "Base/MatrixImpl.h"
-#include "Base/NumDifferential.h"
-#include "Base/Function.h"
-#include "Base/Solver.h"
-#include "FunctionRepository/FuncRepository.h"
-#include "Algorithms/Conjugate.h"
-#include "Algorithms/LineSearch.h"
-#include "Algorithms/BFGS.h"
-#include "Algorithms/LeastSquares.h"
+#include "Base/CBlasWrapper.hpp"
+#include "Base/BasicOperation.hpp"
+#include "Base/Array.hpp"
+#include "Base/Vector.hpp"
+#include "Base/VectorImpl.hpp"
+#include "Base/Matrix.hpp"
+#include "Base/MatrixImpl.hpp"
+#include "Base/NumDifferential.hpp"
+#include "Base/Function.hpp"
+#include "Base/Solver.hpp"
+#include "FunctionRepository/FuncRepository.hpp"
+#include "Algorithms/Conjugate.hpp"
+#include "Algorithms/LineSearch.hpp"
+#include "Algorithms/BFGS.hpp"
+#include "Algorithms/LeastSquares.hpp"
 
 #include <time.h>
 

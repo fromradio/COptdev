@@ -4,6 +4,18 @@
 #define BFGS_H
 
 namespace COPT{
+
+
+/*				classical BFGS approach
+ *				/param func:			input function
+ *				/param c1:				c1 for wolfe condition
+ *				/param c2:				c2 for wolfe condition
+ *				/param sigma:			initial constant for the first H matrix
+ *				/param x:				inital point on input and result on output
+ *				/param tol_error:		tolerence on input and final error on output
+ *				/param iters:			maximum iterations on input and final iteration number on output
+ *				/param rho:				scaling ratio for Wolfe condition
+ */
 template<class VFunc>
 void BFGSMethod(
 	const VFunc& 						func,
@@ -12,7 +24,8 @@ void BFGSMethod(
 	const typename VFunc::ScalarType 	sigma,
 	typename VFunc::Vector& 			x,
 	typename VFunc::ScalarType& 		tol_error,
-	int& 								iters
+	int& 								iters,
+	const typename VFunc::ScalarType 	rho = 0.7
 	)
 {
 	typedef typename VFunc::ScalarType 		Scalar;
@@ -27,14 +40,16 @@ void BFGSMethod(
 	Scalar tol = tol_error*tol_error;
 	tol_error = gradient.squaredNorm();
 	int maxIter = iters;
+	iters = 0;
 
 	Matrix H = Matrix::identity(x.size(),x.size(),std::sqrt(tol_error)*sigma);
 	Matrix I = Matrix::identity(x.size(),x.size());
+	std::cout<<std::sqrt(tol_error)*sigma<<std::endl;
 	while (tol_error>tol){
 		int numbers = 100;
 		Scalar steplength = 1.0;
 		Vector direction = -(H*gradient);
-		backTrackingWithWolfeCondition(func,x,gradient,direction,1.0,c1,c2,steplength,numbers);
+		backTrackingWithWolfeCondition(func,x,gradient,direction,rho,c1,c2,steplength,numbers);
 		Vector s = steplength*direction;
 		x = x+s;
 		gradientformer = gradient;
