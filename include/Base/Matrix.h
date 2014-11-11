@@ -213,6 +213,16 @@ public:
 		return result;
 	}
 
+
+	friend MatrixBase<ScalarType> operator* (const ScalarType s,const MatrixBase<ScalarType>& mat)
+	{
+		MatrixBase<ScalarType> result(mat.rows(),mat.cols());
+		for ( int i = 0 ; i < mat.rows() ; ++ i )
+			for ( int j = 0 ; j < mat.cols() ; ++ j )
+				result(i,j) = mat(i,j)*s;
+		return result;
+	}
+
 	// transpose
 	MatrixBase transpose() const{
 		MatrixBase result(__cols,__rows);

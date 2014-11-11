@@ -6,10 +6,19 @@
 
 namespace COPT
 {
+
+
+// template<class ScalarType>
+// MatrixBase<ScalarType> operator* (const ScalarType s,const MatrixBase<ScalarType>& mat)
+// {
+	
+// }
+/*			create an identity matrix
+ */
 template<class ScalarType>
-static MatrixBase<ScalarType> MatrixBase<ScalarType>::identity(
+MatrixBase<ScalarType> MatrixBase<ScalarType>::identity(
 	size_t m,
-	size_t m,
+	size_t n,
 	const ScalarType s)
 {
 	MatrixBase result(m,n);

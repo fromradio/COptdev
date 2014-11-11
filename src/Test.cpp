@@ -113,10 +113,19 @@ int main(int argc,char* argv[])
 	// x[0] = 1.0; 
 	double tol = 1e-5;   
 	int iter_max = 100; 
-	COPT::steepestDescentUsingBackTracking(
+	// COPT::steepestDescentUsingBackTracking(
+	// 	func,
+	// 	0.7,
+	// 	1e-1 ,
+	// 	x,
+	// 	tol,
+	// 	iter_max
+	// 	); 
+	COPT::BFGSMethod(
 		func,
-		0.7,
 		1e-1 ,
+		0.4,
+		0.5, 
 		x,
 		tol,
 		iter_max
