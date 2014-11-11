@@ -16,6 +16,10 @@ void BFGSMethod(
 {
 	typedef typename VFunc::ScalarType 		Scalar;
 	typedef typename VFunc::Vector 			Vector;
+	typedef typename VFunc::Matrix 			Matrix;
+
+	// gradient;
+	Vector gradient = func.gradient(x);
 	
 }
 
