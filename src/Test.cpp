@@ -1,6 +1,6 @@
 #include <Header>
 // #include <omp.h>
-
+ 
 
 typedef double		 					 FT;
 typedef COPT::Array<FT> 				Array;
