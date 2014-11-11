@@ -29,6 +29,7 @@
 #include "BasicOperation.h"
 #include "Array.h"
 #include "Vector.h"
+#include "VectorImpl.h"
 #include "Matrix.h"
 #include "NumDifferential.h"
 

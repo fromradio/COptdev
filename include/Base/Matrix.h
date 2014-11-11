@@ -270,6 +270,8 @@ public:
 			result(i,i) = static_cast<ScalarType>(1.0);
 		return result;
 	}
+
+	static MatrixBase identity(size_t m,size_t n,const ScalarType s);
 };
 
 };
