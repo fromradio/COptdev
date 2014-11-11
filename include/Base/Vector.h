@@ -20,12 +20,16 @@
 
 namespace COPT
 {
+// declaration
+template <class FT>
+class MatrixBase;
+
 template <class FT>
 class VectorBase : public Array<FT>{
 public:
 	// the type of float number
 	typedef 				Array<FT>				Arr;
-	typedef typename 		Arr::ScalarType			ScalarType;
+	typedef 				FT						ScalarType;
 
 public:
 
@@ -34,11 +38,7 @@ public:
 	/*
 		default constructor
 	*/
-	VectorBase()
-		:
-		Arr()
-	{}
-
+	VectorBase();
 	/*
 		Construct the vector with specific length
 			if data is NULL, a zero vector is constructed
@@ -184,6 +184,8 @@ public:
 
 	/*		Generate special VectorBases
 	 */
+
+
 	/*			Generate e VectorBase = [0,0,...,1,0,...]
 	 *			/param size:		the size of the VectorBase
 	 *			/param i:			the index of non-zero element
@@ -207,6 +209,11 @@ public:
 		vec[i] = s;
 		return vec;
 	}
+
+	/*			transpose operations
+	 */
+	MatrixBase<ScalarType> mulTrans(const VectorBase& vec) const;
+
 };
 
 }	// end of namespace COPT
