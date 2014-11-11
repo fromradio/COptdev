@@ -56,7 +56,6 @@ bool judgeWolfeCondition(
  *		/param c1:				the first constant
  *		/param c2:				the second constant
  */
-
 template<class VFunc>
 bool judgeStrongWolfeCondition(
 	const VFunc& func,
@@ -115,6 +114,17 @@ void findStepLengthBackTracking(
 	}
 }
 
+
+/*		Back tracking method to find the step length satisfying Wolfe condition
+ *		/param func:				the input function
+ *		/param x:					current point
+ *		/param gradient:			the gradient of current point
+ *		/param direction:			the descent direction
+ *		/param rho:					the scaling ratio
+ *		/param c1:					the first constant
+ *		/param c2:					the second constant
+ *		/param alpha:				the initial step length on input and result on output
+ */
 template<class Function,class Vector>
 void backTrackingWithWolfeCondition(
 	const Function& func,
@@ -224,6 +234,7 @@ void newtonMethod(
 			break;
 	}
 }
+
 }// End of namespace COPT
 
 #endif

@@ -4,8 +4,6 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
-#include "BasicOperation.h"
-#include <list>
 /*
 	A framework for a general Solver class
 */

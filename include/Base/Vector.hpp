@@ -4,19 +4,12 @@
 
 #ifndef VECTOR_H
 #define VECTOR_H
-
-#include <vector>
-#include <iostream>
-
 /*
 	basic operation that will be used in the pipeline
 */
-#include "BasicOperation.h"
-
 /*
 	the exception class for COPT
 */
-#include "COException.h"
 
 namespace COPT
 {
