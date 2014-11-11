@@ -9,6 +9,7 @@
 */
 namespace COPT{
 
+
 /*
  *	Scalar function
  *		input: scalar x
@@ -59,7 +60,7 @@ protected:
 public:
 	typedef 			VT 								Vector;
 	typedef typename 	Vector::ScalarType 				ScalarType;
-	typedef 			MatrixBase<ScalarType>				Matrix;
+	typedef 			MatrixBase<ScalarType>			Matrix;
 	typedef typename 	Vector::ScalarType 				FT;
 
 	VectorFunction ( ):__dim(0) {}
