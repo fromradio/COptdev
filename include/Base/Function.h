@@ -59,7 +59,7 @@ protected:
 public:
 	typedef 			VT 								Vector;
 	typedef typename 	Vector::ScalarType 				ScalarType;
-	typedef 			Matrix<ScalarType>				Matrix;
+	typedef 			MatrixBase<ScalarType>				Matrix;
 	typedef typename 	Vector::ScalarType 				FT;
 
 	VectorFunction ( ):__dim(0) {}

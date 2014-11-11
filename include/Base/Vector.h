@@ -21,11 +21,11 @@
 namespace COPT
 {
 template <class FT>
-class Vector : public Array<FT>{
+class VectorBase : public Array<FT>{
 public:
 	// the type of float number
-	typedef 				Array<FT>				Array;
-	typedef typename 		Array::ScalarType		ScalarType;
+	typedef 				Array<FT>				Arr;
+	typedef typename 		Arr::ScalarType			ScalarType;
 
 public:
 
@@ -34,9 +34,9 @@ public:
 	/*
 		default constructor
 	*/
-	Vector()
+	VectorBase()
 		:
-		Array()
+		Arr()
 	{}
 
 	/*
@@ -44,16 +44,16 @@ public:
 			if data is NULL, a zero vector is constructed
 	*/
 
-	Vector( int length , ScalarType* data = NULL )
+	VectorBase( int length , ScalarType* data = NULL )
 		:
-		Array(length,data)
+		Arr(length,data)
 	{
 	}
 
 	/*
 		Copy assignment
 	*/
-	Vector ( const Vector& vec )
+	VectorBase ( const VectorBase& vec )
 		
 	{
 		this->__size=vec.size();
@@ -65,7 +65,7 @@ public:
 		API with vector in stdlib
 	*/
 
-	Vector(const std::vector<ScalarType>& vec)
+	VectorBase(const std::vector<ScalarType>& vec)
 	{
 		this->__size=static_cast<size_t>(vec.size());
 		this->__data_ptr=new ScalarType [vec.size()];
@@ -74,9 +74,9 @@ public:
 	}
 
 #ifdef EIGEN
-	Vector(const Eigen::Matrix<ScalarType,Eigen::Dynamic,1>& vec)
+	VectorBase(const Eigen::Matrix<ScalarType,Eigen::Dynamic,1>& vec)
 		:
-		Array(vec.size())
+		Arr(vec.size())
 	{
 		for ( int i = 0 ; i < this->__size ; ++ i ){
 			this->__data_ptr[i]  =vec(i);
@@ -88,7 +88,7 @@ public:
 		Deconstructor
 	*/
 
-	~Vector()
+	~VectorBase()
 	{
 	}
 
@@ -96,7 +96,7 @@ public:
 		Copyt operation
 	*/
 
-	Vector& operator= (const Vector& vec ){
+	VectorBase& operator= (const VectorBase& vec ){
 		this->resize(vec.size());
 		this->setData(vec.size(),vec.dataPtr());
 		return *this;
@@ -106,7 +106,7 @@ public:
 		Mathematical operations
 	*/
 	/*
-	 * 			Square norm of the vector
+	 * 			Square norm of the VectorBase
 	 */
 	ScalarType squaredNorm() const{
 		ScalarType result = 0;
@@ -116,8 +116,8 @@ public:
 		return result;
 	}
 	// dot operation
-	ScalarType dot(const Vector& vec) const{
-		if(this->__size!=vec.size()) throw COException("Vector error: the length of two vectors do not equal to each other");
+	ScalarType dot(const VectorBase& vec) const{
+		if(this->__size!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
 		else{
 			ScalarType sum = blas::copt_blas_dot(this->__size,this->__data_ptr,1,vec.dataPtr(),1);
 			return sum;
@@ -129,22 +129,22 @@ public:
 		blas::copt_blas_scal(this->__size,s,this->__data_ptr,1);
 	}
 	// multiply with a scalar
-	Vector operator* (ScalarType s){
-		Vector result(*this);
+	VectorBase operator* (ScalarType s){
+		VectorBase result(*this);
 		result.scale(s);
 		return result;
 	}
 
-	friend Vector operator* (ScalarType s,const Vector& vec){
-		Vector result(vec);
+	friend VectorBase operator* (ScalarType s,const VectorBase& vec){
+		VectorBase result(vec);
 		result.scale(s);
 		return result;
 	}
 
 	// summation operation
-	Vector operator+ (const Vector& vec) const{
-		if(this->__size!=vec.size()) throw COException("Vector error: the length of two vectors do not equal to each other");
-		Vector<ScalarType> result(this->__size);
+	VectorBase operator+ (const VectorBase& vec) const{
+		if(this->__size!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
+		VectorBase<ScalarType> result(this->__size);
 		for ( int i = 0 ; i < this->__size ; ++ i ){
 			result[i] = this->__data_ptr[i]+vec[i];
 		}
@@ -152,9 +152,9 @@ public:
 	}
 
 	//subtraction operation
-	Vector operator- (const Vector& vec) const{
-		if(this->__size!=vec.size()) throw COException("Vector error: the length of two vectors do not equal to each other");
-		Vector<ScalarType> result(this->__size);
+	VectorBase operator- (const VectorBase& vec) const{
+		if(this->__size!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
+		VectorBase<ScalarType> result(this->__size);
 		for ( int i = 0 ; i < this->__size ; ++ i ){
 			result[i] = this->__data_ptr[i]-vec[i];
 		}
@@ -162,8 +162,8 @@ public:
 	}
 
 	// 
-	Vector operator- () const{
-		Vector<ScalarType> result(this->__size);
+	VectorBase operator- () const{
+		VectorBase<ScalarType> result(this->__size);
 		for ( int i = 0 ; i < this->__size ; ++ i ){
 			result[i] = -this->__data_ptr[i];
 		}
@@ -172,7 +172,7 @@ public:
 
 	/* overload of stream
 	 */
-	friend std::ostream& operator<<(std::ostream& os,const Vector& vec){
+	friend std::ostream& operator<<(std::ostream& os,const VectorBase& vec){
 		os<<"[ ";
 		for ( int i = 0 ; i< vec.size()-1 ; ++ i ){
 			os<<vec[i]<<" , ";
@@ -182,28 +182,28 @@ public:
 	}
 
 
-	/*		Generate special vectors
+	/*		Generate special VectorBases
 	 */
-	/*			Generate e vector = [0,0,...,1,0,...]
-	 *			/param size:		the size of the vector
+	/*			Generate e VectorBase = [0,0,...,1,0,...]
+	 *			/param size:		the size of the VectorBase
 	 *			/param i:			the index of non-zero element
 	 */
-	static Vector vecE(size_t size,int i)
+	static VectorBase vecE(size_t size,int i)
 	{
 		if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
-		Vector vec(size);
+		VectorBase vec(size);
 		vec[i] = 1.0;
 		return vec;
 	}
-	/*			Generate e vector = [0,0,...,s,0,...]
-	 *			/param size:		the size of the vector
+	/*			Generate e VectorBase = [0,0,...,s,0,...]
+	 *			/param size:		the size of the VectorBase
 	 *			/param i:			the index of non-zero element
 	 *			/param s:			the value of non-zero element
 	 */
-	static Vector vecE(size_t size,int i,const ScalarType s)
+	static VectorBase vecE(size_t size,int i,const ScalarType s)
 	{
 		if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
-		Vector vec(size);
+		VectorBase vec(size);
 		vec[i] = s;
 		return vec;
 	}
