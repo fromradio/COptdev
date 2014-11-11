@@ -4,8 +4,8 @@
 
 typedef double		 				FT;
 typedef COPT::Array<FT> 			Array;
-typedef COPT::Vector<FT>			Vector;
-typedef COPT::Matrix<FT>			Matrix;
+typedef COPT::VectorBase<FT>			Vector;
+typedef COPT::MatrixBase<FT>	 		Matrix;
 
 // typedef double 			FT;
 // typedef COPT::Vector<FT>			Vector;
@@ -65,27 +65,27 @@ typedef COPT::Matrix<FT>			Matrix;
  *			Vector test
  *
  */
-// int main(int argc,char* argv[])
-// {
-// 	Vector vec1(5);
-// 	Vector vec2(5);
-// 	std::cout<<vec1<<std::endl;
-// 	vec1[0] = 1.0;
-// 	vec1[1] = 2.0;
-// 	vec1[2] = 3.0;
-// 	vec1[3] = 4.0;
-// 	vec1[4] = 5.0;
-// 	vec1.swap(vec2);
-// 	std::cout<<"Vector 1 "<<vec1<<std::endl;
-// 	std::cout<<"Vector 2 "<<vec2<<std::endl;
-// 	vec1.copy(vec2);
-// 	std::cout<<"Vector 1 "<<vec1<<std::endl;
-// 	std::cout<<vec1.dot(vec2)<<std::endl;
-// 	std::cout<<2.0*vec1<<std::endl;
-// 	Matrix mat(2,5);
-// 	mat(0,0) = 1.0;
-// 	std::cout<<mat*vec1<<std::endl;
-// }
+int main(int argc,char* argv[])
+{
+	Vector vec1(5);
+	Vector vec2(5);
+	std::cout<<vec1<<std::endl;
+	vec1[0] = 1.0;
+	vec1[1] = 2.0;
+	vec1[2] = 3.0;
+	vec1[3] = 4.0;
+	vec1[4] = 5.0;
+	vec1.swap(vec2);
+	std::cout<<"Vector 1 "<<vec1<<std::endl;
+	std::cout<<"Vector 2 "<<vec2<<std::endl;
+	vec1.copy(vec2);
+	std::cout<<"Vector 1 "<<vec1<<std::endl;
+	std::cout<<vec1.dot(vec2)<<std::endl;
+	std::cout<<2.0*vec1<<std::endl;
+	Matrix mat(2,5);
+	mat(0,0) = 1.0;
+	std::cout<<mat*vec1<<std::endl;
+}
 
 /*
  *			Matrix test
@@ -99,28 +99,28 @@ typedef COPT::Matrix<FT>			Matrix;
 /*
  *			Gradient method test
  */
-int main(int argc,char* argv[])
-{ 
-	COPT::RosenbrockFunction<Vector> func;
-	Vector vec(2);
-	vec[0] = 1.0;
-	vec[1] = 0.0;
-	std::cout<<func(vec)<<std::endl;
-	std::cout<<func.gradient(vec)<<std::endl;
-	std::cout<<func.hessian(vec)<<std::endl; 
-	Vector x(2);
-	double tol = 1e-4;
-	int iter_max = 100000;
-	COPT::steepestDescentUsingBackTracking(
-		func,
-		0.7,
-		1e-4,
-		x,
-		tol,
-		iter_max
-		);
-	std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
-}
+// int main(int argc,char* argv[])
+// { 
+// 	COPT::RosenbrockFunction<Vector> func;
+// 	Vector vec(2);
+// 	vec[0] = 1.0;
+// 	vec[1] = 0.0;
+// 	std::cout<<func(vec)<<std::endl;
+// 	std::cout<<func.gradient(vec)<<std::endl;
+// 	std::cout<<func.hessian(vec)<<std::endl; 
+// 	Vector x(2);
+// 	double tol = 1e-4;
+// 	int iter_max = 100000;
+// 	COPT::steepestDescentUsingBackTracking(
+// 		func,
+// 		0.7,
+// 		1e-4,
+// 		x,
+// 		tol,
+// 		iter_max
+// 		);
+// 	std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
+// }
 
 // int main(int argc,char* argv[])
 // {
