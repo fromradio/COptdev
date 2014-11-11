@@ -120,6 +120,7 @@ int main(int argc,char* argv[])
 /*
  *			Gradient method test
  */
+
 // int main(int argc,char* argv[])
 // { 
 // 	COPT::RosenbrockFunction<Vector> func;
@@ -130,22 +131,32 @@ int main(int argc,char* argv[])
 // 	std::cout<<func.gradient(vec)<<std::endl;
 // 	std::cout<<func.hessian(vec)<<std::endl; 
 // 	Vector x(2);
-// 	x[0] = 1.0; 
-// 	double tol = 1e-7;   
+// 	// x[0] = 1.0; 
+// 	double tol = 1e-5;   
 // 	int iter_max = 100; 
 // 	// COPT::steepestDescentUsingBackTracking(
 // 	// 	func,
 // 	// 	0.7,
-// 	// 	1e-4,
+// 	// 	1e-1 ,
 // 	// 	x,
 // 	// 	tol,
 // 	// 	iter_max
-// 	// 	);
-// 	COPT::newtonMethod(
+// 	// 	); 
+// 	COPT::BFGSMethod(
 // 		func,
+// 		1e-1 ,
+// 		0.4,
+// 		0.5, 
 // 		x,
 // 		tol,
-// 		iter_max);
+// 		iter_max
+// 		); 
+// 	// COPT::newtonMethod(
+// 	// 	func,
+// 	// 	x,
+// 	// 	tol,
+// 	// 	iter_max);
+// 	std::cout<<x.mulTrans(x)<<std::endl;  
 // 	std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
 // }
 

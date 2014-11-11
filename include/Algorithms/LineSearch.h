@@ -1,6 +1,5 @@
-// 		This file is part of open library COPT
-//		Copyright (c) MathU
-//		Written by Ruimin Wang, ruimin.wang13@gmail.com
+//		Copyright (C) Ruimin Wang, ruimin.wang13@gmail.com
+//		Copyright (C) MathU
 
 #ifndef LINE_SEARCH_H
 #define LINE_SEARCH_H
@@ -35,7 +34,7 @@ bool judgeWolfeCondition(
 {
 	typename VFunc::ScalarType dot = gradient.dot(p);
 	if(func(x+alpha*p)<=func(x)+c1*alpha*dot)
-		if(func.gradient(x+alpha*p).dot(p)>=dot)
+		if(func.gradient(x+alpha*p).dot(p)>=c2*dot)
 			return true;
 		else
 			return false;
@@ -116,6 +115,36 @@ void findStepLengthBackTracking(
 	}
 }
 
+template<class Function,class Vector>
+void backTrackingWithWolfeCondition(
+	const Function& func,
+	const Vector& x,
+	const Vector& gradient,
+	const Vector& direction,
+	const typename Vector::ScalarType rho,
+	const typename Vector::ScalarType c1,
+	const typename Vector::ScalarType c2,
+	typename Vector::ScalarType& alpha,
+	int& iters)
+{
+	typedef typename Vector::ScalarType 		ScalarType;
+
+	int maxIter = iters;
+	iters = 0;
+	ScalarType f = func(x);
+	ScalarType dot = gradient.dot(direction);
+	while(iters < maxIter){
+		if(func(x+alpha*direction)<=f+c1*alpha*dot)
+			if(func.gradient(x+alpha*direction).dot(direction)>=c2*dot)
+				break;
+			else
+				;
+		else
+			alpha = rho*alpha;
+		++ iters;
+	}
+}
+
 
 /*
  *		Steepest Descent approach solving non-linear problem
@@ -148,6 +177,7 @@ void steepestDescentUsingBackTracking(
 		ScalarType steplength = 1;
 		int biter = 100;
 		findStepLengthBackTracking(func,x,gradient,direction,rho,c,steplength,biter);
+		// backTrackingWithWolfeCondition(func,x,gradient,direction,rho,c,0.4,steplength,biter);
 		x = x + steplength*direction;
 		++ iters;
 		if(iters>=maxIter)
@@ -160,6 +190,13 @@ void steepestDescentUsingBackTracking(
 	tol_error = sqrt(error);
 }
 
+
+/*		Newton method
+ *		/param func:			the input function
+ *		/param x:				intial point on input and result on output
+ *		/param tol_error:		tolerance on input and final estimated error on output
+ *		/param iters:			maximum iteration number on input and final iteration number on output
+ */
 template<class VFunc>
 void newtonMethod(
 	const VFunc& func,
@@ -187,13 +224,6 @@ void newtonMethod(
 			break;
 	}
 }
-
-template<class VFunc>
-void BFGSMethod(
-	)
-{
-	
-}
-};
+}// End of namespace COPT
 
 #endif

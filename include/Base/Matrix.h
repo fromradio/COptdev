@@ -153,7 +153,7 @@ public:
 		if( __rows != mat.rows() || __cols != mat.cols() ){
 			__rows = mat.rows();
 			__cols = mat.cols();
-			SAFE_DELETE_Arr(this->__data_ptr);
+			SAFE_DELETE_ARRAY(this->__data_ptr);
 			this->__data_ptr = new ScalarType[__rows*__cols];
 		}
 
@@ -210,6 +210,16 @@ public:
 			for ( int j = 0 ; j < mat.cols() ; ++ j )
 				for ( int k = 0 ; k < __cols ; ++ k )
 					result(i,j) += operator()(i,k)*mat(k,j);
+		return result;
+	}
+
+
+	friend MatrixBase<ScalarType> operator* (const ScalarType s,const MatrixBase<ScalarType>& mat)
+	{
+		MatrixBase<ScalarType> result(mat.rows(),mat.cols());
+		for ( int i = 0 ; i < mat.rows() ; ++ i )
+			for ( int j = 0 ; j < mat.cols() ; ++ j )
+				result(i,j) = mat(i,j)*s;
 		return result;
 	}
 
@@ -270,6 +280,8 @@ public:
 			result(i,i) = static_cast<ScalarType>(1.0);
 		return result;
 	}
+
+	static MatrixBase identity(size_t m,size_t n,const ScalarType s);
 };
 
 };

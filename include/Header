@@ -21,24 +21,25 @@
 #endif
 
 
-#include "COException.h"
-#include "Traits.h"
+#include "Base/COException.h"
+#include "Base/Traits.h"
 
 
-#include "CBlasWrapper.h"
-#include "BasicOperation.h"
-#include "Array.h"
-#include "Vector.h"
-#include "Matrix.h"
-#include "NumDifferential.h"
-
-#include "Function.h"
-#include "Solver.h"
-#include "FuncRepository.h"
-#include "Conjugate.h"
-#include "LineSearch.h"
-
-#include "LeastSquares.h"
+#include "Base/CBlasWrapper.h"
+#include "Base/BasicOperation.h"
+#include "Base/Array.h"
+#include "Base/Vector.h"
+#include "Base/VectorImpl.h"
+#include "Base/Matrix.h"
+#include "Base/MatrixImpl.h"
+#include "Base/NumDifferential.h"
+#include "Base/Function.h"
+#include "Base/Solver.h"
+#include "FunctionRepository/FuncRepository.h"
+#include "Algorithms/Conjugate.h"
+#include "Algorithms/LineSearch.h"
+#include "Algorithms/BFGS.h"
+#include "Algorithms/LeastSquares.h"
 
 #include <time.h>
 
