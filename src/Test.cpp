@@ -87,7 +87,27 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 // 	mat(0,0) = 1.0;
 // 	std::cout<<mat*vec1<<std::endl;
 // }
+/*LeastSquare test
 
+*/
+int main(int argc,char* argv[])
+{
+	Matrix A(4,2);
+	A(0,0) = 1; A(0,1) = -1;
+	A(1,0) = -1;A(1,1) = 1;
+	A(2,0) = 2; A(2,1) = -2;
+	A(3,0) = -3;A(3,1) = 1;
+	Vector b(4);
+	b[0] = 1;
+	b[1] = 2;
+	b[2] = 3;
+	b[3] = 4;
+	Vector x(2);
+	COPT::LeastMeanSquareMethod(A,b,0.01,x);
+	std::cout<<x<<std::endl;
+	COPT::LeastSquareMethod(A,b,x);
+	std::cout<<x<<std::endl;
+}
 /*
  *			Matrix test
  */
@@ -100,34 +120,34 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 /*
  *			Gradient method test
  */
-int main(int argc,char* argv[])
-{ 
-	COPT::RosenbrockFunction<Vector> func;
-	Vector vec(2);
-	vec[0] = 1.0;
-	vec[1] = 0.0;
-	std::cout<<func(vec)<<std::endl;
-	std::cout<<func.gradient(vec)<<std::endl;
-	std::cout<<func.hessian(vec)<<std::endl; 
-	Vector x(2);
-	x[0] = 1.0; 
-	double tol = 1e-7;   
-	int iter_max = 100; 
-	// COPT::steepestDescentUsingBackTracking(
-	// 	func,
-	// 	0.7,
-	// 	1e-4,
-	// 	x,
-	// 	tol,
-	// 	iter_max
-	// 	);
-	COPT::newtonMethod(
-		func,
-		x,
-		tol,
-		iter_max);
-	std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
-}
+// int main(int argc,char* argv[])
+// { 
+// 	COPT::RosenbrockFunction<Vector> func;
+// 	Vector vec(2);
+// 	vec[0] = 1.0;
+// 	vec[1] = 0.0;
+// 	std::cout<<func(vec)<<std::endl;
+// 	std::cout<<func.gradient(vec)<<std::endl;
+// 	std::cout<<func.hessian(vec)<<std::endl; 
+// 	Vector x(2);
+// 	x[0] = 1.0; 
+// 	double tol = 1e-7;   
+// 	int iter_max = 100; 
+// 	// COPT::steepestDescentUsingBackTracking(
+// 	// 	func,
+// 	// 	0.7,
+// 	// 	1e-4,
+// 	// 	x,
+// 	// 	tol,
+// 	// 	iter_max
+// 	// 	);
+// 	COPT::newtonMethod(
+// 		func,
+// 		x,
+// 		tol,
+// 		iter_max);
+// 	std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
+// }
 
 // int main(int argc,char* argv[])
 // {
@@ -188,7 +208,7 @@ int main(int argc,char* argv[])
 // 	// std::cout<<"final error is "<<tol <<std::endl;;
 // 	// std::cout<<"final iteration is "<<iters<<std::endl;
 // 	// std::cout<<"result is "<<x0<<std::endl;
-
+ 
 // 	// double* data = new double[10];
 // 	// for ( int i = 0 ; i < 10 ; ++ i )
 // 	// 	data[i] =  1.0;
