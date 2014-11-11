@@ -1,6 +1,6 @@
 #include <Python.h>
 #include <iostream>
-#include <E:/COptdev/include/Frame/Vector.h>
+#include <Header>
 
 static PyObject* geVec(PyObject *self, PyObject *args)
 {
@@ -8,7 +8,7 @@ static PyObject* geVec(PyObject *self, PyObject *args)
 	PyObject *list;
 	if (!PyArg_ParseTuple(args, "i", &i))
 		return NULL;
-	COPT::Vector<double> vec(i);
+	COPT::VectorBase<double> vec(i);
     list = PyList_New(i);
     for (j = 0;j < i;j++)
     	PyList_SetItem(list,j,Py_BuildValue("f",vec[j]));

@@ -6,6 +6,8 @@
 #define CBLAS 1
 #include <typeinfo>
 #include <iostream>
+#include <vector>
+#include <list>
 #include <cmath>
 
 
@@ -21,6 +23,7 @@
 #endif
 
 
+<<<<<<< HEAD
 #include "COException.h"
 #include "Traits.h"
 
@@ -41,6 +44,27 @@
 #include "AlternatingDirectionMethodOfMultipliers.h"
 
 #include "LeastSquares.h"
+=======
+#include "Base/COException.hpp"
+#include "Base/Traits.hpp"
+
+
+#include "Base/CBlasWrapper.hpp"
+#include "Base/BasicOperation.hpp"
+#include "Base/Array.hpp"
+#include "Base/Vector.hpp"
+#include "Base/VectorImpl.hpp"
+#include "Base/Matrix.hpp"
+#include "Base/MatrixImpl.hpp"
+#include "Base/NumDifferential.hpp"
+#include "Base/Function.hpp"
+#include "Base/Solver.hpp"
+#include "FunctionRepository/FuncRepository.hpp"
+#include "Algorithms/Conjugate.hpp"
+#include "Algorithms/LineSearch.hpp"
+#include "Algorithms/BFGS.hpp"
+#include "Algorithms/LeastSquares.hpp"
+>>>>>>> upstream/master
 
 #include <time.h>
 

@@ -1,8 +1,0 @@
-g++ -g -Wall -I./lib/Eigen -I./include/Frame -I./include/LeastSquares -I./include/FunctionRepository -c ./src/Test.cpp -o obj/Test.o
-
-
-g++ ./obj/BasicMath.o ./obj/Function.o ./obj/OptFrame.o ./obj/LeastSquares.o ./obj/Test.o -o bin/main
-
-g++ -g -Wall -IE:/Python27/include (-LE:/Python27/libs) -I./lib/Eigen -I./include/Frame -I./include/LeastSquares -I./include/FunctionRepository -c ./python/geVec.cpp -o python/geVec.o (-lpython27)
-
-g++ -shared -IE:/Python27/include -LE:/Python27/libs ./obj/BasicMath.o ./obj/Function.o ./obj/OptFrame.o ./obj/LeastSquares.o ./python/geVec.o -o python/geVec.pyd -lpython27
