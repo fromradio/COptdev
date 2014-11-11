@@ -160,7 +160,36 @@ void steepestDescentUsingBackTracking(
 	tol_error = sqrt(error);
 }
 
-// template<class
+template<class VFunc>
+void newtonMethod(
+	const VFunc& func,
+	typename VFunc::Vector& x,
+	typename VFunc::ScalarType& tol_error,
+	int & iters)
+{
+	typedef typename VFunc::Vector		Vector;
+	typedef typename VFunc::ScalarType	ScalarType;
+	typedef typename VFunc::Matrix 		Matrix;
+	int maxIter = iters;
+	iters = 0;
+	Vector gradient = func.gradient(x);
+	Vector direction;
+	ScalarType tol = tol_error*tol_error;
+	ScalarType error = gradient.squaredNorm();
+	while(error>tol){
+		Matrix hessian = func.hessian(x);
+		direction = hessian.solve(gradient);
+		std::cout<<"direction "<<direction<<std::endl;
+		std::cout<<hessian<<std::endl;
+		std::cout<<hessian*direction<<std::endl;
+		x = x - direction;
+		gradient = func.gradient(x);
+		++ iters;
+		error = gradient.squaredNorm();
+		if ( iters >=  maxIter)
+			break;
+	}
+}
 };
 
 #endif

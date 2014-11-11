@@ -22,8 +22,9 @@ class MatrixBase
 public:
 
 	// the scalar type
-	typedef 			Array<FT>			Arr;
-	typedef typename	Arr::ScalarType 	ScalarType;
+	typedef 			Array<FT>				Arr;
+	typedef typename	Arr::ScalarType 		ScalarType;
+	typedef 			VectorBase<ScalarType>	Vector;
 
 
 private:
@@ -99,6 +100,40 @@ public:
 		else
 			return this->__data_ptr[i];
 	}
+
+	/*
+	 *			obtain the i-th row
+	 */
+	Vector row( int num ) const {
+		if ( num < 0 )
+			throw COException("MatrixBase error: row index is less that zero!");
+		else if ( num >= __rows)
+			throw COException("MatrixBase error: row index is out of range!");
+		else{
+			Vector result(__cols);
+			for ( int i = 0 ; i < __cols ; ++ i ){
+				result[i] = this->operator(num,i);
+			}
+			return result;
+		}
+	}
+	/*
+	 *			obtain the i-th column
+	 */
+	Vector col( int num ) const {
+		if ( num < 0 )
+			throw COException("MatrixBase error: row index is less that zero!");
+		else if ( num >= __cols)
+			throw COException("MatrixBase error: row index is out of range!");
+		else{
+			Vector result(__rows);
+			for ( int i = 0 ; i < __rows ; ++ i ){
+				result[i] = this->operator(i,num);
+			}
+			return result;
+		}
+	}
+
 
 	// set element using Arr
 
@@ -210,7 +245,7 @@ public:
 		{
 			for ( int j = 0 ;  j < __cols ; ++ j )
 			{
-				MatrixBase(i,j) = this->operator()(i,j);
+				matrix(i,j) = this->operator()(i,j);
 			}
 		}
 		Eigen::Matrix<ScalarType,Eigen::Dynamic,1> vector(vec.size());
@@ -218,8 +253,8 @@ public:
 		{
 			vector(i) = vec[i];
 		}
-		matrix.ldlt().solve(vector);
-		return VectorBase<ScalarType>(vector);
+		Eigen::Matrix<ScalarType,Eigen::Dynamic,1> result = matrix.ldlt().solve(vector);
+		return VectorBase<ScalarType>(result);
 	}
 #endif
 
