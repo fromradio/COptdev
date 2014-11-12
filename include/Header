@@ -23,28 +23,6 @@
 #endif
 
 
-<<<<<<< HEAD
-#include "COException.h"
-#include "Traits.h"
-
-
-#include "CBlasWrapper.h"
-#include "BasicOperation.h"
-#include "Array.h"
-#include "Vector.h"
-#include "VectorImpl.h"
-#include "Matrix.h"
-#include "NumDifferential.h"
-
-#include "Function.h"
-#include "Solver.h"
-#include "FuncRepository.h"
-#include "Conjugate.h"
-#include "LineSearch.h"
-#include "AlternatingDirectionMethodOfMultipliers.h"
-
-#include "LeastSquares.h"
-=======
 #include "Base/COException.hpp"
 #include "Base/Traits.hpp"
 
@@ -64,7 +42,6 @@
 #include "Algorithms/LineSearch.hpp"
 #include "Algorithms/BFGS.hpp"
 #include "Algorithms/LeastSquares.hpp"
->>>>>>> upstream/master
 
 #include <time.h>
 
