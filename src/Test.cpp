@@ -66,21 +66,21 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
  *
  */
 
-int main(int argc,char* argv[])
-{
-	Vector vec1(5),vec2(5); // generate a vector with size 5
-	std::cout<<"Initialized vector one "<<vec1<<std::endl;
-	vec1[0] = 1.0;
-	vec1[1] = 2.0;
-	vec1[2] = 3.0;
-	vec1[3] = 4.0;
-	vec1[4] = 5.0;
-	std::cout<<"Vector one after assignmnet "<<vec1<<std::endl;
-	vec1.copy(vec2); // copy assignment
-	std::cout<<"Vector two "<<vec2<<std::endl;
-	std::cout<<"dot multiply operation "<<vec1.dot(vec2)<<std::endl; // dot operation
-	std::cout<<"scalar multiply operation "<<2.0*vec1<<std::endl;
-}
+// int main(int argc,char* argv[])
+// {
+// 	Vector vec1(5),vec2(5); // generate a vector with size 5
+// 	std::cout<<"Initialized vector one "<<vec1<<std::endl;
+// 	vec1[0] = 1.0;
+// 	vec1[1] = 2.0;
+// 	vec1[2] = 3.0;
+// 	vec1[3] = 4.0;
+// 	vec1[4] = 5.0;
+// 	std::cout<<"Vector one after assignmnet "<<vec1<<std::endl;
+// 	vec2.copy(vec1); // copy assignment
+// 	std::cout<<"Vector two "<<vec2<<std::endl;
+// 	std::cout<<"dot multiply operation "<<vec1.dot(vec2)<<std::endl; // dot operation
+// 	std::cout<<"scalar multiply operation "<<2.0*vec1<<std::endl;
+// }
 
 // int main(int argc,char* argv[])
 // {
@@ -133,51 +133,59 @@ int main(int argc,char* argv[])
 // {
 // 	Matrix iden = Matrix::identity(5,5);
 // 	Vector vec(5);
-// 	std::cout<<iden.solve(vec)<<std::endl;  
+// 	vec[0] = 1.0;
+// 	vec[1] = 2.0;
+// 	std::cout<<"Matrix multiply a vector "<<iden*vec<<std::endl;
+// 	std::cout<<"Linear system solver "<<iden.solve(vec)<<std::endl; 
+// 	// ldlt algorithm is called as default
 // }
+
+
 /*
  *			Gradient method test
  */
 
-// int main(int argc,char* argv[])
-// { 
-// 	COPT::RosenbrockFunction<Vector> func;
-// 	Vector vec(2);
-// 	vec[0] = 1.0;
-// 	vec[1] = 0.0;
-// 	std::cout<<func(vec)<<std::endl;
-// 	std::cout<<func.gradient(vec)<<std::endl;
-// 	std::cout<<func.hessian(vec)<<std::endl; 
-// 	Vector x(2);
-// 	// x[0] = 1.0; 
-// 	double tol = 1e-5;   
-// 	int iter_max = 100; 
-// 	// COPT::steepestDescentUsingBackTracking(
-// 	// 	func,
-// 	// 	0.7,
-// 	// 	1e-1 ,
-// 	// 	x,
-// 	// 	tol,
-// 	// 	iter_max
-// 	// 	); 
+int main(int argc,char* argv[])
+{ 
+	COPT::RosenbrockFunction<Vector> func;
+	COPT::NonLinearSolver<COPT::VectorFunction<Vector> > nls(func);
+	// Vector vec(2);
+	// vec[0] = 1.0;
+	// vec[1] = 0.0;
+	// std::cout<<func(vec)<<std::endl;
+	// std::cout<<func.gradient(vec)<<std::endl;
+	// std::cout<<func.hessian(vec)<<std::endl; 
+	Vector x(2);
+	nls.solve(x);
+	// x[0] = 1.0; 
+	// double tol = 1e-5;   
+	// int iter_max = 10000; 
+	// COPT::steepestDescentUsingBackTracking(
+	// 	func,
+	// 	0.7,
+	// 	1e-1 ,
+	// 	x,
+	// 	tol,
+	// 	iter_max
+	// 	); 
 	   
-// 	COPT::BFGSMethod(
-// 		func,
-// 		1e-1 ,
-// 		0.4,
-// 		0.5, 
-// 		x,
-// 		tol,
-// 		iter_max
-// 		); 
-// 	// COPT::newtonMethod(
-// 	// 	func,
-// 	// 	x,
-// 	// 	tol,
-// 	// 	iter_max);
-// 	std::cout<<x.mulTrans(x)<<std::endl;  
-// 	std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
-// }
+	// COPT::BFGSMethod(
+	// 	func,
+	// 	1e-1 ,
+	// 	0.4,
+	// 	0.5, 
+	// 	x,
+	// 	tol,
+	// 	iter_max
+	// 	); 
+	// COPT::newtonMethod(
+	// 	func,
+	// 	x,
+	// 	tol,
+	// 	iter_max);
+	// std::cout<<x.mulTrans(x)<<std::endl;  
+	// std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
+}
 
 // int main(int argc,char* argv[])
 // {

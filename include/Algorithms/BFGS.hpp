@@ -15,6 +15,7 @@ namespace COPT{
  *				/param tol_error:		tolerence on input and final error on output
  *				/param iters:			maximum iterations on input and final iteration number on output
  *				/param rho:				scaling ratio for Wolfe condition
+ *				/param tracknum:		the maximum number using back tracking method to find the step length
  */
 template<class VFunc>
 void BFGSMethod(
@@ -25,7 +26,8 @@ void BFGSMethod(
 	typename VFunc::Vector& 			x,
 	typename VFunc::ScalarType& 		tol_error,
 	int& 								iters,
-	const typename VFunc::ScalarType 	rho = 0.7
+	const typename VFunc::ScalarType 	rho = 0.7,
+	const int 							tracknum = 100
 	)
 {
 	typedef typename VFunc::ScalarType 		Scalar;
@@ -46,7 +48,7 @@ void BFGSMethod(
 	Matrix I = Matrix::identity(x.size(),x.size());
 	std::cout<<std::sqrt(tol_error)*sigma<<std::endl;
 	while (tol_error>tol){
-		int numbers = 100;
+		int numbers = tracknum;
 		Scalar steplength = 1.0;
 		Vector direction = -(H*gradient);
 		backTrackingWithWolfeCondition(func,x,gradient,direction,rho,c1,c2,steplength,numbers);
