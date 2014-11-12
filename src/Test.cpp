@@ -147,44 +147,26 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 
 int main(int argc,char* argv[])
 { 
-	COPT::RosenbrockFunction<Vector> func;
-	COPT::NonLinearSolver<COPT::VectorFunction<Vector> > nls(func);
-	// Vector vec(2);
-	// vec[0] = 1.0;
-	// vec[1] = 0.0;
-	// std::cout<<func(vec)<<std::endl;
-	// std::cout<<func.gradient(vec)<<std::endl;
-	// std::cout<<func.hessian(vec)<<std::endl; 
+	typedef COPT::RosenbrockFunction<Vector>	Function;
+	typedef COPT::NonLinearSolver<Function> 	Solver;
+	Function func;
+	Solver nls(func);
 	Vector x(2);
+	std::cout<<"first trial of SDM method "<<std::endl;
 	nls.solve(x);
-	// x[0] = 1.0; 
-	// double tol = 1e-5;   
-	// int iter_max = 10000; 
-	// COPT::steepestDescentUsingBackTracking(
-	// 	func,
-	// 	0.7,
-	// 	1e-1 ,
-	// 	x,
-	// 	tol,
-	// 	iter_max
-	// 	); 
-	   
-	// COPT::BFGSMethod(
-	// 	func,
-	// 	1e-1 ,
-	// 	0.4,
-	// 	0.5, 
-	// 	x,
-	// 	tol,
-	// 	iter_max
-	// 	); 
-	// COPT::newtonMethod(
-	// 	func,
-	// 	x,
-	// 	tol,
-	// 	iter_max);
-	// std::cout<<x.mulTrans(x)<<std::endl;  
-	// std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
+	nls.printInfo();
+	std::cout<<std::endl<<"second trial of SDM method "<<std::endl;
+	nls.setIterationNum(100000);
+	nls.solve(x);
+	nls.printInfo();
+	std::cout<<std::endl<<"Newton's method"<<std::endl;
+	nls.setType(Solver::NM);
+	nls.solve(x);
+	nls.printInfo();
+	std::cout<<std::endl<<"BFGS method"<<std::endl;
+	nls.setType(Solver::BFGS);
+	nls.solve(x);
+	nls.printInfo();
 }
 
 // int main(int argc,char* argv[])

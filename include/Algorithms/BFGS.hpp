@@ -36,7 +36,6 @@ void BFGSMethod(
 
 	// gradient;
 	Vector gradient = func.gradient(x);
-	// Vector xformer = x;
 	Vector gradientformer = gradient;
 
 	Scalar tol = tol_error*tol_error;
@@ -46,7 +45,6 @@ void BFGSMethod(
 
 	Matrix H = Matrix::identity(x.size(),x.size(),std::sqrt(tol_error)*sigma);
 	Matrix I = Matrix::identity(x.size(),x.size());
-	std::cout<<std::sqrt(tol_error)*sigma<<std::endl;
 	while (tol_error>tol){
 		int numbers = tracknum;
 		Scalar steplength = 1.0;
@@ -62,9 +60,12 @@ void BFGSMethod(
 		H = (I-s.mulTrans(y))*H*(I-y.mulTrans(s))+1.0/rho*(s.mulTrans(s));
 		tol_error = gradient.squaredNorm();
 		++ iters;
-		if(iters>=maxIter)
+		if(iters>=maxIter){
+			tol_error = std::sqrt(tol_error);
 			break;
+		}
 	}
+	tol_error = std::sqrt(tol_error);
 }
 }// End of namespace COPT
 

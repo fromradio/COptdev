@@ -225,17 +225,18 @@ void newtonMethod(
 	Vector gradient = func.gradient(x);
 	Vector direction;
 	ScalarType tol = tol_error*tol_error;
-	ScalarType error = gradient.squaredNorm();
-	while(error>tol){
+	tol_error = gradient.squaredNorm();
+	while(tol_error>tol){
 		Matrix hessian = func.hessian(x);
 		direction = hessian.solve(gradient);
 		x = x - direction;
 		gradient = func.gradient(x);
 		++ iters;
-		error = gradient.squaredNorm();
+		tol_error = gradient.squaredNorm();
 		if ( iters >=  maxIter)
 			break;
 	}
+	tol_error = std::sqrt(tol_error);
 }
 
 }// End of namespace COPT

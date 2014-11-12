@@ -74,6 +74,12 @@ public:
 	//		set the type of the solver: SDM, NM or BFGS
 	void setType(const SolverType type);
 
+	//		set the maximus iteration number
+	void setIterationNum(const int maxiternum);
+
+	//		set the error threshold
+	void setErrorThreshold(const ScalarType tol);
+
 	//		interface for solving the problem
 	void solve( const Vector& vec);
 

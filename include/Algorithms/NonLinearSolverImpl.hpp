@@ -38,6 +38,27 @@ void NonLinearSolver<VFunc>::setType(const SolverType type)
 	__type = type;
 }
 
+/*		set the maximum iteration number
+ *		/param maxiternum: 			the maximum itration number
+ */
+template<class VFunc>
+void NonLinearSolver<VFunc>::setIterationNum(
+	const int maxiternum)
+{
+	__maxiternum = maxiternum;
+}
+
+/* 		set the error threshold
+ *		/param tol:					the error threshold
+ */
+template<class VFunc>
+void NonLinearSolver<VFunc>::setErrorThreshold(
+	const typename VFunc::ScalarType tol
+	)
+{
+	__tol = tol;
+}
+
 /*		Kernel function
  *		Solving the problem
  */
@@ -111,11 +132,37 @@ void NonLinearSolver<VFunc>::solve(
 template<class VFunc>
 void NonLinearSolver<VFunc>::printInfo()
 {
-	if(__status)
-		std::cout<<"An at least local minimal has been successfully found: "
-	else(__status)
+	std::cout<<"The result of non-linear solver by ";
+	switch(__type){
+	case SDM:
 	{
-		std::cout<<"Solver fails to find minimal in "<<_iters<<" step. The norm of 
+		std::cout<<"Steepest descent method";
+	}
+	break;
+	case NM:
+	{
+		std::cout<<"Newton's method";
+	}
+	break;
+	case BFGS:
+	{
+		std::cout<<"BFGS method";
+	}
+	break;
+	default:
+	{
+		throw COException("Unkown type of non-linear solver");
+	}
+	break;
+	}
+	std::cout<<std::endl;
+	if(__status){
+		std::cout<<"An at least local minimal has been successfully found as: "<<std::endl<<__x<<std::endl;
+		std::cout<<"The whole procedure takes "<<__iters<<" iterations with norm of "<<__error<<std::endl;
+	}
+	else
+	{
+		std::cout<<"Solver fails to find minimal in "<<__iters<<" step. The norm of gradient of the function currently is "<<__error<<std::endl;
 	}
 }
 
