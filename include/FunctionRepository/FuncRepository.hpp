@@ -110,7 +110,7 @@ class RosenbrockFunction
 	: public VectorFunction<VT>
 {
 public:
-	RosenbrockFunction(){}
+	RosenbrockFunction(){this->__dim = 2;}
 	typename VectorFunction<VT>::ScalarType operator() (const VT& vec ) const{
 		return (100*(vec[1]-vec[0]*vec[0])*(vec[1]-vec[0]*vec[0])+(1-vec[0])*(1-vec[0]));
 	}

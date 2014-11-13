@@ -1,5 +1,6 @@
 //		Copyright (C) Songtao Guo, guost@mathu.cn
 //		Copyright (C) MathU
+//			Code reviewed by Ruimin Wang, ruimin.wang13@gmail.com, wangrm@mathu.cn
 
 #ifndef LEAST_SQUARE_H
 #define LEAST_SQUARE_H

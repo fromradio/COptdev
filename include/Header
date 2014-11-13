@@ -22,7 +22,6 @@
 #include <Eigen/Dense>
 #endif
 
-
 #include "Base/COException.hpp"
 #include "Base/Traits.hpp"
 
@@ -42,6 +41,10 @@
 #include "Algorithms/LineSearch.hpp"
 #include "Algorithms/BFGS.hpp"
 #include "Algorithms/LeastSquares.hpp"
+#include "Algorithms/AlternatingDirectionMethodOfMultipliers.hpp"
+#include "Algorithms/NonLinearSolver.hpp"
+#include "Algorithms/NonLinearSolverImpl.hpp"
+
 
 #include <time.h>
 
