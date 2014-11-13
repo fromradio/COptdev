@@ -15,6 +15,7 @@ namespace COPT{
  *				/param tol_error:		tolerence on input and final error on output
  *				/param iters:			maximum iterations on input and final iteration number on output
  *				/param rho:				scaling ratio for Wolfe condition
+ *				/param tracknum:		the maximum number using back tracking method to find the step length
  */
 template<class VFunc>
 void BFGSMethod(
@@ -25,7 +26,8 @@ void BFGSMethod(
 	typename VFunc::Vector& 			x,
 	typename VFunc::ScalarType& 		tol_error,
 	int& 								iters,
-	const typename VFunc::ScalarType 	rho = 0.7
+	const typename VFunc::ScalarType 	rho = 0.7,
+	const int 							tracknum = 100
 	)
 {
 	typedef typename VFunc::ScalarType 		Scalar;
@@ -34,7 +36,6 @@ void BFGSMethod(
 
 	// gradient;
 	Vector gradient = func.gradient(x);
-	// Vector xformer = x;
 	Vector gradientformer = gradient;
 
 	Scalar tol = tol_error*tol_error;
@@ -44,9 +45,8 @@ void BFGSMethod(
 
 	Matrix H = Matrix::identity(x.size(),x.size(),std::sqrt(tol_error)*sigma);
 	Matrix I = Matrix::identity(x.size(),x.size());
-	std::cout<<std::sqrt(tol_error)*sigma<<std::endl;
 	while (tol_error>tol){
-		int numbers = 100;
+		int numbers = tracknum;
 		Scalar steplength = 1.0;
 		Vector direction = -(H*gradient);
 		backTrackingWithWolfeCondition(func,x,gradient,direction,rho,c1,c2,steplength,numbers);
@@ -60,9 +60,12 @@ void BFGSMethod(
 		H = (I-s.mulTrans(y))*H*(I-y.mulTrans(s))+1.0/rho*(s.mulTrans(s));
 		tol_error = gradient.squaredNorm();
 		++ iters;
-		if(iters>=maxIter)
+		if(iters>=maxIter){
+			tol_error = std::sqrt(tol_error);
 			break;
+		}
 	}
+	tol_error = std::sqrt(tol_error);
 }
 }// End of namespace COPT
 

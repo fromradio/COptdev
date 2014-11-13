@@ -9,6 +9,7 @@
 
 namespace COPT
 {
+
 /*			Default construction
  *			a null vector with size zero is created
  */
@@ -17,6 +18,7 @@ VectorBase<ScalarType>::VectorBase()
 	:Array<ScalarType>()
 {
 }
+
 /*				
  *			multipy a vector's transpose
  *			/param vec: 		the vector which is transposed
@@ -32,6 +34,14 @@ MatrixBase<ScalarType> VectorBase<ScalarType>::mulTrans(const VectorBase<ScalarT
 		for ( int j = 0 ; j < n ; ++ j )
 			result(i,j) = this->operator[](i)*vec[j];
 	return result;
+}
+
+/*			the transpose of a matrix multiplies a vector
+ */
+template<class ScalarType>
+VectorBase<ScalarType> VectorBase<ScalarType>::transMul(const MatrixBase<ScalarType>& mat) const
+{
+	return mat.transpose()*(*this);
 }
 }// End of namespace COPT
 

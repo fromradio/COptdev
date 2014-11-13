@@ -12,7 +12,7 @@
 
 
 #include <complex>
-#include <cblas.h>
+#include <ThirdParty/cblas.h>
 #include <algorithm>
 
 
@@ -43,6 +43,10 @@
 #include "Algorithms/LineSearch.hpp"
 #include "Algorithms/BFGS.hpp"
 #include "Algorithms/LeastSquares.hpp"
+#include "Algorithms/AlternatingDirectionMethodOfMultipliers.hpp"
+#include "Algorithms/NonLinearSolver.hpp"
+#include "Algorithms/NonLinearSolverImpl.hpp"
+
 
 #include <time.h>
 

@@ -1,10 +1,10 @@
 from distutils.core import setup, Extension
 
-module1 = Extension('geVec',
-                    include_dirs = ['E:/COptdev/include/Base','E:/COptdev/include/ThirParty','E:/COptdev/Algorithms','E:/COptdev/Differential','E:/COptdev/FunctionRepository','E:/COptdev/LeastSquares','E:/COptdev/include','E:/libs/Eigen'],
+module1 = Extension('call',
+                    include_dirs = ['E:/COptdev/include/Base','E:/COptdev/include/ThirParty','E:/COptdev/include/Algorithms','E:/COptdev/include/FunctionRepository','E:/COptdev/include','E:/libs/eigen'],
                     libraries = ['cblas','blas'],
                     library_dirs = ['E:/libs'],
-                    sources = ['geVec.cpp'])
+                    sources = ['call.cpp'])
 
 setup (name = 'PackageName',
        version = '1.0',
