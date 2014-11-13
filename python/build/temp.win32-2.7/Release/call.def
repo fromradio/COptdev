@@ -1,3 +1,0 @@
-LIBRARY call.pyd
-EXPORTS
-initcall
