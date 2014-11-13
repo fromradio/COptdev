@@ -1,8 +1,7 @@
 #include <Header>
-// #include <omp.h>
  
 
-typedef double		 					 FT;
+typedef double		 					FT;
 typedef COPT::Array<FT> 				Array;
 typedef COPT::VectorBase<FT>			Vector;
 typedef COPT::MatrixBase<FT>	 		Matrix;
@@ -69,6 +68,22 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 
 // int main(int argc,char* argv[])
 // {
+// 	Vector vec1(5),vec2(5); // generate a vector with size 5
+// 	std::cout<<"Initialized vector one "<<vec1<<std::endl;
+// 	vec1[0] = 1.0;
+// 	vec1[1] = 2.0;
+// 	vec1[2] = 3.0;
+// 	vec1[3] = 4.0;
+// 	vec1[4] = 5.0;
+// 	std::cout<<"Vector one after assignmnet "<<vec1<<std::endl;
+// 	vec2.copy(vec1); // copy assignment
+// 	std::cout<<"Vector two "<<vec2<<std::endl;
+// 	std::cout<<"dot multiply operation "<<vec1.dot(vec2)<<std::endl; // dot operation
+// 	std::cout<<"scalar multiply operation "<<2.0*vec1<<std::endl;
+// }
+
+// int main(int argc,char* argv[])
+// {
 // 	Vector vec1(5);
 // 	Vector vec2(5);
 // 	std::cout<<vec1<<std::endl;
@@ -88,6 +103,8 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 // 	mat(0,0) = 1.0;
 // 	std::cout<<mat*vec1<<std::endl;
 // }
+
+
 /*LeastSquare test
 
 */
@@ -116,51 +133,41 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 // {
 // 	Matrix iden = Matrix::identity(5,5);
 // 	Vector vec(5);
-// 	std::cout<<iden.solve(vec)<<std::endl;  
+// 	vec[0] = 1.0;
+// 	vec[1] = 2.0;
+// 	std::cout<<"Matrix multiply a vector "<<iden*vec<<std::endl;
+// 	std::cout<<"Linear system solver "<<iden.solve(vec)<<std::endl; 
+// 	// ldlt algorithm is called as default
 // }
+
+
 /*
  *			Gradient method test
  */
 
-// int main(int argc,char* argv[])
-// { 
-// 	COPT::RosenbrockFunction<Vector> func;
-// 	Vector vec(2);
-// 	vec[0] = 1.0;
-// 	vec[1] = 0.0;
-// 	std::cout<<func(vec)<<std::endl;
-// 	std::cout<<func.gradient(vec)<<std::endl;
-// 	std::cout<<func.hessian(vec)<<std::endl; 
-// 	Vector x(2);
-// 	// x[0] = 1.0; 
-// 	double tol = 1e-5;   
-// 	int iter_max = 100; 
-// 	// COPT::steepestDescentUsingBackTracking(
-// 	// 	func,
-// 	// 	0.7,
-// 	// 	1e-1 ,
-// 	// 	x,
-// 	// 	tol,
-// 	// 	iter_max
-// 	// 	); 
-	   
-// 	COPT::BFGSMethod(
-// 		func,
-// 		1e-1 ,
-// 		0.4,
-// 		0.5, 
-// 		x,
-// 		tol,
-// 		iter_max
-// 		); 
-// 	// COPT::newtonMethod(
-// 	// 	func,
-// 	// 	x,
-// 	// 	tol,
-// 	// 	iter_max);
-// 	std::cout<<x.mulTrans(x)<<std::endl;  
-// 	std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
-// }
+int main(int argc,char* argv[])
+{ 
+	typedef COPT::RosenbrockFunction<Vector>	Function;
+	typedef COPT::NonLinearSolver<Function> 	Solver;
+	Function func;
+	Solver nls(func);
+	Vector x(2);
+	std::cout<<"first trial of SDM method "<<std::endl;
+	nls.solve(x);
+	nls.printInfo();
+	std::cout<<std::endl<<"second trial of SDM method "<<std::endl;
+	nls.setIterationNum(100000);
+	nls.solve(x);
+	nls.printInfo();
+	std::cout<<std::endl<<"Newton's method"<<std::endl;
+	nls.setType(Solver::NM);
+	nls.solve(x);
+	nls.printInfo();
+	std::cout<<std::endl<<"BFGS method"<<std::endl;
+	nls.setType(Solver::BFGS);
+	nls.solve(x);
+	nls.printInfo();
+}
 
 // int main(int argc,char* argv[])
 // {
@@ -264,39 +271,39 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 // }
 
 
-int main(){
-	Matrix A(3,3);
-	A(0,0)=rand();
-	A(0,1)=rand();
-	A(0,2)=rand();
-	A(1,0)=rand();
-	A(1,1)=rand();
-	A(1,2)=rand();
-	A(2,0)=rand();
-	A(2,1)=rand();
-	A(2,2)=rand();
-	Vector b(3);
-	b[0]=rand();
-	b[1]=rand(); 
-	b[2]=rand();
-	double rho=1;
-	Vector u(3);
-	u[0]=8;
-	u[1]=397;
-	u[2]=15;
-	Vector z(3);
-	Vector x(3);
-	int number=1000000;
-	double e=1e-12;
-	COPT::LeastAbsoluteDeviationMethod(A,b,rho,u,x,z,number,e);
-	std::cout<<"x= "<<x<<std::endl;
-	std::cout<<"z= "<<z<<std::endl;
-	std::cout<<"u= "<<u<<std::endl;
-	std::cout<<"number="<<number<<std::endl;
-	std::cout<<"A= "<<A<<std::endl;
-	std::cout<<"b= "<<b<<std::endl;
+// int main(){
+// 	Matrix A(3,3);
+// 	A(0,0)=rand();
+// 	A(0,1)=rand();
+// 	A(0,2)=rand();
+// 	A(1,0)=rand();
+// 	A(1,1)=rand();
+// 	A(1,2)=rand();
+// 	A(2,0)=rand();
+// 	A(2,1)=rand();
+// 	A(2,2)=rand();
+// 	Vector b(3);
+// 	b[0]=rand();
+// 	b[1]=rand(); 
+// 	b[2]=rand();
+// 	double rho=1;
+// 	Vector u(3);
+// 	u[0]=8;
+// 	u[1]=397;
+// 	u[2]=15;
+// 	Vector z(3);
+// 	Vector x(3);
+// 	int number=1000000;
+// 	double e=1e-12;
+// 	COPT::LeastAbsoluteDeviationMethod(A,b,rho,u,x,z,number,e);
+// 	std::cout<<"x= "<<x<<std::endl;
+// 	std::cout<<"z= "<<z<<std::endl;
+// 	std::cout<<"u= "<<u<<std::endl;
+// 	std::cout<<"number="<<number<<std::endl;
+// 	std::cout<<"A= "<<A<<std::endl;
+// 	std::cout<<"b= "<<b<<std::endl;
 
-}
+// }
 //int main(int argc,char* argv[])
 //{
 //	Vector vec1(5);

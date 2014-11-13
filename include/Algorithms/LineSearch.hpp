@@ -165,17 +165,20 @@ void backTrackingWithWolfeCondition(
  *		/param tol_error	the tolerance on input and estimated error on output
  *		/param iters		maximum iteration number on input and real iterations on output 
  */
-template<class Function,class Vector>
+template<class Function>
 void steepestDescentUsingBackTracking( 
 	const Function& func , 
-	const typename Vector::ScalarType rho, 
-	const typename Vector::ScalarType c , 
-	Vector& x ,
-	typename Vector::ScalarType& tol_error, 
-	int& iters )
+	const typename Function::ScalarType rho, 
+	const typename Function::ScalarType c , 
+	typename Function::Vector& x ,
+	typename Function::ScalarType& tol_error, 
+	int& iters ,
+	const int tracknum = 100
+	)
 {
 	using std::sqrt;
-	typedef typename Vector::ScalarType 			ScalarType;
+	typedef typename Function::ScalarType 			ScalarType;
+	typedef typename Function::Vector 				Vector;
 
 	int maxIter = iters;
 	iters = 0;
@@ -185,7 +188,7 @@ void steepestDescentUsingBackTracking(
 	ScalarType error = direction.squaredNorm();
 	while (error>tol){
 		ScalarType steplength = 1;
-		int biter = 100;
+		int biter = tracknum;
 		findStepLengthBackTracking(func,x,gradient,direction,rho,c,steplength,biter);
 		// backTrackingWithWolfeCondition(func,x,gradient,direction,rho,c,0.4,steplength,biter);
 		x = x + steplength*direction;
@@ -222,17 +225,18 @@ void newtonMethod(
 	Vector gradient = func.gradient(x);
 	Vector direction;
 	ScalarType tol = tol_error*tol_error;
-	ScalarType error = gradient.squaredNorm();
-	while(error>tol){
+	tol_error = gradient.squaredNorm();
+	while(tol_error>tol){
 		Matrix hessian = func.hessian(x);
 		direction = hessian.solve(gradient);
 		x = x - direction;
 		gradient = func.gradient(x);
 		++ iters;
-		error = gradient.squaredNorm();
+		tol_error = gradient.squaredNorm();
 		if ( iters >=  maxIter)
 			break;
 	}
+	tol_error = std::sqrt(tol_error);
 }
 
 }// End of namespace COPT

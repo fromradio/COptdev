@@ -207,6 +207,10 @@ public:
 	 */
 	MatrixBase<ScalarType> mulTrans(const VectorBase& vec) const;
 
+	/*			the transpose of the vector multiplies a matrix
+	 */
+	VectorBase transMul(const MatrixBase<ScalarType>& mat) const;
+
 };
 
 }	// end of namespace COPT
