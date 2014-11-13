@@ -1,3 +1,0 @@
-LIBRARY geVec.pyd
-EXPORTS
-initgeVec
