@@ -22,8 +22,6 @@
 #include <Eigen/Dense>
 #endif
 
-
-
 #include "Base/COException.hpp"
 #include "Base/Traits.hpp"
 
