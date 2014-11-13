@@ -214,6 +214,7 @@ public:
 	}
 
 
+	// multiplication between a scalar and a matrix
 	friend MatrixBase<ScalarType> operator* (const ScalarType s,const MatrixBase<ScalarType>& mat)
 	{
 		MatrixBase<ScalarType> result(mat.rows(),mat.cols());
@@ -221,6 +222,12 @@ public:
 			for ( int j = 0 ; j < mat.cols() ; ++ j )
 				result(i,j) = mat(i,j)*s;
 		return result;
+	}
+
+	// multiplication between a scalar and a matrix
+	friend MatrixBase<ScalarType> operator* (const MatrixBase<ScalarType>& mat,const ScalarType s)
+	{
+		return s*mat;
 	}
 
 	// transpose

@@ -13,7 +13,10 @@ namespace COPT
 // {
 	
 // }
-/*			create an identity matrix
+/*			create an identity matrix with all diagonal elements as s
+ *			/param m: the number of rows
+ *			/param n: the number of columns
+ *			/param s: the value of scalar
  */
 template<class ScalarType>
 MatrixBase<ScalarType> MatrixBase<ScalarType>::identity(
