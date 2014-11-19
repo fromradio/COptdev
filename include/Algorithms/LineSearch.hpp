@@ -105,6 +105,8 @@ void findStepLengthBackTracking(
 	iters = 0;
 	ScalarType f = func(x);
 	ScalarType dot = gradient.dot(direction);
+	std::cout<<gradient<<std::endl;
+	std::cout<<dot<<std::endl;
 	while(iters < maxIter){
 		if(func(x+alpha*direction)<=f+c*alpha*dot)
 			break;
@@ -112,6 +114,8 @@ void findStepLengthBackTracking(
 			alpha = rho*alpha;
 		++ iters;
 	}
+	std::cout<<iters<<' '<<alpha<<std::endl;
+	std::cout<<x+alpha*direction<<std::endl;
 }
 
 

@@ -105,6 +105,7 @@ public:
 				__data_ptr[i] = static_cast<ScalarType>(0.0);
 		}
 	}
+	void reset(size_t size){resize(size);}
 	/*			Judge whether the array is valid
 	 *			The array is valid if and only if the template is valid scalar type:
 	 *			'float', 'double', 'std::complex<float>' or 'std::complex<double>'
