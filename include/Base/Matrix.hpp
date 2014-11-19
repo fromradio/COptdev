@@ -69,9 +69,9 @@ public:
 		basic getters
 	*/
 	// get the number of rows
-	size_t		rows() const {return __rows;}
+	const size_t&		rows() const {return __rows;}
 	// get the number of columns
-	size_t 		cols() const {return __cols;}
+	const size_t& 		cols() const {return __cols;}
 
 	/*
 		get the element of the MatrixBase
@@ -145,6 +145,9 @@ public:
 		else
 			this->__data_ptr[i] = value;
 	}
+
+	/** resize the matrix */
+	void resize ( size_t m , size_t n );
 
 	/*
 		Copy operation
@@ -289,7 +292,21 @@ public:
 	}
 
 	static MatrixBase identity(size_t m,size_t n,const ScalarType s);
-};
 
-};
+	/** Blocking methods */
+	//%{
+	
+	/** Blocking matrix from another matrix with specific row numbers and column numbers*/
+	void blockFromMatrix(const MatrixBase& mat,const std::set<size_t>& rownums,const std::set<size_t>& colnums);
+	
+	/** Blocking matrix from a given matrix with just columns */
+	void columnBlockFromMatrix(const MatrixBase& mat,const std::set<size_t>& colnums);
+	
+	/** Blocking matrix from a given matrix with just rows */
+	void rowBlockFromMatrix(const MatrixBase& mat,const std::set<size_t>& rownums);
+	//%}
+	
+};// End of class MatrixBase
+
+}// End of namespace COPT
 #endif
