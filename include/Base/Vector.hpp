@@ -95,6 +95,27 @@ public:
 		return *this;
 	}
 
+	/** overload operations*/
+	//%{
+	/** operator< */
+	bool operator< (const VectorBase& vec)const;
+
+	/** operator<= */
+	bool operator<=(const VectorBase& vec)const;
+
+	/** operator> */
+	bool operator> (const VectorBase& vec)const;
+
+	/** operator>= */
+	bool operator>=(const VectorBase& vec)const;
+
+	/** operator== */
+	bool operator==(const VectorBase& vec)const;
+
+	/** operator!= */
+	bool operator!=(const VectorBase& vec)const;
+	//%}
+
 	/*
 		Mathematical operations
 	*/
@@ -210,6 +231,14 @@ public:
 	/*			the transpose of the vector multiplies a matrix
 	 */
 	VectorBase transMul(const MatrixBase<ScalarType>& mat) const;
+
+	/** blocking operations */
+	//%{
+	VectorBase block(const std::set<size_t>& indices)const;
+	void blockFromVector(const VectorBase& vec,const std::set<size_t>& indices);
+	VectorBase block(const std::vector<size_t>& indices) const;
+	void blockFromVector(const VectorBase& vec,const std::vector<size_t>& indices);
+	//%}
 
 };
 

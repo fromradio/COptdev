@@ -1,6 +1,6 @@
 //		Copyright (C) Songtao Guo, guost@mathu.cn
 //		Copyright (C) MathU
-//			Code reviewed by Ruimin Wang, ruimin.wang13@gmail.com, wangrm@mathu.cn
+//			Code has been reviewed and modified by Ruimin Wang, ruimin.wang13@gmail.com, wangrm@mathu.cn
 
 #ifndef LEAST_SQUARE_H
 #define LEAST_SQUARE_H
@@ -17,15 +17,15 @@ namespace COPT
 *    /param mu:        step size
 *    /param x:         weight we find after each step
 */
-template<class Vector>
+template<class Scalar>
 void LeastMeanSquareUpdate(
-	const Vector& a,
-	const typename Vector::ScalarType b,
-	const typename Vector::ScalarType mu,
-	Vector& x
+	const VectorBase<Scalar>& a,
+	const Scalar b,
+	const Scalar mu,
+	VectorBase<Scalar>& x
 	)
 {
-	typename Vector::ScalarType e = b - a.dot(x);
+	Scalar e = b - a.dot(x);
 	x = x + mu*e*a;
 }
 
@@ -36,12 +36,12 @@ void LeastMeanSquareUpdate(
 *    /param mu:         step size
 *    /param x:          weight we want to find
 */
-template<class Vector,class Matrix>
+template<class Scalar>
 void LeastMeanSquareMethod(
-	const Matrix& A,
-	const Vector& b,
-	const typename Vector::ScalarType mu,
-	Vector& x 
+	const MatrixBase<Scalar>& A,
+	const VectorBase<Scalar>& b,
+	const Scalar mu,
+	VectorBase<Scalar>& x 
 	)
 {
 	int n = A.rows();
@@ -56,11 +56,11 @@ void LeastMeanSquareMethod(
 *    /param b:          constant vector
 *    /param x:          weight we want to find
 */
-template<class Vector,class Matrix>
+template<class Scalar>
 void LeastSquareMethod(
-	const Matrix A,
-	const Vector b,
-	Vector& x
+	const MatrixBase<Scalar>& A,
+	const VectorBase<Scalar>& b,
+	VectorBase<Scalar>& x
 	)
 {
 	x = (A.transpose()*A).solve(A.transpose()*b);
@@ -76,22 +76,22 @@ void LeastSquareMethod(
 *    /param lam:       related to the forgetting factor
 *    /param delta:     in order to define P(0)   
 */
-template<class Vector,class Matrix>
+template<class Scalar>
 void RLS_learning(
-	const Vector& a,
-	const typename Vector::ScalarType b,
-	Vector& x,
-	Matrix& p,
-	const typename Vector::ScalarType lam,
-	const typename Vector::ScalarType delta
+	const VectorBase<Scalar>& a,
+	const Scalar b,
+	VectorBase<Scalar>& x,
+	MatrixBase<Scalar>& p,
+	const Scalar lam,
+	const Scalar delta
 	)
 {
-	Vector pai = p.transpose()*a;
-	typename Vector::ScalarType gama = lam + pai.dot(a);
-	Vector k = pai*(1.0/gama);
-	typename Vector::ScalarType alpha = b - x.dot(a);
+	VectorBase<Scalar> pai = p.transpose()*a;
+	Scalar gama = lam + pai.dot(a);
+	VectorBase<Scalar> k = pai*(1.0/gama);
+	Scalar alpha = b - x.dot(a);
 	x = x + k*alpha;
-	Matrix pp = k.mulTrans(pai); 
+	MatrixBase<Scalar> pp = k.mulTrans(pai); 
 	p = (1.0/lam)*(p - pp);
 }
 /*
@@ -102,17 +102,17 @@ void RLS_learning(
 *    /param lam:       related to the forgetting factor
 *    /param delta:     in order to define P(0)   
 */
-template<class Vector,class Matrix>
+template<class Scalar>
 void RLS_Method(
-	const Matrix& A,
-	const Vector& b,
-	Vector& x,
-	const typename Vector::ScalarType lam = 1,
-	const typename Vector::ScalarType delta = 250
+	const MatrixBase<Scalar>& A,
+	const VectorBase<Scalar>& b,
+	VectorBase<Scalar>& x,
+	const Scalar lam = 1,
+	const Scalar delta = 250
 	)
 {
 	int n = A.cols();
-	Matrix p = delta*Matrix::identity(n,n);
+	MatrixBase<Scalar> p = delta*MatrixBase<Scalar>::identity(n,n);
 	for(int i = 0;i < n;i++)
 		RLS_learning(A.row(i),b[i],x,p,lam,delta);
 }

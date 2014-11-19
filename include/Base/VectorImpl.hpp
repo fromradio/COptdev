@@ -19,11 +19,78 @@ VectorBase<ScalarType>::VectorBase()
 {
 }
 
-/*				
- *			multipy a vector's transpose
- *			/param vec: 		the vector which is transposed
- *			return value:		the result matrix
- */
+template<class ScalarType>
+bool VectorBase<ScalarType>::operator<(const VectorBase<ScalarType>& vec)const
+{
+	if (this->size() != vec.size() )
+		return false;
+	for ( int i = 0 ; i < this->size() ; ++ i ){
+		if(this->dataPtr()[i]>=vec[i])
+			return false;
+	}
+	return true;
+}
+
+template<class ScalarType>
+bool VectorBase<ScalarType>::operator<=(const VectorBase<ScalarType>& vec)const
+{
+	if (this->size() != vec.size() )
+		return false;
+	for ( int i = 0 ; i < this->size() ; ++ i ){
+		if(this->dataPtr()[i]>vec[i])
+			return false;
+	}
+	return true;
+}
+
+template<class ScalarType>
+bool VectorBase<ScalarType>::operator>(const VectorBase<ScalarType>& vec)const
+{
+	if (this->size() != vec.size() )
+		return false;
+	for ( int i = 0 ; i < this->size() ; ++ i ){
+		if(this->dataPtr()[i]<=vec[i])
+			return false;
+	}
+	return true;
+}
+
+template<class ScalarType>
+bool VectorBase<ScalarType>::operator>=(const VectorBase<ScalarType>& vec)const
+{
+	if (this->size() != vec.size() )
+		return false;
+	for ( int i = 0 ; i < this->size() ; ++ i ){
+		if(this->dataPtr()[i]<vec[i])
+			return false;
+	}
+	return true;
+}
+
+template<class ScalarType>
+bool VectorBase<ScalarType>::operator==(const VectorBase<ScalarType>& vec)const
+{
+	if (this->size() != vec.size() )
+		return false;
+	for ( int i = 0 ; i < this->size() ; ++ i ){
+		if(this->dataPtr()[i]!=vec[i])
+			return false;
+	}
+	return true;
+}
+
+template<class ScalarType>
+bool VectorBase<ScalarType>::operator!=(const VectorBase<ScalarType>& vec)const
+{
+	if ( this->size() != vec.size() )
+		return true;
+	for ( int i = 0 ; i < this->size() ; ++ i ){
+		if(this->dataPtr()[i]!=vec[i])
+			return true;
+	}
+	return false;
+}
+
 template<class ScalarType>
 MatrixBase<ScalarType> VectorBase<ScalarType>::mulTrans(const VectorBase<ScalarType>& vec) const
 {
@@ -36,12 +103,71 @@ MatrixBase<ScalarType> VectorBase<ScalarType>::mulTrans(const VectorBase<ScalarT
 	return result;
 }
 
+
 /*			the transpose of a matrix multiplies a vector
  */
 template<class ScalarType>
 VectorBase<ScalarType> VectorBase<ScalarType>::transMul(const MatrixBase<ScalarType>& mat) const
 {
 	return mat.transpose()*(*this);
+}
+
+template<class ScalarType>
+VectorBase<ScalarType> VectorBase<ScalarType>::block(const std::set<size_t>& indices) const
+{
+	if( *indices.rbegin() >= this->size() )
+	{
+		throw COException("Index out of range in Vector blocking!");
+	}
+	VectorBase<ScalarType> result(indices.size());
+	int i = 0;
+	for ( std::set<size_t>::const_iterator iter = indices.begin() ; iter != indices.end() ; ++ iter ){
+		result[i] = this->operator[](*iter);
+		++ i;
+	} 
+	return result;
+}
+
+template<class ScalarType>
+void VectorBase<ScalarType>::blockFromVector(const VectorBase& vec,const std::set<size_t>& indices)
+{
+	if( *indices.rbegin() >= vec.size() )
+	{
+		throw COException("Index out of range in Vector blocking!");
+	}
+	this->resize(indices.size());
+	int i = 0;
+	for ( std::set<size_t>::const_iterator iter = indices.begin() ; iter != indices.end() ; ++ iter ){
+		this->operator[](i) = vec[*iter];
+		++ i;
+	}
+}
+
+template<class ScalarType>
+VectorBase<ScalarType> VectorBase<ScalarType>::block(const std::vector<size_t>& indices) const
+{
+	VectorBase<ScalarType> result(indices.size());
+	for ( int i = 0 ; i < indices.size() ; ++ i ){
+		if (indices[i] >= this->size())
+		{
+			throw COException("Index out of range in Vector blocking!");
+		}
+		result[i] = this->operator[](indices[i]);
+	}
+	return result;
+}
+
+template<class ScalarType>
+void VectorBase<ScalarType>::blockFromVector(const VectorBase& vec,const std::vector<size_t>& indices)
+{
+	this->resize(indices.size());
+	for ( int i = 0 ; i < indices.size() ; ++ i ){
+		if(indices[i] >= vec.size() )
+		{
+			throw COException("Index out of range in Vector blocking!");
+		}
+		this->operator[](i)=vec[indices[i]];
+	}
 }
 }// End of namespace COPT
 

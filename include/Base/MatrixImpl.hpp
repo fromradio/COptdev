@@ -8,12 +8,22 @@ namespace COPT
 {
 
 
+template<class ScalarType>
+void MatrixBase<ScalarType>::resize(size_t m,size_t n)
+{
+	__rows = m;
+	__cols = n;
+	this->reset(m*n);
+}
 // template<class ScalarType>
 // MatrixBase<ScalarType> operator* (const ScalarType s,const MatrixBase<ScalarType>& mat)
 // {
 	
 // }
-/*			create an identity matrix
+/*			create an identity matrix with all diagonal elements as s
+ *			/param m: the number of rows
+ *			/param n: the number of columns
+ *			/param s: the value of scalar
  */
 template<class ScalarType>
 MatrixBase<ScalarType> MatrixBase<ScalarType>::identity(
@@ -27,6 +37,119 @@ MatrixBase<ScalarType> MatrixBase<ScalarType>::identity(
 		result(i,i) = s;
 	return result;
 }
+
+
+template<class ScalarType>
+void MatrixBase<ScalarType>::blockFromMatrix(const MatrixBase& mat,const std::set<size_t>& rownums,const std::set<size_t>& colnums)
+{
+	if (*rownums.rbegin()>=mat.rows()||*colnums.rbegin()>=mat.cols()){
+		std::cerr<<*rownums.rbegin()<<' '<<*colnums.rbegin()<<std::endl;
+		throw COException("Index out of range in matrix blocking!");
+		return;
+	}
+
+	this->resize(rownums.size(),colnums.size());
+	int r = 0,c = 0;
+	for( std::set<size_t>::iterator riter = rownums.begin() ; riter != rownums.end() ; ++ riter)
+	{
+		c = 0;
+		for ( std::set<size_t>::const_iterator citer = colnums.begin() ; citer != colnums.end() ; ++ citer )
+		{
+			this->operator()(r,c) = mat(*riter,*citer);
+			++c;
+		}
+		++ r;
+	}
+}
+
+template<class ScalarType>
+void MatrixBase<ScalarType>::columnBlockFromMatrix(const MatrixBase& mat,const std::set<size_t>& colnums)
+{
+	if(*colnums.rbegin()>=mat.cols()){
+		throw COException("Index out of range in matrix blocking!");
+		return;
+	}
+
+	this->resize(mat.rows(),colnums.size());
+	int c = 0;
+	for ( std::set<size_t>::const_iterator citer = colnums.begin() ; citer != colnums.end() ; ++ citer )
+	{
+		for (int r = 0 ; r < mat.rows() ; ++ r )
+		{
+			this->operator()(r,c) = mat(r,*citer);
+		}
+		++ c;
+	}
+}
+
+template<class ScalarType>
+void MatrixBase<ScalarType>::rowBlockFromMatrix(const MatrixBase& mat,const std::set<size_t>& rownums)
+{
+	if(*rownums.rbegin()>=mat.rows()){
+		throw COException("Index out of range in matrix blocking!");
+		return;
+	}
+
+	this->resize(rownums.size(),mat.cols());
+	int r = 0;
+	for ( std::set<size_t>::const_iterator riter = rownums.begin() ; riter != rownums.end() ; ++ riter )
+	{
+		for ( int c = 0 ; c < mat.cols() ; ++ c )
+		{
+			this->operator()(r,c) = mat(*riter,c);
+		}
+		++ r;
+	}
+}
+
+template<class ScalarType>
+void MatrixBase<ScalarType>::blockFromMatrix(const MatrixBase& mat,const std::vector<size_t>& rownums,const std::vector<size_t>& colnums)
+{
+	this->resize(rownums.size(),colnums.size());
+	for ( int r = 0 ; r < rownums.size() ; ++ r )
+	{
+		if(rownums[r]>=mat.rows())
+			throw COException("Index out of range in matrix blocking!");
+		for ( int c = 0 ; c < colnums.size() ; ++ c )
+		{
+			if(colnums[c]>=mat.cols())
+				throw COException("Index out of range in matrix blocking!");
+			this->operator()(r,c) = mat(rownums[r],colnums[c]);
+		}
+	}
+}
+
+template<class ScalarType>
+void MatrixBase<ScalarType>::columnBlockFromMatrix(const MatrixBase& mat,const std::vector<size_t>& colnums)
+{
+	this->resize(mat.rows(),colnums.size());
+	
+	for ( int r = 0 ; r < mat.rows() ; ++ r )
+	{
+		for ( int c = 0 ; c < colnums.size() ; ++ c )
+		{
+			if(colnums[c]>=mat.cols())
+				throw COException("Index out of range in matrix blocking!");
+			this->operator()(r,c) = mat(r,colnums[c]);
+		}
+	}
+}
+
+template<class ScalarType>
+void MatrixBase<ScalarType>::rowBlockFromMatrix(const MatrixBase& mat,const std::vector<size_t>& rownums)
+{
+	this->resize(rownums.size(),mat.cols());
+	for ( int r = 0 ; r < rownums.size() ; ++ r )
+	{
+		if (rownums[r]>=mat.rows())
+			throw COException("Index out of range in matrix blocking!");
+		for ( int c = 0 ; c < mat.cols() ; ++ c )
+		{
+			this->operator()(r,c)=mat(rownums[r],c);
+		}
+	}
+}
+
 }// End of namespace COPT
 
 #endif

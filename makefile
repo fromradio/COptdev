@@ -14,6 +14,10 @@ SRC = $(foreach n, $(DIR_SRC),$(wildcard $(n)/*.cpp))
 # TT = $(notdir $(SRC))
 OBJ = $(patsubst %.cpp,$(DIR_OBJ)/%.o,$(notdir $(SRC)))
 
+TEST_BIN = $(DIR_BIN)/test
+TEST_OBJ = $(DIR_OBJ)/test.o
+TEST_SRC = ./test/simplex.cpp
+
 TARGET = main
 BIN_TARGET = $(DIR_BIN)/$(TARGET)
 
@@ -50,6 +54,21 @@ all:
 	@echo $(OBJ)
 	@echo $(TT)
 	@echo "end"
+
+test: $(TEST_BIN)
+#$(TEST_BIN): $(TEST_OBJ)
+#	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
+
+#$(TEST_OBJ):$(TEST_SRC)
+#	$(CC) $(CFLAGS) -c $< -o $@
+
+help: $(TEST_BIN) 
+	
+$(TEST_BIN): $(TEST_OBJ)
+	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
+$(TEST_OBJ):$(TEST_SRC)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 
 
 #test : $(objects)

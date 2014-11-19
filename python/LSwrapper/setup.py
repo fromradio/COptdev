@@ -1,15 +1,15 @@
 from distutils.core import setup, Extension
 
-module1 = Extension('geLSs',
-                    include_dirs = ['E:/COptdev/include/Base','E:/COptdev/include/ThirParty','E:/COptdev/include/Algorithms','E:/COptdev/include/FunctionRepository','E:/COptdev/include/LeastSquares','E:/COptdev/include','E:/libs/Eigen'],
+module1 = Extension('copt',
+                    include_dirs = ['../../include'],
                     libraries = ['cblas','blas'],
-                    library_dirs = ['E:/libs'],
-                    sources = ['geLSs.cpp'])
+                    library_dirs = [],
+                    sources = ['py_least_squares_wrapper.cpp'])
 
-setup (name = 'PackageName',
+setup (name = 'COPT',
        version = '1.0',
-       description = 'This is a demo package',
+       description = 'Least Squares Method',
        long_description = '''
-This is really just a demo package.
+The module contains three basic approaches for solving least square method.
 ''',
        ext_modules = [module1])

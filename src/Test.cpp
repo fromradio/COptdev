@@ -6,7 +6,6 @@ typedef COPT::Array<FT> 				Array;
 typedef COPT::VectorBase<FT>			Vector;
 typedef COPT::MatrixBase<FT>	 		Matrix;
 
-
 // typedef double 			FT;
 // typedef COPT::Vector<FT>			Vector;
 // typedef COPT::Matrix<FT>			Matrix;
