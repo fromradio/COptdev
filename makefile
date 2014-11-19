@@ -16,7 +16,7 @@ OBJ = $(patsubst %.cpp,$(DIR_OBJ)/%.o,$(notdir $(SRC)))
 
 TEST_BIN = $(DIR_BIN)/test
 TEST_OBJ = $(DIR_OBJ)/test.o
-TEST_SRC = ./test/matrix.cpp
+TEST_SRC = ./test/simplex.cpp
 
 TARGET = main
 BIN_TARGET = $(DIR_BIN)/$(TARGET)

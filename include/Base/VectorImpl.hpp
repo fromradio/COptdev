@@ -113,7 +113,7 @@ VectorBase<ScalarType> VectorBase<ScalarType>::transMul(const MatrixBase<ScalarT
 }
 
 template<class ScalarType>
-VectorBase<ScalarType> VectorBase<ScalarType>::block(const std::set<size_t>& indices)
+VectorBase<ScalarType> VectorBase<ScalarType>::block(const std::set<size_t>& indices) const
 {
 	if( *indices.rbegin() >= this->size() )
 	{
@@ -140,6 +140,33 @@ void VectorBase<ScalarType>::blockFromVector(const VectorBase& vec,const std::se
 	for ( std::set<size_t>::const_iterator iter = indices.begin() ; iter != indices.end() ; ++ iter ){
 		this->operator[](i) = vec[*iter];
 		++ i;
+	}
+}
+
+template<class ScalarType>
+VectorBase<ScalarType> VectorBase<ScalarType>::block(const std::vector<size_t>& indices) const
+{
+	VectorBase<ScalarType> result(indices.size());
+	for ( int i = 0 ; i < indices.size() ; ++ i ){
+		if (indices[i] >= this->size())
+		{
+			throw COException("Index out of range in Vector blocking!");
+		}
+		result[i] = this->operator[](indices[i]);
+	}
+	return result;
+}
+
+template<class ScalarType>
+void VectorBase<ScalarType>::blockFromVector(const VectorBase& vec,const std::vector<size_t>& indices)
+{
+	this->resize(indices.size());
+	for ( int i = 0 ; i < indices.size() ; ++ i ){
+		if(indices[i] >= vec.size() )
+		{
+			throw COException("Index out of range in Vector blocking!");
+		}
+		this->operator[](i)=vec[indices[i]];
 	}
 }
 }// End of namespace COPT

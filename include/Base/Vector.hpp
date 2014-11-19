@@ -234,8 +234,10 @@ public:
 
 	/** blocking operations */
 	//%{
-	VectorBase block(const std::set<size_t>& indices);
+	VectorBase block(const std::set<size_t>& indices)const;
 	void blockFromVector(const VectorBase& vec,const std::set<size_t>& indices);
+	VectorBase block(const std::vector<size_t>& indices) const;
+	void blockFromVector(const VectorBase& vec,const std::vector<size_t>& indices);
 	//%}
 
 };

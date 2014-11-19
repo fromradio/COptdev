@@ -273,7 +273,7 @@ public:
 		{
 			vector(i) = vec[i];
 		}
-		Eigen::Matrix<ScalarType,Eigen::Dynamic,1> result = matrix.ldlt().solve(vector);
+		Eigen::Matrix<ScalarType,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
 		return VectorBase<ScalarType>(result);
 	}
 #endif
@@ -296,7 +296,7 @@ public:
 	/** Blocking methods */
 	//%{
 	
-	/** Blocking matrix from another matrix with specific row numbers and column numbers*/
+	/** Blocking matrix from a given matrix with specific row numbers and column numbers*/
 	void blockFromMatrix(const MatrixBase& mat,const std::set<size_t>& rownums,const std::set<size_t>& colnums);
 	
 	/** Blocking matrix from a given matrix with just columns */
@@ -304,8 +304,16 @@ public:
 	
 	/** Blocking matrix from a given matrix with just rows */
 	void rowBlockFromMatrix(const MatrixBase& mat,const std::set<size_t>& rownums);
+
+	/** Blocking matrix from a given matrix, order is not considered */
+	void blockFromMatrix(const MatrixBase& mat,const std::vector<size_t>& rownums,const std::vector<size_t>& colnums);
+	/** Blocking matrix from a given matrix, order is not considered */
+	void columnBlockFromMatrix(const MatrixBase& mat,const std::vector<size_t>& colnums);
+
+	/** Blocking matrix from a given matrix, order is not considered */
+	void rowBlockFromMatrix(const MatrixBase& mat,const std::vector<size_t>& rownums);
 	//%}
-	
+
 };// End of class MatrixBase
 
 }// End of namespace COPT
