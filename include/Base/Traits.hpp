@@ -4,6 +4,8 @@
 #ifndef COPT_TRAITS_H
 #define COPT_TRAITS_H
 
+namespace COPT
+{
 template<class T1>
 struct get_pod_type
 { typedef T1 type;};
@@ -83,6 +85,28 @@ struct is_scalar
 					is_scalar<T>::value||
 					is_complex<T>::value;
 };
+
+
+
+template<class T>
+class VectorBase;
+template<class T>
+class MatrixBase;
+
+/*		A trait class describing basic types that might be
+ *		used in a numerical solver. A solver should take trait
+ *		as template for flexibility.
+ */
+template<class T>
+class KernelTrait
+{
+public:
+	typedef T 					ScalarType;
+	typedef VectorBase<T>		Vector;
+	typedef MatrixBase<T>		Matrix;
+};
+
+}// End of namespace COPT
 
 
 #endif
