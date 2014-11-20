@@ -38,16 +38,18 @@ private:
 		Optimal,
 		Unbounded
 	};
+
+	enum AlgoType{
+		Success,
+		Unbounded,
+		NotFeasible
+	};
 	//%}
 
-	/** private functions */
-	//%{
-	
- 	
-	/** the first phase */
-	void phaseOne();
-	//%}
 public:
+
+	/** static functions of simplex solver */
+	//%{
 	/*		One step of a simplex algorithm for solving a Linear Programming
  	 *		problem.
  	 *		/param A: 			input matrix
@@ -63,9 +65,56 @@ public:
  						std::vector<size_t>& indb,
  						std::vector<size_t>& indn);
 
- 	static inline bool findPivoting(const Vector& xb,const Vector& d,const int q,std::vector<size_t>& indb,std::vector<size_t>& indn);
+ 	static inline bool findPivoting(
+ 						const Vector& xb,
+ 						const Vector& d,
+ 						const int q,
+ 						std::vector<size_t>& indb,
+ 						std::vector<size_t>& indn);
+
+ 	/* 		The first phase of simplex method. The target is to find the feasible
+	 *		point of the problem. 
+	 *				min e^Tz
+	 *				s.t. Ax+Ez=b
+	 *					 (x,z)>=0
+	 */
+	static inline void findFeasiblePoint(
+						const Vector& A,
+						const Vector& b,
+						const Vector& c);
+ 	/* 		Simplex method algorithm when initial point is known.
+ 	 *		/param A:			equal constraint matrix
+ 	 *		/param b:			right hand vector of equal constraint
+ 	 *		/param c:			weight vector
+ 	 *		/param x:			initial feasible point on input and result on output
+ 	 */
+ 	static inline AlgoType simplexMethod(
+ 						const Matrix& A,
+ 						const Vector& b,
+ 						const Vector& c,
+ 						Vector& x);
+ 	//%} end of static methods
 }; // End of class SimplexSolver
 
+
+template<class kernel>
+void SimplexSolver<kernel>::findFeasiblePoint(
+	const Matrix& A,
+	const Vector& b,
+	const Vector& c)
+{
+	
+}
+
+template<class kernel>
+typename SimplexSolver<kernel>::AlgoType SimplexSolver<kernel>::simplexMethod(
+	const Matrix& A,
+	const Vector& b,
+	const Vector& c,
+	Vector& x)
+{
+
+}
 
 /** implementation part*/
 template<class kernel>
@@ -112,9 +161,9 @@ typename SimplexSolver<kernel>::StepType SimplexSolver<kernel>::oneSimplexStep(
 			q = i;
 			break;
 		}
-	}
+	} // find the corresponding q
 	if ( q == -1 )
-		return Optimal;
+		return Optimal; // optimal solution is found
 	Vector Aq = A.col(indn[q]);
 	Vector d = B.solve(Aq);
 	bool unbound = true;
