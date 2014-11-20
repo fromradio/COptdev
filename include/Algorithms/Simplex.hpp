@@ -41,7 +41,7 @@ private:
 
 	enum AlgoType{
 		Success,
-		Unbounded,
+		Unbound,
 		NotFeasible
 	};
 	//%}
@@ -79,7 +79,7 @@ public:
 	 *					 (x,z)>=0
 	 */
 	static inline void findFeasiblePoint(
-						const Vector& A,
+						const Matrix& A,
 						const Vector& b,
 						const Vector& c);
  	/* 		Simplex method algorithm when initial point is known.
