@@ -30,5 +30,5 @@ int main(int argc,char* argv[])
 	indn.push_back (1); 
 	std::cout<<"current status is "<<Simplex::oneSimplexStep(A,b,c,indb,indn);
 	std::cout<<"current status is "<<Simplex::oneSimplexStep(A,b,c,indb,indn);
-	std::cout<<"current status is "<<Simplex::oneSimplexStep(A,b,c,indb,indn); 
+	std::cout<<"current status is "<<Simplex::oneSimplexStep(A,b,c,indb,indn);
 }
