@@ -50,6 +50,30 @@ public:
 
 	/** static functions of simplex solver */
 	//%{
+
+	/* 		Find the solution according to the matrix and blocking vector
+	 *		/param A:			input matrix
+	 *		/param b:			right hand vector
+	 *		/param indb:		the blocking vector
+	 *		/param x:			the result on output
+	 */
+	static inline void solveBlockingSystem(
+						const Matrix& A,
+						const Vector& b,
+						const std::vector<size_t>& indb,
+						Vector& x);
+
+	/*		Find the complete solution with a linear system and blocking vector
+	 *		/param A:			input matrix
+	 *		/param b:			right hand vector
+	 *		/param indb:		the blocking vector
+	 *		/param x:			the result on output
+	 */
+	static inline void solveCompleteBlockingSystem(
+						const Matrix& A,
+						const Vector& b,
+						const std::vector<size_t>& indb,
+						Vector& x);
 	/*		One step of a simplex algorithm for solving a Linear Programming
  	 *		problem.
  	 *		/param A: 			input matrix
@@ -79,41 +103,196 @@ public:
 	 *					 (x,z)>=0
 	 */
 	static inline void findFeasiblePoint(
+						const size_t m,
+						const size_t n,
 						const Matrix& A,
 						const Vector& b,
-						const Vector& c);
+						std::vector<size_t>& indb,
+						std::vector<size_t>& indn,
+						std::vector<size_t>& indz);
  	/* 		Simplex method algorithm when initial point is known.
  	 *		/param A:			equal constraint matrix
  	 *		/param b:			right hand vector of equal constraint
  	 *		/param c:			weight vector
  	 *		/param x:			initial feasible point on input and result on output
  	 */
- 	static inline AlgoType simplexMethod(
+ 	static inline AlgoType simplexMethodWithInitalization(
+ 						const int m,
+ 						const int n,
  						const Matrix& A,
  						const Vector& b,
  						const Vector& c,
- 						Vector& x);
+ 						Vector& x,
+ 						std::vector<size_t>& indb,
+ 						std::vector<size_t>& indn);
+
+ 	static inline AlgoType simplexMethodWithIndices(
+ 						const int m,
+ 						const int n,
+ 						const Matrix& A,
+ 						const Vector& b,
+ 						const Vector& c,
+ 						Vector& x,
+ 						std::vector<size_t>& indb,
+ 						std::vector<size_t>& indn,
+ 						std::vector<size_t>& indz);
  	//%} end of static methods
 }; // End of class SimplexSolver
 
 
 template<class kernel>
-void SimplexSolver<kernel>::findFeasiblePoint(
+void SimplexSolver<kernel>::solveBlockingSystem(
 	const Matrix& A,
 	const Vector& b,
-	const Vector& c)
+	const std::vector<size_t>& indb,
+	Vector& x)
 {
-	
+	Matrix B;
+	B.columnBlockFromMatrix(A,indb);
+	x = B.solve(b);
 }
 
 template<class kernel>
-typename SimplexSolver<kernel>::AlgoType SimplexSolver<kernel>::simplexMethod(
+void SimplexSolver<kernel>::solveCompleteBlockingSystem(
+	const Matrix& A,
+	const Vector& b,
+	const std::vector<size_t>& indb,
+	Vector& x)
+{
+	x.resize(A.cols());
+	Vector xb;
+	solveBlockingSystem(A,b,indb,xb);
+	for ( int i = 0 ; i < indb.size() ; ++ i )
+		x(indb[i]) = xb(i);
+}
+
+
+template<class kernel>
+void SimplexSolver<kernel>::findFeasiblePoint(
+	const size_t m,
+	const size_t n,
+	const Matrix& A,
+	const Vector& b,
+	std::vector<size_t>& indb,
+	std::vector<size_t>& indn,
+	std::vector<size_t>& indz)
+{
+	Matrix E = Matrix::identity(m,m),AE;
+	for ( int i = 0 ; i < m ; ++ i ){
+		if(b(i)<0)
+			E(i,i) = static_cast<ScalarType>(-1.0);
+		else
+			E(i,i) = static_cast<ScalarType>(1.0);
+	}
+	Matrix::stCombineAlongColumn(A,E,AE);
+	Vector e(m+n);
+	for ( int i = 0 ; i < m ; ++ i )
+		e(i+n)=1.0;
+	Vector xz(m+n);
+	for ( int i = 0 ; i < m ; ++ i )
+		xz(i+n) = std::abs(b(i));
+	std::vector<size_t> iindb(m),iindn(n); // the indices for B and N
+	for ( size_t i = 0 ; i < m ; ++ i )
+		iindb[i] = n+i;
+	for ( size_t i = 0 ; i < n ; ++ i )
+		iindn[i] = i;
+	Vector x;
+	simplexMethodWithInitalization(m,n,AE,b,e,x,iindb,iindn);
+
+	// compute indb and indn. index less than n is kept
+	indb.clear();indb.reserve(iindb.size());
+	indn.clear();indn.reserve(iindn.size());
+	indz.clear();indz.reserve(iindb.size());
+	for ( size_t i = 0 ; i < iindb.size() ; ++ i )
+	{
+		if(iindb[i]<n)
+			indb.push_back(iindb[i]);
+		else
+			indz.push_back(iindb[i]-n);
+	}
+	for (size_t i = 0 ; i < iindn.size() ; ++ i )
+	{
+		if(iindn[i]<n)
+			indn.push_back(iindn[i]);
+	}
+
+}
+
+template<class kernel>
+typename SimplexSolver<kernel>::AlgoType SimplexSolver<kernel>::simplexMethodWithInitalization(
+	const int m,
+	const int n,
 	const Matrix& A,
 	const Vector& b,
 	const Vector& c,
-	Vector& x)
+	Vector& x,
+	std::vector<size_t>&indb,
+	std::vector<size_t>&indn)
 {
+	StepType type;
+	do{
+		type = oneSimplexStep(A,b,c,indb,indn);
+	}while(type == Normal);
+	if ( type == Unbounded)
+		return NotFeasible;
+	else{
+		Matrix B;
+		B.columnBlockFromMatrix(A,indb);
+		Vector xb = B.solve(b);
+		x.resize(n);
+		for ( size_t i = 0 ; i < m ; ++ i ){
+			x(indb[i]) = xb(i);
+		}
+		solveCompleteBlockingSystem(A,b,indb,x);
+		return Success;
+	}
+}
 
+template<class kernel>
+typename SimplexSolver<kernel>::AlgoType SimplexSolver<kernel>::simplexMethodWithIndices(
+	const int m,
+	const int n,
+	const Matrix& A,
+	const Vector& b,
+	const Vector& c,
+	Vector& x,
+	std::vector<size_t>&indb,
+	std::vector<size_t>&indn,
+	std::vector<size_t>&indz)
+{
+	// the difference is that some artificial variables still remains
+	// the size is m - indb.size()
+	size_t zsize = indz.size();
+	// new c
+	Vector nc(n+2*zsize);
+	for ( int i = 0 ; i < n ; ++ i )
+		nc(i)=c(i);
+	Matrix nA(m+zsize,n+2*zsize);
+	for ( int i = 0 ; i < m ; ++ i )
+		for ( int j = 0 ; j < n ; ++ j )
+			nA(i,j) = A(i,j);
+	for ( int i = 0 ; i < zsize ; ++ i )
+	{
+		nA(indz[i],n+i) = 1.0;
+		nA(m+i,n+i) = 1.0;
+		nA(m+i,n+zsize+i) = 1.0;
+	}
+	// new b
+	Vector nb(m+zsize);
+	for ( int i = 0 ; i < m ; ++ i )
+		nb(i) = b(i);
+	Vector nx;
+	std::vector<size_t> iindb(indb);
+	for ( int i = 0 ; i < zsize ; ++ i )
+		iindb.push_back(n+i);
+	AlgoType t = simplexMethodWithInitalization(m,n,nA,nb,nc,nx,iindb,indn);
+	indb.clear();indb.reserve(iindb.size());
+	for ( int i = 0 ; i < iindb.size() ; ++ i ){
+		if(iindb[i]<n)
+			indb.push_back(iindb[i]);
+	}
+	solveCompleteBlockingSystem(A,b,indb,x);
+	return t;
 }
 
 /** implementation part*/

@@ -297,35 +297,61 @@ public:
 	//%{
 	
 	/** Blocking matrix from a given matrix with specific row numbers and column numbers*/
-	void blockFromMatrix(const MatrixBase& mat,const std::set<size_t>& rownums,const std::set<size_t>& colnums);
+	void blockFromMatrix(
+		const MatrixBase& mat,
+		const std::set<size_t>& rownums,
+		const std::set<size_t>& colnums);
 	
 	/** Blocking matrix from a given matrix with just columns */
-	void columnBlockFromMatrix(const MatrixBase& mat,const std::set<size_t>& colnums);
+	void columnBlockFromMatrix(
+		const MatrixBase& mat,
+		const std::set<size_t>& colnums);
 	
 	/** Blocking matrix from a given matrix with just rows */
-	void rowBlockFromMatrix(const MatrixBase& mat,const std::set<size_t>& rownums);
+	void rowBlockFromMatrix(
+		const MatrixBase& mat,
+		const std::set<size_t>& rownums);
 
 	/** Blocking matrix from a given matrix, order is not considered */
-	void blockFromMatrix(const MatrixBase& mat,const std::vector<size_t>& rownums,const std::vector<size_t>& colnums);
-	/** Blocking matrix from a given matrix, order is not considered */
-	void columnBlockFromMatrix(const MatrixBase& mat,const std::vector<size_t>& colnums);
+	void blockFromMatrix(
+		const MatrixBase& mat,
+		const std::vector<size_t>& rownums,
+		const std::vector<size_t>& colnums);
 
 	/** Blocking matrix from a given matrix, order is not considered */
-	void rowBlockFromMatrix(const MatrixBase& mat,const std::vector<size_t>& rownums);
+	void columnBlockFromMatrix(
+		const MatrixBase& mat,
+		const std::vector<size_t>& colnums);
+
+	/** Blocking matrix from a given matrix, order is not considered */
+	void rowBlockFromMatrix(
+		const MatrixBase& mat,
+		const std::vector<size_t>& rownums);
+
 	//%}
 
 	/** combining methods */
 	//%{
 
 	/** combining along row direction */
-	void combineAlongRow(const MatrixBase& m1,const MatrixBase& m2);
+	void combineAlongRow(
+		const MatrixBase& m1,
+		const MatrixBase& m2);
 	/** combining along column direction */
-	void combineAlongColumn(const MatrixBase& m1,const MatrixBase& m2);
+	void combineAlongColumn(
+		const MatrixBase& m1,
+		const MatrixBase& m2);
 
 	/** combine along row direction taking matrix as parameter */
-	static inline void stCombineAlongRow(const MatrixBase& m1,const MatrixBase& m2,MatrixBase& m);
+	static inline void stCombineAlongRow(
+		const MatrixBase& m1,
+		const MatrixBase& m2,
+		MatrixBase& m);
 	/** combine along column direction taking matrix as parameter */
-	static inline void stCombineAlongColumn(const MatrixBase&m1,const MatrixBase& m2,MatrixBase& m);
+	static inline void stCombineAlongColumn(
+		const MatrixBase&m1,
+		const MatrixBase& m2,
+		MatrixBase& m);
 	//%}
 
 };// End of class MatrixBase

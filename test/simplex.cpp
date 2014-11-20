@@ -20,15 +20,22 @@ int main(int argc,char* argv[])
 	A(1,0)=2;
 	A(1,1)=0.5;
 	A(1,3)=1;
-	Vector b(2);   
+	Vector b(2),x;   
 	b[0]=5;
 	b[1]=8;
-	std::vector<size_t> indb,indn;
+	std::vector<size_t> indb,indn,indz;
 	indb.push_back(2);
 	indb.push_back(3);
 	indn.push_back(0);
 	indn.push_back (1); 
-	std::cout<<"current status is "<<Simplex::oneSimplexStep(A,b,c,indb,indn);
-	std::cout<<"current status is "<<Simplex::oneSimplexStep(A,b,c,indb,indn);
-	std::cout<<"current status is "<<Simplex::oneSimplexStep(A,b,c,indb,indn);
+	Simplex::findFeasiblePoint(2,4,A,b,indb,indn,indz);
+	std::cout<<indb.size()<<std::endl;
+	std::cout<<indn.size()<<std::endl;
+	std::cout<<indz.size()<<std::endl;
+	Simplex::simplexMethodWithIndices(2,4,A,b,c,x,indb,indn,indz);
+	std::cout<<x<<std::endl;
+
+	// std::cout<<"current status is "<<Simplex::oneSimplexStep(A,b,c,indb,indn);
+	// std::cout<<"current status is "<<Simplex::oneSimplexStep(A,b,c,indb,indn);
+	// std::cout<<"current status is "<<Simplex::oneSimplexStep(A,b,c,indb,indn);
 }
