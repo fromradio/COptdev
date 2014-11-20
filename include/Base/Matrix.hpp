@@ -314,6 +314,20 @@ public:
 	void rowBlockFromMatrix(const MatrixBase& mat,const std::vector<size_t>& rownums);
 	//%}
 
+	/** combining methods */
+	//%{
+
+	/** combining along row direction */
+	void combineAlongRow(const MatrixBase& m1,const MatrixBase& m2);
+	/** combining along column direction */
+	void combineAlongColumn(const MatrixBase& m1,const MatrixBase& m2);
+
+	/** combine along row direction taking matrix as parameter */
+	static inline void stCombineAlongRow(const MatrixBase& m1,const MatrixBase& m2,MatrixBase& m);
+	/** combine along column direction taking matrix as parameter */
+	static inline void stCombineAlongColumn(const MatrixBase&m1,const MatrixBase& m2,MatrixBase& m);
+	//%}
+
 };// End of class MatrixBase
 
 }// End of namespace COPT

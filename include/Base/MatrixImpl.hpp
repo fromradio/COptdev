@@ -150,6 +150,52 @@ void MatrixBase<ScalarType>::rowBlockFromMatrix(const MatrixBase& mat,const std:
 	}
 }
 
+template<class ScalarType>
+void MatrixBase<ScalarType>::combineAlongRow(const MatrixBase& m1,const MatrixBase& m2)
+{
+	MatrixBase::stCombineAlongRow(m1,m2,*this);
+}
+
+template<class ScalarType>
+void MatrixBase<ScalarType>::combineAlongColumn(const MatrixBase& m1,const MatrixBase& m2)
+{
+	MatrixBase::stCombineAlongColumn(m1,m2,*this);
+}
+
+template<class ScalarType>
+void MatrixBase<ScalarType>::stCombineAlongRow(const MatrixBase& m1,const MatrixBase& m2,MatrixBase& m)
+{
+	if(m1.cols()!=m2.cols())
+		throw CEOxception("Please make sure the column number of two matrices is the same before combination!");
+	m.resize(m1.rows()+m2.rows(),m1,cols());
+	for ( size_t i = 0 ; i < m1.cols() ; ++ i ){
+		for ( size_t j = 0 ; j < m1.rows() ; ++ j ){
+			m(j,i) = m1(j,i);
+		}
+		size_t n = m1.rows();
+		for ( size_t j = 0 ; j < m2.rows() ; ++ j ){
+			m(j+n,i) = m2(j,i);
+		}
+	}
+}
+
+template<class ScalarType>
+void MatrixBase<ScalarType>::stCombineAlongColumn(const MatrixBase& m1,const MatrixBase& m2,MatrixBase& m)
+{
+	if(m1.rows()!=m2.rows())
+		throw CEOxception("Please make sure the row number of two matrices is the same before combination!");
+	m.resize(m1.rows(),m1.cols()+m2.cols());
+	for ( size_t i = 0 ; i < m1.rows() ; ++ i ){
+		for (size_t j = 0 ; j < m1.cols() ; ++ j ){
+			m(i,j) = m1(i,j);
+		}
+		size_t n = m1.cols();
+		for (size_t j = 0 ; j < m2.cols() ; ++ j ){
+			m(i,j+n)=m2(i,j);
+		}
+	}
+}
+
 }// End of namespace COPT
 
 #endif
