@@ -4,7 +4,7 @@
 #ifndef VECTOR_IMPL_H
 #define VECTOR_IMPL_H
 /*
-				The implementation of Vector
+				Implementation of class 'VectorBase' taking number type as template
 */
 
 namespace COPT
@@ -17,6 +17,18 @@ template<class ScalarType>
 VectorBase<ScalarType>::VectorBase()
 	:Array<ScalarType>()
 {
+}
+
+template<class ScalarType>
+ScalarType& VectorBase<ScalarType>::operator() ( const size_t i )
+{
+	return this->operator[](i);
+}
+
+template<class ScalarType>
+const ScalarType& VectorBase<ScalarType>::operator() (const size_t i ) const
+{
+	return this->operator[](i);
 }
 
 template<class ScalarType>
@@ -168,6 +180,23 @@ void VectorBase<ScalarType>::blockFromVector(const VectorBase& vec,const std::ve
 		}
 		this->operator[](i)=vec[indices[i]];
 	}
+}
+
+template<class ScalarType>
+void VectorBase<ScalarType>::combine(const VectorBase& v1,const VectorBase& v2)
+{
+	VectorBase::stCombine(v1,v2,*this);
+}
+
+template<class ScalarType>
+void VectorBase<ScalarType>::stCombine(const VectorBase& v1,const VectorBase& v2,VectorBase& v)
+{
+	v.resize(v1.size()+v2.size());
+	size_t n = v1.size();
+	for ( size_t i = 0 ; i < n ; ++ i )
+		v[i] = v1[i];
+	for ( size_t i = 0 ; i < v2.size() ; ++ i )
+		v[i+n] = v2[i];
 }
 }// End of namespace COPT
 
