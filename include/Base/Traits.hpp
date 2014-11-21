@@ -14,9 +14,6 @@ template<class T2>
 struct get_pod_type<std::complex<T2> >
 { typedef T2 type;};
 
-
-
-
 template<class T1>
 struct is_float
 { static const bool value = false;};
@@ -104,6 +101,17 @@ public:
 	typedef T 					ScalarType;
 	typedef VectorBase<T>		Vector;
 	typedef MatrixBase<T>		Matrix;
+};
+
+
+/** traits of constraints and functions*/
+struct linear_constraint_tag{};
+struct quadratic_constraint_tag{};
+struct non_linear_constraint_tag{};
+
+template<class Constraint>
+struct constraint_trait{
+	typedef typename Constraint::constraint_category	constraint_category;
 };
 
 }// End of namespace COPT
