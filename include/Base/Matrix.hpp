@@ -4,7 +4,6 @@
 #ifndef MatrixBase_H
 #define MatrixBase_H
 
-// #include "Vector.h"
 /*
  *				class 'MatrixBase'
  *					dervied from base class 'Array'
@@ -33,65 +32,36 @@ private:
 	// the size of columns
 	size_t 					__cols;
 public:
-	// default constructor
-	MatrixBase()
-		:
-		Arr(),
-		__rows(0),
-		__cols(0)
-	{
+	/** constructor and deconstructor */
+	//%{
+	/** default constructor */
+	MatrixBase();
 
-	}
-	MatrixBase(size_t m,size_t n,ScalarType* data=NULL)
-		:
-		Arr(m*n,data),
-		__rows(m),
-		__cols(n)
-	{
-	}
+	MatrixBase(size_t m,size_t n,ScalarType* data=NULL);
 
-	/*
-		Copy assignment
-	*/
-	MatrixBase(const MatrixBase<ScalarType>& mat)
-		:
-		Arr(mat.rows()*mat.cols(),mat.dataPtr()),
-		__rows(mat.rows()),
-		__cols(mat.cols())
-	{
-	}
+	/** Copy assignment */
+	MatrixBase(const MatrixBase& mat);
 
-	~MatrixBase()
-	{
-	}
+	/** deconstructor */
+	~MatrixBase();
+	//%} end of constructor and deconstructor
 
-	/*
-		basic getters
-	*/
-	// get the number of rows
-	const size_t&		rows() const {return __rows;}
-	// get the number of columns
-	const size_t& 		cols() const {return __cols;}
 
-	/*
-		get the element of the MatrixBase
-	*/
 
-	ScalarType& operator() (int i , int j){
-		if(i<0||j<0)
-			throw COException("MatrixBase error: index is less than zero!");
-		else if (i>=__rows||j>=__cols)
-			throw COException("MatrixBase error: index is out of range!");
-		else{
-			return this->__data_ptr[j*__rows+i];
-		}
-	}
-	const ScalarType& operator() (int i,int j) const {
-		return const_cast<MatrixBase&>(*this).operator()(i,j);
-	}
+	/**	getters and setters*/
+	//%{
+	/** get the number of rows */
+	const size_t&		rows() const;
+
+	/** get the number of columns */
+	const size_t& 		cols() const;
+
+	/**	matlab-like element getter */
+	ScalarType& operator() (int i , int j);
+
+	const ScalarType& operator() (int i,int j) const;
 
 	// get the element using Arr
-
 	const ScalarType& data( int i ) const{
 		if ( i < 0 )
 			throw COException("MatrixBase error: index is less that zero!");

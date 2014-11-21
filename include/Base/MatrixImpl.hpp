@@ -7,6 +7,71 @@
 namespace COPT
 {
 
+template<class ScalarType>
+MatrixBase<ScalarType>::MatrixBase()
+	:
+	Arr(),
+	__rows(0),
+	__cols(0)
+{
+}
+
+template<class ScalarType>
+MatrixBase<ScalarType>::MatrixBase(
+	size_t m,
+	size_t n,
+	ScalarType* data)
+	:
+	Arr(m*n,data),
+	__rows(m),
+	__cols(n)
+{
+}
+
+template<class ScalarType>
+MatrixBase<ScalarType>::MatrixBase(
+	const MatrixBase& mat)
+	:
+	Arr(mat.rows()*mat.cols(),mat.dataPtr()),
+	__rows(mat.rows()),
+	__cols(mat.cols())
+{
+}
+
+template<class ScalarType>
+MatrixBase<ScalarType>::~MatrixBase()
+{
+}
+
+template<class ScalarType>
+const size_t& MatrixBase<ScalarType>::rows() const
+{
+	return __rows;
+}
+
+template<class ScalarType>
+const size_t& MatrixBase<ScalarType>::cols() const
+{
+	return __cols;
+}
+
+template<class ScalarType>
+typename MatrixBase<ScalarType>::ScalarType& MatrixBase<ScalarType>::operator() (int i,int j)
+{
+	if(i<0||j<0)
+		throw COException("MatrixBase error: index is less than zero!");
+	else if (i>=__rows||j>=__cols)
+		throw COException("MatrixBase error: index is out of range!");
+	else{
+		return this->__data_ptr[j*__rows+i];
+	}
+}
+
+template<class ScalarType>
+const typename MatrixBase<ScalarType>::ScalarType& MatrixBase<ScalarType>::operator() ( int i , int j ) const
+{
+	return const_cast<MatrixBase&>(*this).operator()(i,j);
+}
 
 template<class ScalarType>
 void MatrixBase<ScalarType>::resize(size_t m,size_t n)
@@ -15,16 +80,7 @@ void MatrixBase<ScalarType>::resize(size_t m,size_t n)
 	__cols = n;
 	this->reset(m*n);
 }
-// template<class ScalarType>
-// MatrixBase<ScalarType> operator* (const ScalarType s,const MatrixBase<ScalarType>& mat)
-// {
-	
-// }
-/*			create an identity matrix with all diagonal elements as s
- *			/param m: the number of rows
- *			/param n: the number of columns
- *			/param s: the value of scalar
- */
+
 template<class ScalarType>
 MatrixBase<ScalarType> MatrixBase<ScalarType>::identity(
 	size_t m,
