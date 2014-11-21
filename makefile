@@ -14,7 +14,11 @@ SRC = $(foreach n, $(DIR_SRC),$(wildcard $(n)/*.cpp))
 # TT = $(notdir $(SRC))
 OBJ = $(patsubst %.cpp,$(DIR_OBJ)/%.o,$(notdir $(SRC)))
 
-TARGET = main
+TEST_BIN = $(DIR_BIN)/test
+TEST_OBJ = $(DIR_OBJ)/test.o
+TEST_SRC = ./test/simplex.cpp
+
+TARGET = all
 BIN_TARGET = $(DIR_BIN)/$(TARGET)
 
 CC = g++
@@ -30,6 +34,8 @@ vpath %.cpp ./src
 
 # vpath %.cpp include/Frame
 
+all:$(BIN_TARGET)
+
 
 $(BIN_TARGET):$(OBJ)
 	$(CC) $(OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
@@ -43,13 +49,43 @@ clean:
 
 
 # all debug
-all:
-	@echo $(BIN_TARGET)
-	@echo $(SRC)
-	@echo $(notdir $(SRC))
-	@echo $(OBJ)
-	@echo $(TT)
-	@echo "end"
+# all:
+# 	@echo $(BIN_TARGET)
+# 	@echo $(SRC)
+# 	@echo $(notdir $(SRC))
+# 	@echo $(OBJ)
+# 	@echo $(TT)
+# 	@echo "end"
+
+test: $(TEST_BIN)
+
+matrix: bin/matrix
+
+# test for matrix
+bin/matrix: obj/matrix.o
+	$(CC) obj/matrix.o $(DIR_LIB) -o $@ -lcblas -lblas
+obj/matrix.o: test/matrix.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# test for simplex method
+simplex: bin/simplex
+bin/simplex: obj/simplex.o
+	$(CC) obj/simplex.o $(DIR_LIB) -o $@ -lcblas -lblas
+obj/simplex.o: test/simplex.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+#$(TEST_BIN): $(TEST_OBJ)
+#	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
+
+#$(TEST_OBJ):$(TEST_SRC)
+#	$(CC) $(CFLAGS) -c $< -o $@
+
+help: $(TEST_BIN) 
+	
+$(TEST_BIN): $(TEST_OBJ)
+	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
+$(TEST_OBJ):$(TEST_SRC)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 
 
 #test : $(objects)

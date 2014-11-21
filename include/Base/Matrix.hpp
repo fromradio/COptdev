@@ -69,9 +69,9 @@ public:
 		basic getters
 	*/
 	// get the number of rows
-	size_t		rows() const {return __rows;}
+	const size_t&		rows() const {return __rows;}
 	// get the number of columns
-	size_t 		cols() const {return __cols;}
+	const size_t& 		cols() const {return __cols;}
 
 	/*
 		get the element of the MatrixBase
@@ -146,6 +146,9 @@ public:
 			this->__data_ptr[i] = value;
 	}
 
+	/** resize the matrix */
+	void resize ( size_t m , size_t n );
+
 	/*
 		Copy operation
 	*/
@@ -214,6 +217,7 @@ public:
 	}
 
 
+	// multiplication between a scalar and a matrix
 	friend MatrixBase<ScalarType> operator* (const ScalarType s,const MatrixBase<ScalarType>& mat)
 	{
 		MatrixBase<ScalarType> result(mat.rows(),mat.cols());
@@ -221,6 +225,12 @@ public:
 			for ( int j = 0 ; j < mat.cols() ; ++ j )
 				result(i,j) = mat(i,j)*s;
 		return result;
+	}
+
+	// multiplication between a scalar and a matrix
+	friend MatrixBase<ScalarType> operator* (const MatrixBase<ScalarType>& mat,const ScalarType s)
+	{
+		return s*mat;
 	}
 
 	// transpose
@@ -263,7 +273,7 @@ public:
 		{
 			vector(i) = vec[i];
 		}
-		Eigen::Matrix<ScalarType,Eigen::Dynamic,1> result = matrix.ldlt().solve(vector);
+		Eigen::Matrix<ScalarType,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
 		return VectorBase<ScalarType>(result);
 	}
 #endif
@@ -282,7 +292,69 @@ public:
 	}
 
 	static MatrixBase identity(size_t m,size_t n,const ScalarType s);
-};
 
-};
+	/** Blocking methods */
+	//%{
+	
+	/** Blocking matrix from a given matrix with specific row numbers and column numbers*/
+	void blockFromMatrix(
+		const MatrixBase& mat,
+		const std::set<size_t>& rownums,
+		const std::set<size_t>& colnums);
+	
+	/** Blocking matrix from a given matrix with just columns */
+	void columnBlockFromMatrix(
+		const MatrixBase& mat,
+		const std::set<size_t>& colnums);
+	
+	/** Blocking matrix from a given matrix with just rows */
+	void rowBlockFromMatrix(
+		const MatrixBase& mat,
+		const std::set<size_t>& rownums);
+
+	/** Blocking matrix from a given matrix, order is not considered */
+	void blockFromMatrix(
+		const MatrixBase& mat,
+		const std::vector<size_t>& rownums,
+		const std::vector<size_t>& colnums);
+
+	/** Blocking matrix from a given matrix, order is not considered */
+	void columnBlockFromMatrix(
+		const MatrixBase& mat,
+		const std::vector<size_t>& colnums);
+
+	/** Blocking matrix from a given matrix, order is not considered */
+	void rowBlockFromMatrix(
+		const MatrixBase& mat,
+		const std::vector<size_t>& rownums);
+
+	//%}
+
+	/** combining methods */
+	//%{
+
+	/** combining along row direction */
+	void combineAlongRow(
+		const MatrixBase& m1,
+		const MatrixBase& m2);
+	/** combining along column direction */
+	void combineAlongColumn(
+		const MatrixBase& m1,
+		const MatrixBase& m2);
+
+	/** combine along row direction taking matrix as parameter */
+	static inline void stCombineAlongRow(
+		const MatrixBase& m1,
+		const MatrixBase& m2,
+		MatrixBase& m);
+	/** combine along column direction taking matrix as parameter */
+	static inline void stCombineAlongColumn(
+		const MatrixBase&m1,
+		const MatrixBase& m2,
+		MatrixBase& m);
+	//%}
+
+};// End of class MatrixBase
+
+}// End of namespace COPT
 #endif

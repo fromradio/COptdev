@@ -95,6 +95,31 @@ public:
 		return *this;
 	}
 
+	/** Matlab-like element assignment */
+	ScalarType& operator() (const size_t i );
+	const ScalarType& operator() (const size_t i )const ;
+
+	/** overload operations*/
+	//%{
+	/** operator< */
+	bool operator< (const VectorBase& vec)const;
+
+	/** operator<= */
+	bool operator<=(const VectorBase& vec)const;
+
+	/** operator> */
+	bool operator> (const VectorBase& vec)const;
+
+	/** operator>= */
+	bool operator>=(const VectorBase& vec)const;
+
+	/** operator== */
+	bool operator==(const VectorBase& vec)const;
+
+	/** operator!= */
+	bool operator!=(const VectorBase& vec)const;
+	//%}
+
 	/*
 		Mathematical operations
 	*/
@@ -210,6 +235,27 @@ public:
 	/*			the transpose of the vector multiplies a matrix
 	 */
 	VectorBase transMul(const MatrixBase<ScalarType>& mat) const;
+
+	/** blocking operations */
+	//%{
+	VectorBase block(const std::set<size_t>& indices)const;
+	void blockFromVector(const VectorBase& vec,const std::set<size_t>& indices);
+	VectorBase block(const std::vector<size_t>& indices) const;
+	void blockFromVector(const VectorBase& vec,const std::vector<size_t>& indices);
+	//%}
+
+	/** combination operations */
+	//%{
+	/** combination of two vectors */
+	void combine(
+		const VectorBase& v1,
+		const VectorBase& v2);
+	/** combination of two vectors taking output as parameter */
+	static inline void stCombine(
+		const VectorBase& v1,
+		const VectorBase& v2,
+		VectorBase& v);
+	//%}
 
 };
 

@@ -12,6 +12,7 @@ const int    MAX_SEARCH = 10000;				// default maximum number of search
 const double	DEFAULT_CONVERGE_ERROR = 1e-5; 	// default converge error
 const double 	DEFAULT_STEP_FOR_DIFFERENTIAL = 1e-5;
 
+const double INFTY = 1e10;
 
 /*
  *				Judge that whether a scalar is zero
