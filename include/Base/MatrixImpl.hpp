@@ -56,21 +56,47 @@ const size_t& MatrixBase<ScalarType>::cols() const
 }
 
 template<class ScalarType>
-typename MatrixBase<ScalarType>::ScalarType& MatrixBase<ScalarType>::operator() (int i,int j)
+typename MatrixBase<ScalarType>::ScalarType& MatrixBase<ScalarType>::operator() (const int i,const int j)
 {
 	if(i<0||j<0)
 		throw COException("MatrixBase error: index is less than zero!");
 	else if (i>=__rows||j>=__cols)
 		throw COException("MatrixBase error: index is out of range!");
 	else{
-		return this->__data_ptr[j*__rows+i];
+		return this->operator[](j*__rows+i);
 	}
 }
 
 template<class ScalarType>
-const typename MatrixBase<ScalarType>::ScalarType& MatrixBase<ScalarType>::operator() ( int i , int j ) const
+const typename MatrixBase<ScalarType>::ScalarType& MatrixBase<ScalarType>::operator() ( const int i , const int j ) const
 {
 	return const_cast<MatrixBase&>(*this).operator()(i,j);
+}
+
+template<class ScalarType>
+const typename MatrixBase<ScalarType>::ScalarType& MatrixBase<ScalarType>::data ( const int i ) const{
+	if ( i < 0 )
+		throw COException("MatrixBase error: index is less that zero!");
+	else if ( i >= __rows*__cols )
+		throw COException("MatrixBase error: index is out of range!");
+	else
+		return this->operator[](i);
+}
+
+template<class ScalarType>
+VectorBase<ScalarType> MatrixBase<ScalarType>::row(const size_t num){
+	if ( num >= __rows )
+		throw COException("MatrixBase error: row index out of range!");
+	else
+		return VectorBase<ScalarType>(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
+}
+
+template<class ScalarType>
+VectorBase<ScalarType> MatrixBase<ScalarType>::col(const size_t num){
+	if ( num >= __cols )
+		throw COException("MatrixBase error: col index out of range!");
+	else
+		return VectorBase<ScalarType>(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 }
 
 template<class ScalarType>

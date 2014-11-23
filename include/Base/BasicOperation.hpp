@@ -35,5 +35,12 @@ inline void SAFE_DELETE_ARRAY(T* array)
 	if ( array ) { delete[] array;}
 }
 
+/*		Basic class for iterator
+ */
+class Iterator
+{
+
+};
+
 };
 #endif

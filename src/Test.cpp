@@ -153,7 +153,7 @@ int main(int argc,char* argv[])
 	Vector x(2);
 	std::cout<<"first trial of SDM method "<<std::endl;
 	nls.solve(x);
-	nls.printInfo(); 
+	nls.printInfo();    
 	// std::cout<<std::endl<<"second trial of SDM method "<<std::endl;
 	// nls.setIterationNum(100000);
 	// nls.solve(x);

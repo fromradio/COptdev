@@ -37,7 +37,7 @@ bool VectorBase<ScalarType>::operator<(const VectorBase<ScalarType>& vec)const
 	if (this->size() != vec.size() )
 		return false;
 	for ( int i = 0 ; i < this->size() ; ++ i ){
-		if(this->dataPtr()[i]>=vec[i])
+		if(this->operator[](i)>=vec[i])
 			return false;
 	}
 	return true;
@@ -49,7 +49,7 @@ bool VectorBase<ScalarType>::operator<=(const VectorBase<ScalarType>& vec)const
 	if (this->size() != vec.size() )
 		return false;
 	for ( int i = 0 ; i < this->size() ; ++ i ){
-		if(this->dataPtr()[i]>vec[i])
+		if(this->operator[](i)>vec[i])
 			return false;
 	}
 	return true;
@@ -61,7 +61,7 @@ bool VectorBase<ScalarType>::operator>(const VectorBase<ScalarType>& vec)const
 	if (this->size() != vec.size() )
 		return false;
 	for ( int i = 0 ; i < this->size() ; ++ i ){
-		if(this->dataPtr()[i]<=vec[i])
+		if(this->operator[](i)<=vec[i])
 			return false;
 	}
 	return true;
@@ -73,7 +73,7 @@ bool VectorBase<ScalarType>::operator>=(const VectorBase<ScalarType>& vec)const
 	if (this->size() != vec.size() )
 		return false;
 	for ( int i = 0 ; i < this->size() ; ++ i ){
-		if(this->dataPtr()[i]<vec[i])
+		if(this->operator[](i)<vec[i])
 			return false;
 	}
 	return true;
@@ -85,7 +85,7 @@ bool VectorBase<ScalarType>::operator==(const VectorBase<ScalarType>& vec)const
 	if (this->size() != vec.size() )
 		return false;
 	for ( int i = 0 ; i < this->size() ; ++ i ){
-		if(this->dataPtr()[i]!=vec[i])
+		if(this->operator[](i)!=vec[i])
 			return false;
 	}
 	return true;
@@ -97,7 +97,7 @@ bool VectorBase<ScalarType>::operator!=(const VectorBase<ScalarType>& vec)const
 	if ( this->size() != vec.size() )
 		return true;
 	for ( int i = 0 ; i < this->size() ; ++ i ){
-		if(this->dataPtr()[i]!=vec[i])
+		if(this->operator[](i)!=vec[i])
 			return true;
 	}
 	return false;
@@ -106,7 +106,7 @@ bool VectorBase<ScalarType>::operator!=(const VectorBase<ScalarType>& vec)const
 template<class ScalarType>
 MatrixBase<ScalarType> VectorBase<ScalarType>::mulTrans(const VectorBase<ScalarType>& vec) const
 {
-	size_t 					m = this->__size;
+	size_t 					m = this->size();
 	size_t 					n = vec.size();
 	MatrixBase<ScalarType> 	result(m,n);
 	for ( int i = 0 ; i < m ; ++ i )

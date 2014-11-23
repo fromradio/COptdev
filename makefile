@@ -73,6 +73,13 @@ bin/simplex: obj/simplex.o
 	$(CC) obj/simplex.o $(DIR_LIB) -o $@ -lcblas -lblas
 obj/simplex.o: test/simplex.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
+
+# test for matrix vector
+vecmat: bin/vecmat
+bin/vecmat: obj/vecmat.o
+	$(CC) obj/vecmat.o $(DIR_LIB) -o $@ -lcblas -lblas
+obj/vecmat.o: test/matrix_vector.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 

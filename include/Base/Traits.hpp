@@ -114,6 +114,9 @@ struct constraint_trait{
 	typedef typename Constraint::constraint_category	constraint_category;
 };
 
+
+struct referred_array{};
+
 }// End of namespace COPT
 
 
