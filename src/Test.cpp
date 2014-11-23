@@ -122,12 +122,22 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
  	std::cout<<A<<std::endl;
  	std::cout<<b<<std::endl;
  	Vector x(2);
- 	COPT::LeastMeanSquareMethod(A,b,0.01,x);
- 	std::cout<<x<<std::endl;
- 	COPT::LeastSquareMethod(A,b,x);
- 	std::cout<<x<<std::endl;
- 	COPT::RLS_Method(A,b,x);
- 	std::cout<<x<<std::endl;
+
+ 	typedef COPT::LeastSquaresSolver<FT>      LeastSquares;
+ 	LeastSquares ls(A,b);
+
+
+ 	ls.solve(x);
+ 	ls.printInfo();
+ 	ls.setType(LeastSquares::LS);
+ 	ls.solve(x);
+ 	ls.printInfo();
+ 	ls.setType(LeastSquares::RLS);
+ 	ls.solve(x);
+ 	ls.printInfo();
+ 	std::cout<<x<<"______asdfasdf"<<std::endl;
+ 	x = ls.result();
+ 	std::cout<<x<<"+++++++asdfasdf"<<std::endl;
  } 
 /*
  *			Matrix test
@@ -186,31 +196,31 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 // 	std::cout<<x.mulTrans(x)<<std::endl;  
 // 	std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
 // }
-=======
+ 
 
-int main(int argc,char* argv[])
-{ 
-	typedef COPT::RosenbrockFunction<Vector>	Function;
-	typedef COPT::NonLinearSolver<Function> 	Solver;
-	Function func;
-	Solver nls(func,1e-5,10,0.001,0.5,0.7)   ;
-	Vector x(2);
-	std::cout<<"first trial of SDM method "<<std::endl;
-	nls.solve(x);
-	nls.printInfo();
-	// std::cout<<std::endl<<"second trial of SDM method "<<std::endl;
-	// nls.setIterationNum(100000);
-	// nls.solve(x);
-	// nls.printInfo();
-	// std::cout<<std::endl<<"Newton's method"<<std::endl;
-	// nls.setType(Solver::NM);
-	// nls.solve(x);
-	// nls.printInfo();
-	// std::cout<<std::endl<<"BFGS method"<<std::endl;
-	// nls.setType(Solver::BFGS);
-	// nls.solve(x);
-	// nls.printInfo();
-}
+// int main(int argc,char* argv[])
+// { 
+// 	typedef COPT::RosenbrockFunction<Vector>	Function;
+// 	typedef COPT::NonLinearSolver<Function> 	Solver;
+// 	Function func;
+// 	Solver nls(func,1e-5,10,0.001,0.5,0.7)   ;
+// 	Vector x(2);
+// 	std::cout<<"first trial of SDM method "<<std::endl;
+// 	nls.solve(x);
+// 	nls.printInfo();
+// 	// std::cout<<std::endl<<"second trial of SDM method "<<std::endl;
+// 	// nls.setIterationNum(100000);
+// 	// nls.solve(x);
+// 	// nls.printInfo();
+// 	// std::cout<<std::endl<<"Newton's method"<<std::endl;
+// 	// nls.setType(Solver::NM);
+// 	// nls.solve(x);
+// 	// nls.printInfo();
+// 	// std::cout<<std::endl<<"BFGS method"<<std::endl;
+// 	// nls.setType(Solver::BFGS);
+// 	// nls.solve(x);
+// 	// nls.printInfo();
+// }
 
 
 // int main(int argc,char* argv[])
