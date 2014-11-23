@@ -34,6 +34,7 @@ class LinearEqualConstraint
 private:
 	typedef typename	kernel::Vector 			Vector;
 	typedef typename 	kernel::Matrix 			Matrix;
+	typedef linear_constraint_tag 				constraint_category;
 	/** variables*/
 	//%{
 	/** Matrix A*/

@@ -37,21 +37,32 @@ public:
 			if data is NULL, a zero vector is constructed
 	*/
 
-	VectorBase( int length , ScalarType* data = NULL )
+	VectorBase( const size_t size , ScalarType* data = NULL )
 		:
-		Arr(length,data)
+		Arr(size , data)
 	{
 	}
 
-	/*
-		Copy assignment
-	*/
+	/** Copy assignment */
 	VectorBase ( const VectorBase& vec )
-		
+		:
+		Arr()
 	{
-		this->__size=vec.size();
-		this->__data_ptr=new ScalarType[vec.size()];
-		blas::copt_blas_copy(this->__size,vec.dataPtr(),1,this->__data_ptr,1);
+		if (vec.isReferred())
+		{
+			// the vector is a referred vector
+			this->setReferredArray(vec.size(),const_cast<ScalarType*>(vec.dataPtr()),vec.interval());
+		}
+		else{
+			// copy the vector data
+			this->setArray(vec.size(),vec.dataPtr(),vec.interval());
+		}
+	}
+
+	VectorBase( const size_t size , const referred_array& tag , ScalarType* data ,const size_t inter = 1)
+		:
+		Arr(size,tag,data,inter)
+	{
 	}
 
 	/*
@@ -59,11 +70,12 @@ public:
 	*/
 
 	VectorBase(const std::vector<ScalarType>& vec)
+		:
+		Arr()
 	{
-		this->__size=static_cast<size_t>(vec.size());
-		this->__data_ptr=new ScalarType [vec.size()];
-		for ( int i = 0 ; i < this->__size ; ++ i )
-			this->__data_ptr[i] = vec[i];
+		this->resize(vec.size(),1);
+		for ( int i = 0 ; i < this->size() ; ++ i )
+			this->operator[](i) = vec[i];
 	}
 
 #ifdef EIGEN
@@ -71,8 +83,8 @@ public:
 		:
 		Arr(vec.size())
 	{
-		for ( int i = 0 ; i < this->__size ; ++ i ){
-			this->__data_ptr[i]  =vec(i);
+		for ( int i = 0 ; i < this->size() ; ++ i ){
+			this->operator[](i)  = vec(i);
 		}
 	}
 #endif
@@ -90,8 +102,12 @@ public:
 	*/
 
 	VectorBase& operator= (const VectorBase& vec ){
-		this->resize(vec.size());
-		this->setData(vec.size(),vec.dataPtr());
+		if (vec.isReferred()){
+			this->setReferredArray(vec.size(),const_cast<ScalarType*>(vec.dataPtr()),vec.interval());
+		}
+		else{
+			this->setArray(vec.size(),vec.dataPtr(),vec.interval());
+		}
 		return *this;
 	}
 
@@ -128,62 +144,64 @@ public:
 	 */
 	ScalarType squaredNorm() const{
 		ScalarType result = 0;
-		for ( int i = 0 ; i < this->__size ; ++ i ){
-			result += this->__data_ptr[i]*this->__data_ptr[i];
+		for ( int i = 0 ; i < this->size() ; ++ i ){
+			result += this->operator[](i)*this->operator[](i);
 		}
 		return result;
 	}
 	// dot operation
 	ScalarType dot(const VectorBase& vec) const{
-		if(this->__size!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
+		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
 		else{
-			ScalarType sum = blas::copt_blas_dot(this->__size,this->__data_ptr,1,vec.dataPtr(),1);
+			ScalarType sum = blas::copt_blas_dot(this->size(),this->dataPtr(),this->interval(),vec.dataPtr(),vec.interval());
 			return sum;
 		}
 	}
 
 	// scale with a special length
 	void scale(ScalarType s){
-		blas::copt_blas_scal(this->__size,s,this->__data_ptr,1);
+		blas::copt_blas_scal(this->size(),s,this->dataPtr(),this->interval());
 	}
 	// multiply with a scalar
 	VectorBase operator* (ScalarType s){
-		VectorBase result(*this);
+		VectorBase result;
+		result.setArray(this->size(),this->dataPtr(),this->interval());
 		result.scale(s);
 		return result;
 	}
 
 	friend VectorBase operator* (ScalarType s,const VectorBase& vec){
-		VectorBase result(vec);
+		VectorBase result;
+		result.setArray(vec.size(),const_cast<ScalarType*>(vec.dataPtr()),vec.interval());
 		result.scale(s);
 		return result;
 	}
 
 	// summation operation
 	VectorBase operator+ (const VectorBase& vec) const{
-		if(this->__size!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
-		VectorBase<ScalarType> result(this->__size);
-		for ( int i = 0 ; i < this->__size ; ++ i ){
-			result[i] = this->__data_ptr[i]+vec[i];
+		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
+		VectorBase<ScalarType> result(this->size());
+		for ( int i = 0 ; i < this->size() ; ++ i ){
+			result[i] = this->operator[](i)+vec[i];
 		}
 		return result;
 	}
 
 	//subtraction operation
 	VectorBase operator- (const VectorBase& vec) const{
-		if(this->__size!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
-		VectorBase<ScalarType> result(this->__size);
-		for ( int i = 0 ; i < this->__size ; ++ i ){
-			result[i] = this->__data_ptr[i]-vec[i];
+		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
+		VectorBase<ScalarType> result(this->size());
+		for ( int i = 0 ; i < this->size() ; ++ i ){
+			result[i] = this->operator[](i)-vec[i];
 		}
 		return result;
 	}
 
 	// 
 	VectorBase operator- () const{
-		VectorBase<ScalarType> result(this->__size);
-		for ( int i = 0 ; i < this->__size ; ++ i ){
-			result[i] = -this->__data_ptr[i];
+		VectorBase<ScalarType> result(this->size());
+		for ( int i = 0 ; i < this->size() ; ++ i ){
+			result[i] = -this->operator[](i);
 		}
 		return result;
 	}

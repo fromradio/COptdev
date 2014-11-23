@@ -12,36 +12,44 @@ class Array
 {
 public:
 	typedef 				T 		ScalarType;
-protected:
-	size_t 							__size; 		// the size of the array
-	ScalarType*						__data_ptr;		// the pointer to the data itself
+private:
+	/** private variables */
+	//%{
+	/** the total size of the array */
+	size_t 							__size;
+	/** the interval of the pointer, 1 as default */
+	size_t 							__inter;
+	/** the pointer to the data */
+	ScalarType*						__data_ptr;
+	/** whether the array is referred */
+	bool							__referred;
+	//%}
 
 
 	/* 				 protected functions
 	 */
-	void setData(int size,const ScalarType* data)
-	{
-		resize(size);
-		blas::copt_blas_copy(__size,data,1,__data_ptr,1);
-	}
+	
 	
 public:
 
 	Array()
 		:
 		__size(0),
-		__data_ptr(NULL)
+		__inter(1),
+		__data_ptr(NULL),
+		__referred(false)
 	{
 	}
 
-	Array( size_t size , const ScalarType* data = NULL)
+	Array ( const size_t size, const ScalarType* data = NULL, const size_t inter = 1 )
 		:
 		__size(size),
-		__data_ptr(new ScalarType[size])
+		__inter(1),
+		__data_ptr(new ScalarType[size]),
+		__referred(false)
 	{
 		if ( data ){
-			for ( int i = 0 ; i < __size ; ++ i )
-				__data_ptr[i] = data[i];
+			blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
 		}
 		else{
 			for ( int i = 0 ; i < __size ; ++ i )
@@ -49,9 +57,29 @@ public:
 		}
 	}
 
+	Array( const size_t size , const referred_array& , ScalarType* data ,const size_t inter = 1)
+		:
+		__size(size),
+		__inter(inter),
+		__data_ptr(data),
+		__referred(true)
+	{
+	}
+
+	Array( const Array& arr )
+	{
+		if(arr.isReferred())
+			setReferredArray(arr.size(),arr.dataPtr(),arr.interval());
+		else
+			setArray(arr);
+	}
+
 	virtual ~Array()
 	{
-		SAFE_DELETE_ARRAY(__data_ptr);
+		if (__referred)
+			__data_ptr = NULL;
+		else
+			SAFE_DELETE_ARRAY(__data_ptr);
 	}
 
 
@@ -59,9 +87,9 @@ public:
 	 *		Access to data pointer for modification or other operations
 	 *
 	 */
-	// ScalarType* dataPtr(){
-	// 	return __data_ptr;
-	// }
+	ScalarType* dataPtr(){
+	 	return __data_ptr;
+	}
 	const ScalarType* dataPtr() const{
 		return __data_ptr;
 	}
@@ -70,8 +98,8 @@ public:
 	 *
 	 */
 	void copy( const Array& arr ) {
-		resize(arr.size());
-		blas::copt_blas_copy(__size,arr.dataPtr(),1,__data_ptr,1);
+		resize(arr.size(),arr.interval());
+		blas::copt_blas_copy(__size,arr.dataPtr(),1,__data_ptr,arr.interval());
 	}
 
 	/*
@@ -85,31 +113,78 @@ public:
 			blas::copt_blas_swap(__size,const_cast<ScalarType*>(arr.dataPtr()),1,__data_ptr,1);
 	}
 
-	/*
-	 * 			the size(length) of the array
-	 *
-	 */
-	const size_t& size() const{
-		return __size;
-	}
+	/** getter and setter */
+	//%{
+
+	/** the size of the array */ 
+	const size_t& size() const{return __size;}
+
+	/** whether the array is referred */
+	bool isReferred() const{return __referred;}
+
+	/** the interval of the array */
+	size_t interval() const{return __inter;}
+
+	//%}
+	
 	/*
 	 *			resize the array to specific size
 	 *
 	 */
-	void resize( size_t size ){
-		if(__size != size ){
-			__size = size;
-			SAFE_DELETE_ARRAY(__data_ptr);
-			__data_ptr = new ScalarType[__size];
-			for ( int i = 0 ; i < __size ; ++ i )
-				__data_ptr[i] = static_cast<ScalarType>(0.0);
-		}
+	void resize( const size_t size , const size_t inter){
+		if(__referred)
+			throw COException("referred array is not allowed to be resized!");
 		else{
-			for ( int i = 0 ; i < __size ; ++ i )
-				__data_ptr[i] = static_cast<ScalarType>(0.0);
+			if(__size != size || __inter != inter ){
+				__size = size;
+				__inter = inter;
+				SAFE_DELETE_ARRAY(__data_ptr);
+				__data_ptr = new ScalarType[__size*__inter];
+				for ( int i = 0 ; i < __size ; ++ i )
+					__data_ptr[i*__inter] = static_cast<ScalarType>(0.0);
+			}
+			else{
+				for ( int i = 0 ; i < __size ; ++ i )
+					__data_ptr[i*__inter] = static_cast<ScalarType>(0.0);
+			}
 		}
 	}
-	void reset(size_t size){resize(size);}
+
+	void reset(size_t size){resize(size,__inter);}
+
+	void setArray(const size_t size,const ScalarType* data,const size_t inter = 1)
+	{
+		if ( __referred )
+			throw COException("referred array is not allowed to be reset ");
+		else{
+			resize(size,inter);
+			blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
+		}
+	}
+
+	void setArray(const Array& arr)
+	{
+		if ( __referred )
+			throw COException("referred array is not allowed to be reset ");
+		else{
+			resize(arr.size(),arr.interval());
+			blas::copt_blas_copy(__size,arr.dataPtr(),arr.interval(),__data_ptr,__inter);
+		}
+	}
+
+	/** set a referred array */
+	void setReferredArray(
+		const size_t size,
+		ScalarType* data,
+		const size_t inter = 1)
+	{
+		__referred = true;
+		__size = size;
+		__data_ptr = data;
+		__inter = inter;
+	}
+
+
 	/*			Judge whether the array is valid
 	 *			The array is valid if and only if the template is valid scalar type:
 	 *			'float', 'double', 'std::complex<float>' or 'std::complex<double>'
@@ -132,14 +207,32 @@ public:
 			throw COException("Vector error, index larger than the length.");
 		}
 		else
-			return __data_ptr[i];
+			return __data_ptr[i*__inter];
 	}
 	const ScalarType& operator[] ( int i ) const {
 		return const_cast<Array&>(*this).operator[](i);
 	}
 
-	/*			overloaded stream
-	 */
+	
+
+	/** copy assignment */
+	Array& operator=(const Array& arr )
+	{
+		if (arr.isReferred())
+		{
+			__referred = true;
+			__data_ptr = arr.dataPtr();
+			__size = arr.size();
+			__inter = arr.interval();
+		}
+		else{
+			__referred = false;
+			copy(arr);
+		}
+		return *this;
+	}
+
+	/**			overloaded stream */
 	friend std::ostream& operator<<(std::ostream& os,const Array& arr){
 		os<<"[ ";
 		for ( int i = 0 ; i< arr.size()-1 ; ++ i ){

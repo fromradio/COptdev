@@ -198,6 +198,7 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 // }
  
 
+<<<<<<< HEAD
 // int main(int argc,char* argv[])
 // { 
 // 	typedef COPT::RosenbrockFunction<Vector>	Function;
@@ -221,6 +222,31 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 // 	// nls.solve(x);
 // 	// nls.printInfo();
 // }
+=======
+int main(int argc,char* argv[])
+{ 
+	typedef COPT::RosenbrockFunction<Vector>	Function;
+	typedef COPT::NonLinearSolver<Function> 	Solver;
+	Function func;
+	Solver nls(func,1e-5,10,0.001,0.5,0.7)   ;
+	Vector x(2);
+	std::cout<<"first trial of SDM method "<<std::endl;
+	nls.solve(x);
+	nls.printInfo();    
+	// std::cout<<std::endl<<"second trial of SDM method "<<std::endl;
+	// nls.setIterationNum(100000);
+	// nls.solve(x);
+	// nls.printInfo();
+	// std::cout<<std::endl<<"Newton's method"<<std::endl;
+	// nls.setType(Solver::NM);
+	// nls.solve(x);
+	// nls.printInfo();
+	// std::cout<<std::endl<<"BFGS method"<<std::endl;
+	// nls.setType(Solver::BFGS);
+	// nls.solve(x);
+	// nls.printInfo();
+}
+>>>>>>> upstream/master
 
 
 // int main(int argc,char* argv[])

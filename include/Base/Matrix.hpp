@@ -4,7 +4,6 @@
 #ifndef MatrixBase_H
 #define MatrixBase_H
 
-// #include "Vector.h"
 /*
  *				class 'MatrixBase'
  *					dervied from base class 'Array'
@@ -24,115 +23,51 @@ public:
 	// the scalar type
 	typedef 			Array<FT>				Arr;
 	typedef typename	Arr::ScalarType 		ScalarType;
-	typedef 			VectorBase<ScalarType>	Vector;
+	typedef 			VectorBase<FT>			Vector;
 
 
 private:
-	// the size of rows
+	/** the size of rows */
 	size_t					__rows;
-	// the size of columns
+	/** the size of columns */
 	size_t 					__cols;
 public:
-	// default constructor
-	MatrixBase()
-		:
-		Arr(),
-		__rows(0),
-		__cols(0)
-	{
+	/** constructor and deconstructor */
+	//%{
+	/** default constructor */
+	MatrixBase();
 
-	}
-	MatrixBase(size_t m,size_t n,ScalarType* data=NULL)
-		:
-		Arr(m*n,data),
-		__rows(m),
-		__cols(n)
-	{
-	}
+	MatrixBase(const size_t m, const size_t n,ScalarType* data=NULL);
 
-	/*
-		Copy assignment
-	*/
-	MatrixBase(const MatrixBase<ScalarType>& mat)
-		:
-		Arr(mat.rows()*mat.cols(),mat.dataPtr()),
-		__rows(mat.rows()),
-		__cols(mat.cols())
-	{
-	}
+	/** Copy assignment */
+	MatrixBase(const MatrixBase& mat);
 
-	~MatrixBase()
-	{
-	}
+	/** deconstructor */
+	~MatrixBase();
+	//%} end of constructor and deconstructor
 
-	/*
-		basic getters
-	*/
-	// get the number of rows
-	const size_t&		rows() const {return __rows;}
-	// get the number of columns
-	const size_t& 		cols() const {return __cols;}
 
-	/*
-		get the element of the MatrixBase
-	*/
 
-	ScalarType& operator() (int i , int j){
-		if(i<0||j<0)
-			throw COException("MatrixBase error: index is less than zero!");
-		else if (i>=__rows||j>=__cols)
-			throw COException("MatrixBase error: index is out of range!");
-		else{
-			return this->__data_ptr[j*__rows+i];
-		}
-	}
-	const ScalarType& operator() (int i,int j) const {
-		return const_cast<MatrixBase&>(*this).operator()(i,j);
-	}
+	/**	getters and setters*/
+	//%{
+	/** get the number of rows */
+	const size_t&		rows() const;
 
-	// get the element using Arr
+	/** get the number of columns */
+	const size_t& 		cols() const;
 
-	const ScalarType& data( int i ) const{
-		if ( i < 0 )
-			throw COException("MatrixBase error: index is less that zero!");
-		else if ( i >= __rows*__cols )
-			throw COException("MatrixBase error: index is out of range!");
-		else
-			return this->__data_ptr[i];
-	}
+	/**	matlab-like element getter */
+	ScalarType& operator() ( const int i , const int j);
 
-	/*
-	 *			obtain the i-th row
-	 */
-	Vector row( int num ) const {
-		if ( num < 0 )
-			throw COException("MatrixBase error: row index is less that zero!");
-		else if ( num >= __rows)
-			throw COException("MatrixBase error: row index is out of range!");
-		else{
-			Vector result(__cols);
-			for ( int i = 0 ; i < __cols ; ++ i ){
-				result[i] = this->operator()(num,i);
-			}
-			return result;
-		}
-	}
-	/*
-	 *			obtain the i-th column
-	 */
-	Vector col( int num ) const {
-		if ( num < 0 )
-			throw COException("MatrixBase error: row index is less that zero!");
-		else if ( num >= __cols)
-			throw COException("MatrixBase error: row index is out of range!");
-		else{
-			Vector result(__rows);
-			for ( int i = 0 ; i < __rows ; ++ i ){
-				result[i] = this->operator()(i,num);
-			}
-			return result;
-		}
-	}
+	const ScalarType& operator() ( const int i, const int j) const;
+
+	/** get the element using Arr */
+	const ScalarType& data( const int i ) const;
+
+	/**	obtain the i-th row */
+	Vector row( const size_t num );
+	/**	obtain the i-th column */
+	Vector col( const size_t num );
 
 
 	// set element using Arr
@@ -143,7 +78,7 @@ public:
 		else if ( i >= __rows*__cols )
 			throw COException("MatrixBase error: index is out of range!");
 		else
-			this->__data_ptr[i] = value;
+			this->operator[](i) = value;
 	}
 
 	/** resize the matrix */
@@ -156,12 +91,12 @@ public:
 		if( __rows != mat.rows() || __cols != mat.cols() ){
 			__rows = mat.rows();
 			__cols = mat.cols();
-			SAFE_DELETE_ARRAY(this->__data_ptr);
-			this->__data_ptr = new ScalarType[__rows*__cols];
+			SAFE_DELETE_ARRAY(this->dataPtr());
+			this->reset(__rows*__cols);
 		}
 
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
-			this->__data_ptr[i] = mat.data(i);
+			this->operator[](i) = mat.data(i);
 		return *this;
 	}
 
@@ -177,7 +112,7 @@ public:
 			throw COException("MatrixBase summation error: the size of two matrices are not consistent!");
 		MatrixBase<ScalarType> result(__rows,__cols);
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
-			result.set(i,this->__data_ptr[i]+mat.data(i));
+			result.set(i,this->operator[](i)+mat.data(i));
 		return result;
 	}
 
@@ -188,7 +123,7 @@ public:
 			throw COException("MatrixBase subtraction error: the size of two matrices are not consistent!");
 		MatrixBase<ScalarType> result(__rows,__cols);
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
-			result.set(i,this->__data_ptr[i]-mat.data(i));
+			result.set(i,this->operator[](i)-mat.data(i));
 		return result;
 	}
 
@@ -354,7 +289,7 @@ public:
 		MatrixBase& m);
 	//%}
 
-};// End of class MatrixBase
+};// End of class MatrixBaseß
 
 }// End of namespace COPT
 #endif
