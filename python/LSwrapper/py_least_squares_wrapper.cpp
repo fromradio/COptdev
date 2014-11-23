@@ -6,11 +6,11 @@
 #include <Python.h>
 #include <Header>
 
-typedef double                      FT;
-typedef COPT::Array<FT>             Array;
-typedef COPT::VectorBase<FT>        Vector;
-typedef COPT::MatrixBase<FT>        Matrix;
-
+typedef double                          FT;
+typedef COPT::Array<FT>                 Array;
+typedef COPT::VectorBase<FT>            Vector;
+typedef COPT::MatrixBase<FT>            Matrix;
+typedef COPT::LeastSquaresSolver<FT>    LeastSquares;
 
 /*
 		A wrapper of Least Squares methods for Python
@@ -42,7 +42,10 @@ static PyObject* pyLeastMeanSquare(PyObject *self,PyObject *args)
 	Vector x(n);
 
 	// call COPT interface
-	COPT::LeastMeanSquareMethod(A0,b0,mu,x);
+	LeastSquares ls(A0,b0,mu);
+	ls.setType(LeastSquares::LMS);
+	ls.solve(x);
+	x = ls.result();
 
 	PyObject *list;
 	list = PyList_New(n);
@@ -50,6 +53,7 @@ static PyObject* pyLeastMeanSquare(PyObject *self,PyObject *args)
 		PyList_SetItem(list,j,Py_BuildValue("f",x[j]));
 	return Py_BuildValue("O",list);
 }
+
 
 /*		normal least square method
  *		args:
@@ -75,7 +79,10 @@ static PyObject* pyLeastSquares(PyObject *self,PyObject *args)
 	Vector x(n);
 
 	// call COPT interface!
-	COPT::LeastSquareMethod(A0,b0,x);
+	LeastSquares ls(A0,b0);
+	ls.setType(LeastSquares::LS);
+	ls.solve(x);
+	x = ls.result();
 
 	PyObject *list;
 	list = PyList_New(n);
@@ -111,7 +118,10 @@ static PyObject* pyRecursiveLeastSquare(PyObject *self,PyObject *args)
 	Vector x(n);
 
 	// call COPT interface
-	COPT::RLS_Method(A0,b0,x,lam,delta);
+	LeastSquares ls(A0,b0,0.01,lam,delta);
+	ls.setType(LeastSquares::RLS);
+	ls.solve(x);
+	x = ls.result();
 
 	PyObject *list;
 	list = PyList_New(n);

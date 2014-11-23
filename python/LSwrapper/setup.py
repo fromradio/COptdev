@@ -1,9 +1,9 @@
 from distutils.core import setup, Extension
 
 module1 = Extension('copt',
-                    include_dirs = ['../../include'],
+                    include_dirs = ['../../include','E:/libs/eigen'],
                     libraries = ['cblas','blas'],
-                    library_dirs = [],
+                    library_dirs = ['E:/libs'],
                     sources = ['py_least_squares_wrapper.cpp'])
 
 setup (name = 'COPT',
