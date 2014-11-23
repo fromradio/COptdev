@@ -41,6 +41,9 @@ public:
 	// print the solver information
 	void printInfo();
 
+	// return the result
+	const VectorBase<Scalar>& result() const{return __x;}
+
 private:
 	// the coefficient matrix
 	const MatrixBase<Scalar>&   __A;
