@@ -398,8 +398,8 @@ public:
 		const size_t 				rows,
 		const size_t 				cols,
 		const size_t 				size,
-		const size_t*				rowind;
-		const sizt_t*			 	colptr,
+		const size_t*				rowind,
+		const size_t*			 	colptr,
 		const ScalarType*			vals);
 
 	/** deconstructor */

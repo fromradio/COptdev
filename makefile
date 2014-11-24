@@ -3,30 +3,10 @@
 # powered by 'MathU'
 # copyright@MathU
 
-DIR_INC += -I/usr/local/Cellar/Eigen/3.2.1/include/eigen3 -I./include/Base -I./include/LeastSquares -I./include/FunctionRepository -I./include/Algorithms -I./include/ThirdParty -I./include
-DIR_SRC += ./src/Frame ./src/LeastSquares ./src
-DIR_OBJ = ./obj
-DIR_BIN = ./bin
-# DIR_LIB = -LE:/libs
+include ./Makefile.in
 
-SRC = $(foreach n, $(DIR_SRC),$(wildcard $(n)/*.cpp))
-# TT = $(patsubst %.cpp,%.o,$(SRC))
-# TT = $(notdir $(SRC))
-OBJ = $(patsubst %.cpp,$(DIR_OBJ)/%.o,$(notdir $(SRC)))
 
-TEST_BIN = $(DIR_BIN)/test
-TEST_OBJ = $(DIR_OBJ)/test.o
-TEST_SRC = ./test/simplex.cpp
 
-TARGET = all
-BIN_TARGET = $(DIR_BIN)/$(TARGET)
-
-CC = g++
-CFLAGS = -g -Wall $(DIR_INC)
-
-vpath %.cpp ./src/Frame
-vpath %.cpp ./src/LeastSquares
-vpath %.cpp ./src
 
 #objects = test.o basicmath.o
 
@@ -57,11 +37,11 @@ clean:
 # 	@echo $(TT)
 # 	@echo "end"
 
-test: $(TEST_BIN)
 
-matrix: bin/matrix
+
 
 # test for matrix
+matrix: bin/matrix
 bin/matrix: obj/matrix.o
 	$(CC) obj/matrix.o $(DIR_LIB) -o $@ -lcblas -lblas
 obj/matrix.o: test/matrix.cpp

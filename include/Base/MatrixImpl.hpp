@@ -284,7 +284,7 @@ template<class ScalarType>
 Triplet<ScalarType>::Triplet(
 	const size_t r,
 	const size_t c,
-	const Scalar v)
+	const ScalarType v)
 	:
 	__r(r),
 	__c(c),

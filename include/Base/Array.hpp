@@ -131,7 +131,7 @@ public:
 	 *			resize the array to specific size
 	 *
 	 */
-	void resize( const size_t size , const size_t inter){
+	void resize( const size_t size , const size_t inter = 1){
 		if(__referred)
 			throw COException("referred array is not allowed to be resized!");
 		else{
