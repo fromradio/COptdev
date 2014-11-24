@@ -60,6 +60,13 @@ bin/vecmat: obj/vecmat.o
 	$(CC) obj/vecmat.o $(DIR_LIB) -o $@ -lcblas -lblas
 obj/vecmat.o: test/matrix_vector.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
+
+# test for sparse matrix
+spmat: bin/spmat
+bin/spmat: obj/spmat.o
+	$(CC) obj/spmat.o $(DIR_LIB) -o $@ -lcblas -lblas
+obj/spmat.o:test/spmat.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 

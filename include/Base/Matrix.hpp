@@ -382,7 +382,7 @@ private:
 	ScalarType*		 	__vals;
 
 	/** static zero */
-	static const ScalarType __zero = static_cast<ScalarType>(0.0);
+	static const ScalarType __zero;
 
 	//%}
 

@@ -198,6 +198,7 @@ void VectorBase<ScalarType>::stCombine(const VectorBase& v1,const VectorBase& v2
 	for ( size_t i = 0 ; i < v2.size() ; ++ i )
 		v[i+n] = v2[i];
 }
+
 }// End of namespace COPT
 
 

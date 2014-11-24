@@ -318,6 +318,9 @@ const ScalarType& Triplet<ScalarType>::value()
 /**			Implementation of SpMatrixBase 		*/
 
 template<class ScalarType>
+const typename SpMatrixBase<ScalarType>::ScalarType SpMatrixBase<ScalarType>::__zero = static_cast<ScalarType>(0.0);
+
+template<class ScalarType>
 SpMatrixBase<ScalarType>::SpMatrixBase()
 	:
 	__rows(0),
@@ -349,9 +352,9 @@ SpMatrixBase<ScalarType>::SpMatrixBase(
 	__vals = new ScalarType[__elesize];
 	__colptr = new size_t[__cols+1];
 
-	copt_blas_copy(__elesize,rowind,1,__rowind,1);
-	copt_blas_copy(__elesize,vals,1,__vals,1);
-	copt_blas_copy(__cols+1,colptr,1,__colptr,1);
+	blas::copt_blas_copy(__elesize,rowind,1,__rowind,1);
+	blas::copt_blas_copy(__elesize,vals,1,__vals,1);
+	blas::copt_blas_copy(__cols+1,colptr,1,__colptr,1);
 }
 
 template<class ScalarType>
@@ -383,9 +386,9 @@ void SpMatrixBase<ScalarType>::setSparseMatrix(
 	__vals = new ScalarType[__elesize];
 	__colptr = new size_t[__cols+1];
 
-	copt_blas_copy(__elesize,rowind,1,__rowind,1);
-	copt_blas_copy(__elesize,vals,1,__vals,1);
-	copt_blas_copy(__cols+1,colptr,1,__colptr,1);
+	blas::copt_blas_copy(__elesize,rowind,1,__rowind,1);
+	blas::copt_blas_copy(__elesize,vals,1,__vals,1);
+	blas::copt_blas_copy(__cols+1,colptr,1,__colptr,1);
 }
 
 template<class ScalarType>
@@ -431,10 +434,10 @@ const ScalarType& SpMatrixBase<ScalarType>::operator()(
 	if(i>=__rows||j>=__cols)
 		throw COException("Sparse Matrix error, index out of range!");
 	size_t ip = __colptr[j],in=__colptr[j+1];
-	for ( int i = ip ; i < in ; ++ i )
+	for ( size_t ind = ip ; ind < in ; ++ ind )
 	{
-		if( i == __rowind[i] )
-			return __vals[i];
+		if( i == __rowind[ind] )
+			return __vals[ind];
 	}
 	return __zero;
 }
