@@ -278,6 +278,167 @@ void MatrixBase<ScalarType>::stCombineAlongColumn(const MatrixBase& m1,const Mat
 	}
 }
 
+/**			Implementation of Triplet			*/
+
+template<class ScalarType>
+Triplet<ScalarType>::Triplet(
+	const size_t r,
+	const size_t c,
+	const Scalar v)
+	:
+	__r(r),
+	__c(c),
+	__v(v)
+{
+}
+
+template<class ScalarType>
+Triplet<ScalarType>::~Triplet()
+{
+}
+
+template<class ScalarType>
+const size_t& Triplet<ScalarType>::rowIndex()
+{
+	return __r;
+}
+
+template<class ScalarType>
+const size_t& Triplet<ScalarType>::columnIndex()
+{
+	return __c;
+}
+
+template<class ScalarType>
+const ScalarType& Triplet<ScalarType>::value()
+{
+	return __v;
+}
+
+/**			Implementation of SpMatrixBase 		*/
+
+template<class ScalarType>
+SpMatrixBase<ScalarType>::SpMatrixBase()
+	:
+	__rows(0),
+	__cols(0),
+	__elesize(0),
+	__rowind(NULL),
+	__colptr(NULL),
+	__vals(NULL)
+{
+}
+
+template<class ScalarType>
+SpMatrixBase<ScalarType>::SpMatrixBase(
+	const size_t 					rows,
+	const size_t 					cols,
+	const size_t 					elesize,
+	const size_t*					rowind,
+	const size_t*					colptr,
+	const ScalarType*				vals)
+	:
+	__rows(rows),
+	__cols(cols),
+	__elesize(elesize),
+	__rowind(NULL),
+	__colptr(NULL),
+	__vals(NULL)
+{
+	__rowind = new size_t[__elesize];
+	__vals = new ScalarType[__elesize];
+	__colptr = new size_t[__cols+1];
+
+	copt_blas_copy(__elesize,rowind,1,__rowind,1);
+	copt_blas_copy(__elesize,vals,1,__vals,1);
+	copt_blas_copy(__cols+1,colptr,1,__colptr,1);
+}
+
+template<class ScalarType>
+SpMatrixBase<ScalarType>::~SpMatrixBase()
+{
+	if(__rowind)
+		SAFE_DELETE_ARRAY(__rowind);
+	if(__vals)
+		SAFE_DELETE_ARRAY(__vals);
+	if(__colptr)
+		SAFE_DELETE_ARRAY(__colptr);
+}
+
+template<class ScalarType>
+void SpMatrixBase<ScalarType>::setSparseMatrix(
+	const size_t 					rows,
+	const size_t 					cols,
+	const size_t 					size,
+	const size_t*					rowind,
+	const size_t*			 		colptr,
+	const ScalarType*			 	vals)
+{
+	clear();
+	__rows = rows;
+	__cols = cols;
+	__elesize = size;
+	
+	__rows = new size_t[__elesize];
+	__vals = new ScalarType[__elesize];
+	__colptr = new size_t[__cols+1];
+
+	copt_blas_copy(__elesize,rowind,1,__rowind,1);
+	copt_blas_copy(__elesize,vals,1,__vals,1);
+	copt_blas_copy(__cols+1,colptr,1,__colptr,1);
+}
+
+template<class ScalarType>
+void SpMatrixBase<ScalarType>::setFromTriplets(
+	const size_t rows,
+	const size_t cols,
+	const std::vector<Triplet>& triplets)
+{
+	clear();
+	__rows = rows;
+	__cols = cols;
+}
+
+template<class ScalarType>
+void SpMatrixBase<ScalarType>::clear()
+{
+	__rows = 0;
+	__cols = 0;
+	__elesize = 0;
+
+	if(__rowind)
+	{
+		SAFE_DELETE_ARRAY(__rowind);
+		__rowind = NULL;
+	}
+	if(__vals)
+	{
+		SAFE_DELETE_ARRAY(__vals);
+		__vals = NULL;
+	}
+	if(__colptr)
+	{
+		SAFE_DELETE_ARRAY(__colptr);
+		__colptr = NULL;
+	}
+}
+
+template<class ScalarType>
+const ScalarType& SpMatrixBase<ScalarType>::operator()(
+	const size_t i,
+	const size_t j) const
+{
+	if(i>=__rows||j>=__cols)
+		throw COException("Sparse Matrix error, index out of range!");
+	size_t ip = __colptr[j],in=__colptr[j+1];
+	for ( int i = ip ; i < in ; ++ i )
+	{
+		if( i == __rowind[i] )
+			return __vals[i];
+	}
+	return __zero;
+}
+
 }// End of namespace COPT
 
 #endif

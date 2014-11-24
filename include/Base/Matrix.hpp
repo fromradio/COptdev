@@ -289,7 +289,156 @@ public:
 		MatrixBase& m);
 	//%}
 
-};// End of class MatrixBaseß
+};// End of class MatrixBase
+
+
+/*
+ *		class Triplet for sparse matrix assignment
+ */
+template<class Scalar>
+struct Triplet
+{
+
+public:
+	typedef Scalar 				ScalarType;
+private:
+	/** private variables */
+	//%{
+
+	/** row index */
+	size_t				__r;
+
+	/** column index */
+	size_t 				__c;
+
+	/** value */
+	Scalar 				__v;
+
+	//%}
+
+	/** private constructors */
+	//%{
+	Triplet();
+	Triplet(const Triplet&);
+	//%}
+
+public:
+
+	/** constructor and deconstructor */
+	//%{
+
+	/** the only constructor */
+	Triplet(
+		const size_t r,
+		const size_t c,
+		const Scalar v);
+
+	~Triplet();
+	//%}
+
+	/** getter (no other setter is allowed) */
+	//%{
+
+	/** row index */
+	const size_t& rowIndex();
+
+	/** column index */
+	const size_t& columnIndex();
+
+	/** value */
+	const ScalarType& value();
+	//%}
+};
+
+/*		Sparse matrix class
+ *		the sparse matrix is designed for solve sparse linear systems
+ */
+template<class S>
+class SpMatrixBase
+{
+public:
+	typedef 	S 					ScalarType;
+	typedef 	Triplet<S>			Triplet;
+private:
+	/** private variables */
+	//%{
+
+	/** the number of rows */
+	size_t 				__rows;
+
+	/** the number of columns */
+	size_t 				__cols;
+
+	/** the number of elements */
+	size_t 				__elesize;
+
+	/** the indices of the rows */
+	size_t*				__rowind;
+
+	/** the col pointers */
+	size_t*				__colptr;
+
+	/** the values */
+	ScalarType*		 	__vals;
+
+	/** static zero */
+	static const ScalarType __zero = static_cast<ScalarType>(0.0);
+
+	//%}
+
+public:
+
+	/** constructor and deconstructor */
+	//%{
+
+	/** default constructor */
+	SpMatrixBase();
+
+	SpMatrixBase(
+		const size_t 				rows,
+		const size_t 				cols,
+		const size_t 				size,
+		const size_t*				rowind;
+		const sizt_t*			 	colptr,
+		const ScalarType*			vals);
+
+	/** deconstructor */
+	~SpMatrixBase();
+	//*}
+
+	/** getter and setter */
+	//%{
+
+	/** traditional setter of sparse matrix*/
+	void setSparseMatrix(
+		const size_t 					rows,
+		const size_t 					cols,
+		const size_t 					size,
+		const size_t*			 		rowind,
+		const size_t*			 		colptr,
+		const ScalarType*			 	vals);
+
+	/** set from triplets */
+	void setFromTriplets(
+		const size_t rows,
+		const size_t cols,
+		const std::vector<Triplet>& triplets);
+
+	/** clear the data */
+	void clear();
+
+	//%}
+
+	/** element access */
+	//%{
+
+	/** only const access is allowed */
+	const ScalarType& operator()(
+		const size_t i,
+		const size_t j) const;
+
+	//%}
+};
 
 }// End of namespace COPT
 #endif
