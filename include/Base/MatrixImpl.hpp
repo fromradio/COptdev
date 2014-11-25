@@ -524,7 +524,6 @@ void SpMatrixBase<ScalarType>::setFromTriplets(
 
 	__elesize = rowinds.size();
 
-	judgeRationality();
 }
 
 template<class ScalarType>
@@ -714,6 +713,10 @@ SpMatrixBase<ScalarType> SpMatrixBase<ScalarType>::operator+ ( const SpMatrixBas
 		vs[i] = *iter;
 	SpMatrixBase result;
 	result.setSparseMatrix(__rows,__cols,inds.size(),rowind,colptr,vs);
+
+	delete[]rowind;
+	delete[]colptr;
+	delete[]vs;
 	return result;
 }
 
@@ -780,6 +783,9 @@ SpMatrixBase<ScalarType> SpMatrixBase<ScalarType>::operator- ( const SpMatrixBas
 		vs[i] = *iter;
 	SpMatrixBase result;
 	result.setSparseMatrix(__rows,__cols,inds.size(),rowind,colptr,vs);
+	delete[]rowind;
+	delete[]colptr;
+	delete[]vs;
 	return result;
 }
 

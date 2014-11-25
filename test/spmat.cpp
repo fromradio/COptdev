@@ -25,6 +25,9 @@ int main(int argc,char* argv[])
 	for ( int i = 0 ; i <= cols ; ++ i )
 		colptr[i] = i;
 	SpMatrix mat(rows,cols,elesize,rowind,colptr,vals);
+	delete[]rowind;
+	delete[]colptr;
+	delete[]vals;
 	// std::cout<<mat(0,1)<<std::endl;
 	// std::cout<<mat(1,1)<<std::endl;  
 	// std::cout<<mat(9,9)<<std::endl;
@@ -61,7 +64,7 @@ int main(int argc,char* argv[])
 	v(1) = 1.0;
 	std::cout<<m*v<<std::endl;
 	std::cout<<m.toDenseMatrix()<<std::endl;
-	mat = 10  *mat ;
+	mat = 10*mat ;
 	std::cout<<mat.toDenseMatrix()<<std::endl;
 
 	// std::cout<<(m*mat).toDenseMatrix()<<std::endl;

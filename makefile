@@ -67,6 +67,13 @@ bin/spmat: obj/spmat.o
 	$(CC) obj/spmat.o $(DIR_LIB) -o $@ -lcblas -lblas
 obj/spmat.o:test/spmat.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
+
+# test for umfpack
+umfpack: bin/umfpack
+bin/umfpack: obj/umfpack.o
+	$(CC) obj/umfpack.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
+obj/umfpack.o:test/umfpack.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 
