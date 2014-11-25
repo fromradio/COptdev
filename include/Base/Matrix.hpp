@@ -319,7 +319,6 @@ private:
 	/** private constructors */
 	//%{
 	Triplet();
-	Triplet(const Triplet&);
 	//%}
 
 public:
@@ -340,15 +339,34 @@ public:
 	//%{
 
 	/** row index */
-	const size_t& rowIndex();
+	const size_t& rowIndex() const;
 
 	/** column index */
-	const size_t& columnIndex();
+	const size_t& columnIndex() const;
 
 	/** value */
-	const ScalarType& value();
+	const ScalarType& value() const;
 	//%}
 };
+
+/*		compare two triplets according to row index
+ *
+ */
+template<class Triplet>
+struct rowComparison
+{
+	bool operator()(const Triplet& t1,const Triplet& t2);
+};
+
+/*		compare two triplets accordint to column index
+ *
+ */
+template<class Triplet>
+struct columnComparison
+{
+	bool operator()(const Triplet& t1,const Triplet& t2);
+};
+
 
 /*		Sparse matrix class
  *		the sparse matrix is designed for solve sparse linear systems
@@ -360,6 +378,8 @@ public:
 	typedef 	S 					ScalarType;
 	typedef 	Triplet<S>			Triplet;
 private:
+
+	typedef 	VectorBase<S>		Vector;
 	/** private variables */
 	//%{
 
@@ -386,6 +406,14 @@ private:
 
 	//%}
 
+	/** private functions */
+	//%{
+
+	/** judge the rationality */
+	void judgeRationality();
+
+	//%}
+
 public:
 
 	/** constructor and deconstructor */
@@ -401,6 +429,9 @@ public:
 		const size_t*				rowind,
 		const size_t*			 	colptr,
 		const ScalarType*			vals);
+
+	SpMatrixBase(
+		const SpMatrixBase& );
 
 	/** deconstructor */
 	~SpMatrixBase();
@@ -418,16 +449,47 @@ public:
 		const size_t*			 		colptr,
 		const ScalarType*			 	vals);
 
+	/** overload of operator = */
+	SpMatrixBase& operator = (const SpMatrixBase& );
+
 	/** set from triplets */
 	void setFromTriplets(
 		const size_t rows,
 		const size_t cols,
-		const std::vector<Triplet>& triplets);
+		std::vector<Triplet>& triplets);
 
 	/** clear the data */
 	void clear();
 
+	/** get the row number */
+	const size_t& rows() const;
+
+	/** get the column number */
+	const size_t& cols() const;
+
+	/** get the element size */
+	const size_t& elementSize() const;
+
+	/** get the column pointer */
+	const size_t* columnPointer() const; 
+
+	/** get the row indices */
+	const size_t* rowIndex() const;
+
+	/** get the values */
+	const ScalarType* values() const;
+
+	/** scale with a scalar s */
+	void scale(const ScalarType s);
+
+	/** negative sign of the matrix */
+	void neg();
+
 	//%}
+
+
+
+
 
 	/** element access */
 	//%{
@@ -438,7 +500,42 @@ public:
 		const size_t j) const;
 
 	//%}
-};
+
+	/** operations */
+	//%{
+
+	/** summation */
+	SpMatrixBase operator+(const SpMatrixBase& mat) const;
+
+	/** subtraction */
+	SpMatrixBase operator-(const SpMatrixBase& mat) const;
+
+	/** negative sign */
+	SpMatrixBase operator-() const;
+
+	/** multiplication with another sparse matrix */
+	SpMatrixBase operator*(const SpMatrixBase& mat) const;
+
+	/** multiplication with vector */
+	Vector operator*(const Vector& vec) const;
+
+	/** multiplication with scalar */
+	SpMatrixBase operator*(const ScalarType s) const;
+
+	/** transform to a dense matrix */
+	MatrixBase<ScalarType> toDenseMatrix() const;
+
+	//%}
+
+}; // end of class SpMatrixBase
+
+
+/** Sparse matrix related operator */
+template<class ScalarType>
+SpMatrixBase<ScalarType> operator* (const ScalarType s,const SpMatrixBase<ScalarType>& mat);
+template<class ScalarType,class T>
+SpMatrixBase<ScalarType> operator* (const T s,const SpMatrixBase<ScalarType>& mat);
+
 
 }// End of namespace COPT
 #endif

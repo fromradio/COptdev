@@ -298,24 +298,48 @@ Triplet<ScalarType>::~Triplet()
 }
 
 template<class ScalarType>
-const size_t& Triplet<ScalarType>::rowIndex()
+const size_t& Triplet<ScalarType>::rowIndex() const
 {
 	return __r;
 }
 
 template<class ScalarType>
-const size_t& Triplet<ScalarType>::columnIndex()
+const size_t& Triplet<ScalarType>::columnIndex() const
 {
 	return __c;
 }
 
 template<class ScalarType>
-const ScalarType& Triplet<ScalarType>::value()
+const ScalarType& Triplet<ScalarType>::value() const
 {
 	return __v;
 }
 
+/** 		Implementation of rowComparison 	*/
+template<class Triplet>
+bool rowComparison<Triplet>::operator() (const Triplet& t1,const Triplet& t2)
+{
+	return t1.rowIndex()<t2.rowIndex();
+}
+
+/**			Implementation of columnComparison	*/
+template<class Triplet>
+bool columnComparison<Triplet>::operator() (const Triplet& t1,const Triplet& t2)
+{
+	return t1.columnIndex()<t2.columnIndex();
+}
+
 /**			Implementation of SpMatrixBase 		*/
+
+template<class ScalarType>
+void SpMatrixBase<ScalarType>::judgeRationality()
+{
+	for ( int i = 0 ; i < __elesize ; ++ i )
+	{
+		if ( __rowind[i] >= __rows )
+			throw COException("Sparse matrix not rational: row index out of range!");
+	}
+}
 
 template<class ScalarType>
 const typename SpMatrixBase<ScalarType>::ScalarType SpMatrixBase<ScalarType>::__zero = static_cast<ScalarType>(0.0);
@@ -355,6 +379,21 @@ SpMatrixBase<ScalarType>::SpMatrixBase(
 	blas::copt_blas_copy(__elesize,rowind,1,__rowind,1);
 	blas::copt_blas_copy(__elesize,vals,1,__vals,1);
 	blas::copt_blas_copy(__cols+1,colptr,1,__colptr,1);
+
+	judgeRationality();
+}
+
+template<class ScalarType>
+SpMatrixBase<ScalarType>::SpMatrixBase(
+	const SpMatrixBase& mat)
+{
+	setSparseMatrix(
+		mat.rows(),
+		mat.cols(),
+		mat.elementSize(),
+		mat.rowIndex(),
+		mat.columnPointer(),
+		mat.values());
 }
 
 template<class ScalarType>
@@ -382,24 +421,110 @@ void SpMatrixBase<ScalarType>::setSparseMatrix(
 	__cols = cols;
 	__elesize = size;
 	
-	__rows = new size_t[__elesize];
+	__rowind = new size_t[__elesize];
 	__vals = new ScalarType[__elesize];
 	__colptr = new size_t[__cols+1];
 
 	blas::copt_blas_copy(__elesize,rowind,1,__rowind,1);
 	blas::copt_blas_copy(__elesize,vals,1,__vals,1);
 	blas::copt_blas_copy(__cols+1,colptr,1,__colptr,1);
+
+	judgeRationality();
+}
+
+template<class ScalarType>
+SpMatrixBase<ScalarType>& SpMatrixBase<ScalarType>::operator=(const SpMatrixBase& mat)
+{
+	setSparseMatrix(
+		mat.rows(),
+		mat.cols(),
+		mat.elementSize(),
+		mat.rowIndex(),
+		mat.columnPointer(),
+		mat.values());
+	return *this;
 }
 
 template<class ScalarType>
 void SpMatrixBase<ScalarType>::setFromTriplets(
 	const size_t rows,
 	const size_t cols,
-	const std::vector<Triplet>& triplets)
+	std::vector<Triplet>& triplets)
 {
 	clear();
 	__rows = rows;
 	__cols = cols;
+	// sort the triplets according to the column index at first
+	std::sort(triplets.begin(),triplets.end(),columnComparison<Triplet>());
+	// compute how many elements there are in one column
+	size_t colind = 0 , ip = 0;
+	for ( size_t i = 0 ; i < triplets.size() ; ++ i )
+	{
+		if(triplets[i].columnIndex()>colind)
+		{
+			colind = triplets[i].columnIndex();
+			std::sort(triplets.begin()+ip,triplets.begin()+i,rowComparison<Triplet>());
+			ip = i;
+		}
+	}
+	// last sort
+	std::sort(triplets.begin()+ip,triplets.end(),rowComparison<Triplet>());
+	std::vector<size_t> 	colcounts(__cols,0);
+	std::list<size_t> 		rowinds;
+	std::list<ScalarType>	vals;
+	colind = 0 , ip = 0;
+	size_t count = 0;
+	for ( size_t i = 0 ; i < triplets.size() ; ++ i )
+	{
+		if(triplets[i].columnIndex()>colind)
+		{
+			colcounts[colind] = count;
+			colind = triplets[i].columnIndex();
+			count = 0;
+		}
+		
+		if(i==0)
+		{
+			rowinds.push_back(triplets[i].rowIndex());
+			vals.push_back(triplets[i].value());
+			++count;
+		}
+		else if(triplets[i].rowIndex()==triplets[i-1].rowIndex())
+		{
+			vals.back() += triplets[i].value();
+		}
+		else
+		{
+			rowinds.push_back(triplets[i].rowIndex());
+			vals.push_back(triplets[i].value());
+			++count;
+		}
+	}
+	// last column
+	colcounts[colind] = count;
+
+	__colptr = new size_t[__cols+1];
+	size_t columncount = 0;
+	for ( size_t i = 0 ; i < __cols ; ++ i )
+	{
+		__colptr[i] = columncount;
+		columncount += colcounts[i];
+	}
+	__colptr[__cols] = columncount;
+
+	__rowind = new size_t[rowinds.size()];
+	size_t i = 0;
+	for ( std::list<size_t>::iterator iter = rowinds.begin() ; iter != rowinds.end() ; ++ iter , ++ i )
+		__rowind[i] = *iter;
+
+	__vals = new ScalarType[vals.size()];
+	i = 0;
+	for ( typename std::list<ScalarType>::iterator iter = vals.begin() ; iter != vals.end() ; ++ iter , ++ i )
+		__vals[i] = *iter;
+
+	__elesize = rowinds.size();
+
+	judgeRationality();
 }
 
 template<class ScalarType>
@@ -427,6 +552,56 @@ void SpMatrixBase<ScalarType>::clear()
 }
 
 template<class ScalarType>
+const size_t& SpMatrixBase<ScalarType>::rows() const
+{
+	return __rows;
+}
+
+template<class ScalarType>
+const size_t& SpMatrixBase<ScalarType>::cols() const
+{
+	return __cols;
+}
+
+template<class ScalarType>
+const size_t& SpMatrixBase<ScalarType>::elementSize() const
+{
+	return __elesize;
+}
+
+template<class ScalarType>
+const size_t* SpMatrixBase<ScalarType>::columnPointer() const
+{
+	return __colptr;
+}
+
+template<class ScalarType>
+const size_t* SpMatrixBase<ScalarType>::rowIndex() const
+{
+	return __rowind;
+}
+
+template<class ScalarType>
+const ScalarType* SpMatrixBase<ScalarType>::values() const
+{
+	return __vals;
+}
+
+template<class ScalarType>
+void SpMatrixBase<ScalarType>::scale(const ScalarType s)
+{
+	for ( size_t i = 0 ; i < __elesize ; ++ i )
+		__vals[i] *= s;
+}
+
+template<class ScalarType>
+void SpMatrixBase<ScalarType>::neg()
+{
+	for ( size_t i = 0 ; i < __elesize ; ++ i )
+		__vals[i] = -vals[i];
+}
+
+template<class ScalarType>
 const ScalarType& SpMatrixBase<ScalarType>::operator()(
 	const size_t i,
 	const size_t j) const
@@ -440,6 +615,232 @@ const ScalarType& SpMatrixBase<ScalarType>::operator()(
 			return __vals[ind];
 	}
 	return __zero;
+}
+
+template<class ScalarType>
+SpMatrixBase<ScalarType> SpMatrixBase<ScalarType>::operator*(const SpMatrixBase& mat) const
+{
+	if(__cols != mat.rows() )
+		throw COException("Multiplication error: matrix size does not fit!");
+	std::list<Triplet> tris;
+	for ( size_t c = 0 ; c < __cols ; ++ c )
+	{
+		size_t ci = __colptr[c] , cn = __colptr[c+1];
+		for ( size_t r = ci ; r < cn ; ++ r )
+		{
+			size_t rind = __rowind[r];
+			// traverse mat
+			for ( size_t mc = 0 ; mc < mat.cols() ; ++ mc )
+			{
+				size_t mci = mat.columnPointer()[mc], mcn = mat.columnPointer()[mc+1];
+				for ( size_t mr = mci ; mr < mcn ; ++ mr )
+				{
+					if ( c == mat.rowIndex()[mr] )
+						tris.push_back(Triplet(rind,mc,__vals[r]*mat.values()[mr]));
+				}
+			}
+		}
+	}
+	std::vector<Triplet> triplets;
+	triplets.reserve(tris.size());
+	for ( typename std::list<Triplet>::iterator iter = tris.begin() ; iter != tris.end() ; ++ iter )
+		triplets.push_back(*iter);
+	SpMatrixBase result;
+	result.setFromTriplets(__rows,mat.cols(),triplets);
+	return result;
+}
+
+
+template<class ScalarType>
+SpMatrixBase<ScalarType> SpMatrixBase<ScalarType>::operator+ ( const SpMatrixBase& mat ) const
+{
+	if( __cols != mat.cols() || __rows != mat.rows() )
+		throw COException("Sparse matrix summation error: size does not fit!");
+	std::list<size_t> inds;
+	std::list<ScalarType> vals;
+	size_t *colptr = new size_t[__cols+1];
+	size_t count = 0;
+	for ( size_t c = 0 ; c < __cols ; ++ c )
+	{
+		colptr[c] = count;
+		size_t ci1 = __colptr[c],cn1 = __colptr[c+1],ci2 = mat.columnPointer()[c],cn2=mat.columnPointer()[c+1];
+		size_t i1 = ci1,i2=ci2;
+		while( i1<cn1 || i2<cn2 )
+		{
+			if( i1 < cn1 && i2 < cn2 )
+			{
+				if(__rowind[i1]==mat.rowIndex()[i2])
+				{
+					inds.push_back(__rowind[i1]);
+					vals.push_back(__vals[i1]+mat.values()[i2]);
+					++ i1;
+					++ i2;
+				}
+				else if(__rowind[i1]<mat.rowIndex()[i2])
+				{
+					inds.push_back(__rowind[i1]);
+					vals.push_back(__vals[i1]);
+					++ i1;
+				}
+				else
+				{
+					inds.push_back(mat.rowIndex()[i2]);
+					vals.push_back(mat.values()[i2]);
+					++ i2;
+				}
+			}
+			else if ( i1 < cn1 )
+			{
+				inds.push_back(__rowind[i1]);
+				vals.push_back(__vals[i1]);
+				++ i1;
+			}
+			else{
+				inds.push_back(mat.rowIndex()[i2]);
+				vals.push_back(mat.values()[i2]);
+				++ i2;
+			}
+			++ count;
+		}
+	}
+	colptr[__cols] = count;
+	size_t *rowind = new size_t[inds.size()];
+	size_t i = 0;
+	for ( std::list<size_t>::iterator iter = inds.begin() ; iter != inds.end() ; ++ iter , ++i )
+		rowind[i] = *iter;
+	i = 0;
+	ScalarType *vs = new ScalarType[vals.size()];
+	for ( typename std::list<ScalarType>::iterator iter = vals.begin() ; iter != vals.end() ; ++ iter , ++ i )
+		vs[i] = *iter;
+	SpMatrixBase result;
+	result.setSparseMatrix(__rows,__cols,inds.size(),rowind,colptr,vs);
+	return result;
+}
+
+template<class ScalarType>
+SpMatrixBase<ScalarType> SpMatrixBase<ScalarType>::operator- ( const SpMatrixBase& mat ) const
+{
+	if( __cols != mat.cols() || __rows != mat.rows() )
+		throw COException("Sparse matrix summation error: size does not fit!");
+	std::list<size_t> inds;
+	std::list<ScalarType> vals;
+	size_t *colptr = new size_t[__cols+1];
+	size_t count = 0;
+	for ( size_t c = 0 ; c < __cols ; ++ c )
+	{
+		colptr[c] = count;
+		size_t ci1 = __colptr[c],cn1 = __colptr[c+1],ci2 = mat.columnPointer()[c],cn2=mat.columnPointer()[c+1];
+		size_t i1 = ci1,i2=ci2;
+		while( i1<cn1 || i2<cn2 )
+		{
+			if( i1 < cn1 && i2 < cn2 )
+			{
+				if(__rowind[i1]==mat.rowIndex()[i2])
+				{
+					inds.push_back(__rowind[i1]);
+					vals.push_back(__vals[i1]-mat.values()[i2]);
+					++ i1;
+					++ i2;
+				}
+				else if(__rowind[i1]<mat.rowIndex()[i2])
+				{
+					inds.push_back(__rowind[i1]);
+					vals.push_back(__vals[i1]);
+					++ i1;
+				}
+				else
+				{
+					inds.push_back(mat.rowIndex()[i2]);
+					vals.push_back(-mat.values()[i2]);
+					++ i2;
+				}
+			}
+			else if ( i1 < cn1 )
+			{
+				inds.push_back(__rowind[i1]);
+				vals.push_back(__vals[i1]);
+				++ i1;
+			}
+			else{
+				inds.push_back(mat.rowIndex()[i2]);
+				vals.push_back(-mat.values()[i2]);
+				++ i2;
+			}
+			++ count;
+		}
+	}
+	colptr[__cols] = count;
+	size_t *rowind = new size_t[inds.size()];
+	size_t i = 0;
+	for ( std::list<size_t>::iterator iter = inds.begin() ; iter != inds.end() ; ++ iter , ++i )
+		rowind[i] = *iter;
+	i = 0;
+	ScalarType *vs = new ScalarType[vals.size()];
+	for ( typename std::list<ScalarType>::iterator iter = vals.begin() ; iter != vals.end() ; ++ iter , ++ i )
+		vs[i] = *iter;
+	SpMatrixBase result;
+	result.setSparseMatrix(__rows,__cols,inds.size(),rowind,colptr,vs);
+	return result;
+}
+
+template<class ScalarType>
+SpMatrixBase<ScalarType> SpMatrixBase<ScalarType>::operator- () const
+{
+	SpMatrixBase result(*this);
+	result.neg();
+	return result;
+}
+
+template<class ScalarType>
+typename SpMatrixBase<ScalarType>::Vector SpMatrixBase<ScalarType>::operator*(const Vector& vec) const
+{
+	if(__cols!=vec.size() )
+		throw COException("Multiplication error: size does not fit!");
+	Vector result(__rows);
+	for ( size_t i = 0 ; i < __cols ; ++ i )
+	{
+		size_t ip = __colptr[i] , in = __colptr[i+1];
+		for ( size_t r = ip ; r < in ; ++ r ){
+			result[__rowind[r]] += __vals[r]*vec[i];
+		}
+	}
+	return result;
+}
+
+
+template<class ScalarType,class T>
+SpMatrixBase<ScalarType> operator* (const T s,const SpMatrixBase<ScalarType>& mat)
+{
+	return mat.operator*(static_cast<ScalarType>(s));
+}
+
+template<class ScalarType>
+MatrixBase<ScalarType> SpMatrixBase<ScalarType>::toDenseMatrix() const
+{
+	MatrixBase<ScalarType> result(__rows,__cols);
+	for ( size_t i = 0 ; i < __cols ; ++ i )
+	{
+		size_t ip = __colptr[i] , in = __colptr[i+1];
+		for ( size_t r = ip ; r < in ; ++ r )
+		{
+			result(__rowind[r],i) = __vals[r];
+		}
+	}
+	return result;
+}
+
+template<class ScalarType>
+SpMatrixBase<ScalarType> SpMatrixBase<ScalarType>::operator* ( const ScalarType s ) const
+{
+	SpMatrixBase result(*this);
+	result.scale(s);
+	return result;
+}
+
+template<class ScalarType>
+SpMatrixBase<ScalarType> operator*(const ScalarType s,const SpMatrixBase<ScalarType>& mat)
+{
+	return mat.operator*(s);
 }
 
 }// End of namespace COPT
