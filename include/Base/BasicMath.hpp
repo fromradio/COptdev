@@ -5,8 +5,8 @@
 #include <vector>
 
 
-typedef Eigen::VectorXd Vector;
-typedef Eigen::MatrixXd Matrix;
+// typedef Eigen::VectorXd Vector;
+// typedef Eigen::MatrixXd Matrix;
 // class Vector:public Eigen::VectorXd
 // {
 // public:

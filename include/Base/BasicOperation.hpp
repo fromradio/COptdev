@@ -10,7 +10,9 @@ const double ZERO_THRESH = 1e-10;				// the threshold to judge whether a scalar 
 const int    MAX_SEARCH = 10000;				// default maximum number of search
 
 const double	DEFAULT_CONVERGE_ERROR = 1e-5; 	// default converge error
+const double 	DEFAULT_STEP_FOR_DIFFERENTIAL = 1e-5;
 
+const double INFTY = 1e10;
 
 /*
  *				Judge that whether a scalar is zero
@@ -32,6 +34,13 @@ inline void SAFE_DELETE_ARRAY(T* array)
 {
 	if ( array ) { delete[] array;}
 }
+
+/*		Basic class for iterator
+ */
+class Iterator
+{
+
+};
 
 };
 #endif

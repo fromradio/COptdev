@@ -1,0 +1,53 @@
+// Copyright (C) Ruimin Wang ruimin.wang13@gmail.com
+// Copyright (C) MathU
+
+#ifndef HEADER
+
+#define CBLAS 1
+#include <typeinfo>
+#include <iostream>
+#include <vector>
+#include <list>
+#include <set>
+#include <cmath>
+
+
+#include <complex>
+#include <ThirdParty/cblas.h>
+#include <algorithm>
+
+
+#define EIGEN 1
+
+#ifdef EIGEN
+#include <Eigen/Dense>
+#endif
+
+#include "Base/COException.hpp"
+#include "Base/Traits.hpp"
+
+
+#include "Base/CBlasWrapper.hpp"
+#include "Base/BasicOperation.hpp"
+#include "Base/Array.hpp"
+#include "Base/Vector.hpp"
+#include "Base/VectorImpl.hpp"
+#include "Base/Matrix.hpp"
+#include "Base/MatrixImpl.hpp"
+#include "Base/NumDifferential.hpp"
+#include "Base/Function.hpp"
+#include "Base/Solver.hpp"
+#include "FunctionRepository/FuncRepository.hpp"
+#include "Algorithms/Conjugate.hpp"
+#include "Algorithms/LineSearch.hpp"
+#include "Algorithms/BFGS.hpp"
+#include "Algorithms/LeastSquares.hpp"
+#include "Algorithms/AlternatingDirectionMethodOfMultipliers.hpp"
+#include "Algorithms/NonLinearSolver.hpp"
+#include "Algorithms/NonLinearSolverImpl.hpp"
+#include "Algorithms/Simplex.hpp"
+
+
+#include <time.h>
+
+#endif

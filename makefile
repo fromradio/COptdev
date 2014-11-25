@@ -3,25 +3,10 @@
 # powered by 'MathU'
 # copyright@MathU
 
-DIR_INC += -I/usr/local/Cellar/Eigen/3.2.1/include/eigen3 -I./include/Frame -I./include/LeastSquares -I./include/FunctionRepository
-DIR_SRC += ./src/Frame ./src/LeastSquares ./src
-DIR_OBJ = ./obj
-DIR_BIN = ./bin
+include ./Makefile.in
 
-SRC = $(foreach n, $(DIR_SRC),$(wildcard $(n)/*.cpp))
-# TT = $(patsubst %.cpp,%.o,$(SRC))
-# TT = $(notdir $(SRC))
-OBJ = $(patsubst %.cpp,$(DIR_OBJ)/%.o,$(notdir $(SRC)))
 
-TARGET = main
-BIN_TARGET = $(DIR_BIN)/$(TARGET)
 
-CC = g++
-CFLAGS = -g -Wall $(DIR_INC)
-
-vpath %.cpp ./src/Frame
-vpath %.cpp ./src/LeastSquares
-vpath %.cpp ./src
 
 #objects = test.o basicmath.o
 
@@ -29,9 +14,11 @@ vpath %.cpp ./src
 
 # vpath %.cpp include/Frame
 
+all:$(BIN_TARGET)
+
 
 $(BIN_TARGET):$(OBJ)
-	$(CC) $(OBJ) -o $@
+	$(CC) $(OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 
 $(DIR_OBJ)/%.o:%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -42,13 +29,64 @@ clean:
 
 
 # all debug
-all:
-	@echo $(BIN_TARGET)
-	@echo $(SRC)
-	@echo $(notdir $(SRC))
-	@echo $(OBJ)
-	@echo $(TT)
-	@echo "end"
+# all:
+# 	@echo $(BIN_TARGET)
+# 	@echo $(SRC)
+# 	@echo $(notdir $(SRC))
+# 	@echo $(OBJ)
+# 	@echo $(TT)
+# 	@echo "end"
+
+
+
+
+# test for matrix
+matrix: bin/matrix
+bin/matrix: obj/matrix.o
+	$(CC) obj/matrix.o $(DIR_LIB) -o $@ -lcblas -lblas
+obj/matrix.o: test/matrix.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# test for simplex method
+simplex: bin/simplex
+bin/simplex: obj/simplex.o
+	$(CC) obj/simplex.o $(DIR_LIB) -o $@ -lcblas -lblas
+obj/simplex.o: test/simplex.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# test for matrix vector
+vecmat: bin/vecmat
+bin/vecmat: obj/vecmat.o
+	$(CC) obj/vecmat.o $(DIR_LIB) -o $@ -lcblas -lblas
+obj/vecmat.o: test/matrix_vector.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# test for sparse matrix
+spmat: bin/spmat
+bin/spmat: obj/spmat.o
+	$(CC) obj/spmat.o $(DIR_LIB) -o $@ -lcblas -lblas
+obj/spmat.o:test/spmat.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# test for umfpack
+umfpack: bin/umfpack
+bin/umfpack: obj/umfpack.o
+	$(CC) obj/umfpack.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
+obj/umfpack.o:test/umfpack.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+#$(TEST_BIN): $(TEST_OBJ)
+#	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
+
+#$(TEST_OBJ):$(TEST_SRC)
+#	$(CC) $(CFLAGS) -c $< -o $@
+
+help: $(TEST_BIN) 
+	
+$(TEST_BIN): $(TEST_OBJ)
+	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
+$(TEST_OBJ):$(TEST_SRC)
+	$(CC) $(CFLAGS) -c $< -o $@
+
 
 
 #test : $(objects)

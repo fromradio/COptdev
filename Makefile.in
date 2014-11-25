@@ -1,0 +1,26 @@
+#
+# Makefile.in
+#
+
+DIR_INC += -I/usr/local/Cellar/Eigen/3.2.2/include/eigen3 -I./include/Base -I./include/LeastSquares -I./include/FunctionRepository -I./include/Algorithms -I./include/ThirdParty -I./include
+DIR_SRC += ./src/Frame ./src/LeastSquares ./src
+DIR_OBJ = ./obj
+DIR_BIN = ./bin
+
+# DIR_LIB = -LE:/libs
+
+SRC = $(foreach n, $(DIR_SRC),$(wildcard $(n)/*.cpp))
+# TT = $(patsubst %.cpp,%.o,$(SRC))
+# TT = $(notdir $(SRC))
+OBJ = $(patsubst %.cpp,$(DIR_OBJ)/%.o,$(notdir $(SRC)))
+
+
+TARGET = all
+BIN_TARGET = $(DIR_BIN)/$(TARGET)
+
+CC = g++
+CFLAGS = -g -Wall $(DIR_INC)
+
+vpath %.cpp ./src/Frame
+vpath %.cpp ./src/LeastSquares
+vpath %.cpp ./src
