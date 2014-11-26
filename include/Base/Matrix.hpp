@@ -296,7 +296,7 @@ public:
  *		class Triplet for sparse matrix assignment
  */
 template<class Scalar>
-struct Triplet
+struct TripletBase
 {
 
 public:
@@ -318,7 +318,7 @@ private:
 
 	/** private constructors */
 	//%{
-	Triplet();
+	TripletBase();
 	//%}
 
 public:
@@ -327,12 +327,12 @@ public:
 	//%{
 
 	/** the only constructor */
-	Triplet(
+	TripletBase(
 		const size_t r,
 		const size_t c,
 		const Scalar v);
 
-	~Triplet();
+	~TripletBase();
 	//%}
 
 	/** getter (no other setter is allowed) */
@@ -376,7 +376,7 @@ class SpMatrixBase
 {
 public:
 	typedef 	S 					ScalarType;
-	typedef 	Triplet<S>			Triplet;
+	typedef 	TripletBase<S>		Triplet;
 private:
 
 	typedef 	VectorBase<S>		Vector;

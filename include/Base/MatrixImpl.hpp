@@ -281,7 +281,7 @@ void MatrixBase<ScalarType>::stCombineAlongColumn(const MatrixBase& m1,const Mat
 /**			Implementation of Triplet			*/
 
 template<class ScalarType>
-Triplet<ScalarType>::Triplet(
+TripletBase<ScalarType>::TripletBase(
 	const size_t r,
 	const size_t c,
 	const ScalarType v)
@@ -293,24 +293,24 @@ Triplet<ScalarType>::Triplet(
 }
 
 template<class ScalarType>
-Triplet<ScalarType>::~Triplet()
+TripletBase<ScalarType>::~TripletBase()
 {
 }
 
 template<class ScalarType>
-const size_t& Triplet<ScalarType>::rowIndex() const
+const size_t& TripletBase<ScalarType>::rowIndex() const
 {
 	return __r;
 }
 
 template<class ScalarType>
-const size_t& Triplet<ScalarType>::columnIndex() const
+const size_t& TripletBase<ScalarType>::columnIndex() const
 {
 	return __c;
 }
 
 template<class ScalarType>
-const ScalarType& Triplet<ScalarType>::value() const
+const ScalarType& TripletBase<ScalarType>::value() const
 {
 	return __v;
 }
@@ -597,7 +597,7 @@ template<class ScalarType>
 void SpMatrixBase<ScalarType>::neg()
 {
 	for ( size_t i = 0 ; i < __elesize ; ++ i )
-		__vals[i] = -vals[i];
+		__vals[i] = -__vals[i];
 }
 
 template<class ScalarType>

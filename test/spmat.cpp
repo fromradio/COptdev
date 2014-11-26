@@ -6,7 +6,7 @@ typedef COPT::Array<FT> 				Array;
 typedef COPT::VectorBase<FT>			Vector;
 typedef COPT::MatrixBase<FT>	 		Matrix;
 typedef COPT::KernelTrait<FT>			kernel;
-typedef COPT::Triplet<FT>				Triplet;
+typedef COPT::TripletBase<FT>			Triplet;
 typedef COPT::SpMatrixBase<FT>			SpMatrix;
 
 int main(int argc,char* argv[])
