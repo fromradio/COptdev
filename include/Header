@@ -4,6 +4,7 @@
 #ifndef HEADER
 
 #define CBLAS 1
+#define USE_UMFPACK
 #include <typeinfo>
 #include <iostream>
 #include <vector>
@@ -14,6 +15,7 @@
 
 #include <complex>
 #include <ThirdParty/cblas.h>
+#include <umfpack.h>
 #include <algorithm>
 
 
@@ -23,12 +25,13 @@
 #include <Eigen/Dense>
 #endif
 
+#include "Base/BasicOperation.hpp"
 #include "Base/COException.hpp"
 #include "Base/Traits.hpp"
 
 
 #include "Base/CBlasWrapper.hpp"
-#include "Base/BasicOperation.hpp"
+#include "Base/UmfPackWrapper.hpp"
 #include "Base/Array.hpp"
 #include "Base/Vector.hpp"
 #include "Base/VectorImpl.hpp"

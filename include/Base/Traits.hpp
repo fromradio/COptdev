@@ -74,6 +74,29 @@ template<>
 struct is_complex_double<std::complex<double> >
 { static const bool value = true;};
 
+template<class T>
+struct is_size
+{ static const bool value = false;};
+
+// template<>
+// struct is_size<size_t>
+// { static const bool value = true;};
+
+// template<>
+// struct is_size<longsize>
+// { static const boll value = true;};
+
+// template<class T>
+// struct integer_type
+// {typedef T type;};
+// template<>
+// struct integer_type<size_t>
+// { typedef int 	type;};
+
+// template<>
+// struct integer_type<longsize>
+// { typedef COPTlong longsize;};
+
 
 
 template<class T>
