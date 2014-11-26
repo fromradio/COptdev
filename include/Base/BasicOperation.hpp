@@ -4,7 +4,16 @@
 namespace COPT
 {
 
+/** COPTlong */
+#ifndef COPTlong
+#ifdef _WIN64
+#define COPTlong __int64
+#else
+#define COPTlong long
+#endif
+#endif
 
+#define longsize unsigned long
 
 const double ZERO_THRESH = 1e-10;				// the threshold to judge whether a scalar is zero
 const int    MAX_SEARCH = 10000;				// default maximum number of search
@@ -42,5 +51,17 @@ class Iterator
 
 };
 
+/** 	base class without default constructor */
+class nondefaultconstructor
+{
+	nondefaultconstructor();
 };
+
+/**		base class who is not copyable */
+class noncopyable
+{
+	noncopyable(const noncopyable& );
+};
+
+} // End of namespace COPT
 #endif

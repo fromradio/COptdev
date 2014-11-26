@@ -14,11 +14,11 @@
 namespace COPT
 {
 // declaration
-template <class FT>
+template <class FT,class Size>
 class MatrixBase;
 
-template <class FT>
-class VectorBase : public Array<FT>{
+template <class FT,class Size = size_t>
+class VectorBase : public Array<FT,Size>{
 public:
 	// the type of float number
 	typedef 				Array<FT>				Arr;
@@ -37,7 +37,7 @@ public:
 			if data is NULL, a zero vector is constructed
 	*/
 
-	VectorBase( const size_t size , ScalarType* data = NULL )
+	VectorBase( const Size size , ScalarType* data = NULL )
 		:
 		Arr(size , data)
 	{
@@ -59,7 +59,7 @@ public:
 		}
 	}
 
-	VectorBase( const size_t size , const referred_array& tag , ScalarType* data ,const size_t inter = 1)
+	VectorBase( const Size size , const referred_array& tag , ScalarType* data ,const Size inter = 1)
 		:
 		Arr(size,tag,data,inter)
 	{
@@ -112,8 +112,8 @@ public:
 	}
 
 	/** Matlab-like element assignment */
-	ScalarType& operator() (const size_t i );
-	const ScalarType& operator() (const size_t i )const ;
+	ScalarType& operator() (const Size i );
+	const ScalarType& operator() (const Size i )const ;
 
 	/** overload operations*/
 	//%{
@@ -226,7 +226,7 @@ public:
 	 *			/param size:		the size of the VectorBase
 	 *			/param i:			the index of non-zero element
 	 */
-	static VectorBase vecE(size_t size,int i)
+	static VectorBase vecE(Size size,int i)
 	{
 		if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
 		VectorBase vec(size);
@@ -238,7 +238,7 @@ public:
 	 *			/param i:			the index of non-zero element
 	 *			/param s:			the value of non-zero element
 	 */
-	static VectorBase vecE(size_t size,int i,const ScalarType s)
+	static VectorBase vecE(Size size,int i,const ScalarType s)
 	{
 		if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
 		VectorBase vec(size);
@@ -248,18 +248,18 @@ public:
 
 	/*			transpose operations
 	 */
-	MatrixBase<ScalarType> mulTrans(const VectorBase& vec) const;
+	MatrixBase<ScalarType,Size> mulTrans(const VectorBase& vec) const;
 
 	/*			the transpose of the vector multiplies a matrix
 	 */
-	VectorBase transMul(const MatrixBase<ScalarType>& mat) const;
+	VectorBase transMul(const MatrixBase<ScalarType,Size>& mat) const;
 
 	/** blocking operations */
 	//%{
-	VectorBase block(const std::set<size_t>& indices)const;
-	void blockFromVector(const VectorBase& vec,const std::set<size_t>& indices);
-	VectorBase block(const std::vector<size_t>& indices) const;
-	void blockFromVector(const VectorBase& vec,const std::vector<size_t>& indices);
+	VectorBase block(const std::set<Size>& indices)const;
+	void blockFromVector(const VectorBase& vec,const std::set<Size>& indices);
+	VectorBase block(const std::vector<Size>& indices) const;
+	void blockFromVector(const VectorBase& vec,const std::vector<Size>& indices);
 	//%}
 
 	/** combination operations */

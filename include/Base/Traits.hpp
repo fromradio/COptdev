@@ -85,22 +85,22 @@ struct is_scalar
 
 
 
-template<class T>
+template<class T,class Size>
 class VectorBase;
-template<class T>
+template<class T,class Size>
 class MatrixBase;
 
 /*		A trait class describing basic types that might be
  *		used in a numerical solver. A solver should take trait
  *		as template for flexibility.
  */
-template<class T>
+template<class T,class Size = size_t>
 class KernelTrait
 {
 public:
-	typedef T 					ScalarType;
-	typedef VectorBase<T>		Vector;
-	typedef MatrixBase<T>		Matrix;
+	typedef T 						ScalarType;
+	typedef VectorBase<T,Size>			Vector;
+	typedef MatrixBase<T,Size>			Matrix;
 };
 
 

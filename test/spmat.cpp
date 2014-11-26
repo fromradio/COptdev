@@ -6,11 +6,12 @@ typedef COPT::Array<FT> 				Array;
 typedef COPT::VectorBase<FT>			Vector;
 typedef COPT::MatrixBase<FT>	 		Matrix;
 typedef COPT::KernelTrait<FT>			kernel;
-typedef COPT::TripletBase<FT>			Triplet;
+typedef COPT::TripletBase<FT>		 	Triplet;
 typedef COPT::SpMatrixBase<FT>			SpMatrix;
 
 int main(int argc,char* argv[])
 {
+	std::cout<<"!!!!"<<std::endl; 
 	size_t rows = 10;
 	size_t cols = 10;
 	size_t elesize = 10;
@@ -71,5 +72,8 @@ int main(int argc,char* argv[])
 	std::cout<<(m+mat).toDenseMatrix()<<std::endl;
 	std::cout<<(m-mat).toDenseMatrix()<<std::endl; 
 	std::cout<<(mat-m).toDenseMatrix()<<std::endl;
-	std::cout<<((mat-m)*mat).toDenseMatrix()<<std::endl;
+	std::cout<<((mat-m)*mat).toDenseMatrix()<<std::endl; 
+
+	SpMatrix mm(m);
+	std::cout<<mm.toDenseMatrix()<<std::endl;
 }
