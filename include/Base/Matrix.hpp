@@ -367,15 +367,19 @@ struct columnComparison
 	bool operator()(const Triplet& t1,const Triplet& t2);
 };
 
-
 /*		Sparse matrix class
  *		the sparse matrix is designed for solve sparse linear systems
  */
+
+template<class SpMatrix>
+class UMFLinearSolver;
+
 template<class S,class Size = size_t>
 class SpMatrixBase
 {
 public:
 	typedef 	S 						ScalarType;
+	typedef  	Size 					SizeType;
 	typedef 	TripletBase<S,Size>		Triplet;
 private:
 
@@ -524,6 +528,9 @@ public:
 
 	/** transform to a dense matrix */
 	MatrixBase<ScalarType,Size> toDenseMatrix() const;
+
+	/** solve a linear system */
+	VectorBase<ScalarType,Size> solve(const VectorBase<ScalarType,Size>& vec);
 
 	//%}
 

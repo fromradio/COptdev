@@ -21,7 +21,7 @@ template <class FT,class Size = size_t>
 class VectorBase : public Array<FT,Size>{
 public:
 	// the type of float number
-	typedef 				Array<FT>				Arr;
+	typedef 				Array<FT,Size>			Arr;
 	typedef 				FT						ScalarType;
 
 public:

@@ -2,18 +2,18 @@
 
 typedef double		 					FT;
 typedef COPT::Array<FT> 				Array;
-typedef COPT::VectorBase<FT>			Vector;
-typedef COPT::MatrixBase<FT>	 		Matrix;
-typedef COPT::SpMatrixBase<FT>			SpMatrix;
-typedef COPT::UMFLinearSolver<FT>	UMFPackSolver;
+typedef COPT::VectorBase<FT,long>			Vector;
+typedef COPT::MatrixBase<FT,long>	 		Matrix;
+typedef COPT::SpMatrixBase<FT,long>			SpMatrix;
+typedef COPT::UMFLinearSolver<SpMatrix>	UMFPackSolver;
 
 int main(int argc , char* argv[])
 {
-	size_t rows = 10;
-	size_t cols = 10;
-	size_t elesize = 10;
-	size_t* rowind = new size_t[elesize];
-	size_t* colptr = new size_t[cols+1];
+	long rows = 10;
+	long cols = 10;
+	long elesize = 10;
+	long* rowind = new long[elesize];
+	long* colptr = new long[cols+1];
 	FT*	vals = new FT[elesize];
 	for ( int i = 0 ; i < elesize ; ++ i )
 	{
@@ -22,10 +22,16 @@ int main(int argc , char* argv[])
 	}
 	for ( int i = 0 ; i <= cols ; ++ i )
 		colptr[i] = i;
-	SpMatrix mat(rows,cols,elesize,rowind,colptr,vals);
+	SpMatrix mat(rows,cols,elesize,colptr,rowind,vals);
+	mat = 2*mat;
+
+	UMFPackSolver solver(mat);
+	// solver.printInfo();
+	Vector v(10);
+	v(0) = 1.0;
+	std::cout<<solver.solve(v)<<std::endl;
+	std::cout<<mat.solve(v)<<std::endl;
 	delete[]rowind;
 	delete[]colptr;
 	delete[]vals;
-	
-	UMFPackSolver solver(mat.elementSize(),mat.columnPointer(),mat.rowIndex(),mat.values());
 }

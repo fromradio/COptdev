@@ -356,29 +356,31 @@ SpMatrixBase<ScalarType,Size>::SpMatrixBase()
 {
 }
 
+int umfpack_symbolic(
+	int rows,int cols,
+	const COPTlong* colptr,const COPTlong* rowind,const double* vals,void **Symbolic,
+	const double* Control,double* Info);
+
 template<class ScalarType,class Size>
 SpMatrixBase<ScalarType,Size>::SpMatrixBase(
-	const Size 					rows,
-	const Size 					cols,
-	const Size 					elesize,
-	const Size*					colptr,
-	const Size*					rowind,
+	const Size 						rows,
+	const Size 						cols,
+	const Size 						elesize,
+	const Size*						colptr,
+	const Size*						rowind,
 	const ScalarType*				vals)
 	:
 	__rows(rows),
 	__cols(cols),
 	__elesize(elesize),
-	__colptr(NULL),
-	__rowind(NULL),
-	__vals(NULL)
+	__colptr(new Size[cols+1]),
+	__rowind(new Size[elesize]),
+	__vals(new ScalarType[elesize])
 {
-	__rowind = new Size[__elesize];
-	__vals = new ScalarType[__elesize];
-	__colptr = new Size[__cols+1];
 
+	blas::copt_blas_copy(__cols+1,colptr,1,__colptr,1);
 	blas::copt_blas_copy(__elesize,rowind,1,__rowind,1);
 	blas::copt_blas_copy(__elesize,vals,1,__vals,1);
-	blas::copt_blas_copy(__cols+1,colptr,1,__colptr,1);
 
 	judgeRationality();
 }
@@ -837,6 +839,12 @@ MatrixBase<ScalarType,Size> SpMatrixBase<ScalarType,Size>::toDenseMatrix() const
 		}
 	}
 	return result;
+}
+
+template<class ScalarType,class Size>
+VectorBase<ScalarType,Size> SpMatrixBase<ScalarType,Size>::solve(const VectorBase<ScalarType,Size>& vec)
+{
+	return UMFLinearSolver<SpMatrixBase>(*this).solve(vec);
 }
 
 template<class ScalarType,class Size>

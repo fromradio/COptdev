@@ -85,94 +85,234 @@ inline int umfpack_solve(
 
 //%}
 
-template<class Scalar,class Size = size_t >
+template<class SpMatrix>
 class UMFLinearSolver
 	:
 	noncopyable
 {
 private:
-
-	// typedef 		integer_type<Size>		Integer;
+	typedef		typename SpMatrix::ScalarType		Scalar;
+	typedef 	typename SpMatrix::SizeType			Size;
 
 	/**	private variables */
 	//%{
 
-	/** number of rows */
-	const Size 		__rows;
-
-	/** number of columns */
-	const Size 		__cols;
-
-	/** number of non-zero elements */
-	const Size  	__nnz;
-
-	/** column pointer */
-	const Size* 	__colptr;
-
-	/** row indices */
-	const Size* 	__rowind;
-
-	/** pointer to values */
-	const Scalar* 	__vals;
+	/** the sparse matrix */
+	const SpMatrix& 	__mat;
 
 	/** umfpack numeric */
-	void**			__numeric;
+	void*				__numeric;
 
 	/** umfpack numeric */
-	void**			__symbolic;
+	void*				__symbolic;
 
 	/** UMFPack Control */
-	double* 		__control;
+	double* 			__control;
 
 	/** UMFPack Info */
-	double*			__info;
+	double*				__info;
+
+	/** whether warning happens */
+	bool				__haswarning;
+
+	/** whether error happens */
+	bool				__haserror;
+
+	/** status information */
+	std::string 		__info_str;
 
 	//%}
 
 	UMFLinearSolver();
+
+	void analyzeStatus(const int status);
 public:
 
-	UMFLinearSolver(
-		const Size rows,
-		const Size cols,
-		const Size nnz,
-		const Size* colptr,
-		const Size* rowind,
-		const Scalar* vals);
+	UMFLinearSolver( const SpMatrix& mat);
 	~UMFLinearSolver();
 
 	/** given the matrix first analyze the symbolic */
-	
+	void analyzeSymbolic();
+
+	/** analyze numeric */
+	void analyzeNumeric();
+
+	/** solve a linear system */
+	VectorBase<Scalar,Size> solve(const VectorBase<Scalar,Size>& vec);
+
+	/** print information */
+	void printInfo();
+
 };
 
 /** 		Implementation			*/
-template<class Scalar,class Size>
-UMFLinearSolver<Scalar,Size>::UMFLinearSolver(
-	const Size rows,
-	const Size cols,
-	const Size nnz,
-	const Size* colptr,
-	const Size* rowind,
-	const Scalar* vals)
-	:
-	__rows(rows),
-	__cols(cols),
-	__nnz(nnz),
-	__colptr(colptr),
-	__rowind(rowind),
-	__vals(vals),
-	__control(new double[UMFPACK_CONTROL]),
-	__info(new double[UMFPACK_INFO])
+
+template<class SpMatrix>
+void UMFLinearSolver<SpMatrix>::analyzeStatus( const int status )
 {
+	if ( status == 0 )
+	{
+		// everythign is ok
+		return;
+	}
+	else if ( status > 0 )
+	{
+		// there is some warning
+		__haswarning = true;
+		switch (status)
+		{
+			case 1:
+			{
+				__info_str.append("UMFPack Warning: matrix is singular. There are exact zeros on the diagonal of U.\n");
+			}
+			break;
+			case 2:
+			{
+				__info_str.append("UMFPack Warning: the determinant is nonzero, but smaller in magnitude than the smallest positive floating-point number.\n");
+			}
+			break;
+			case 3:
+			{
+				__info_str.append("UMFPack Warning: the determinant is larger in magnitude than the largest positive floating-point number (IEEE Inf).\n");
+			}
+			break;
+			default:
+			{
+				__info_str.append("UMFPack Warning: unknown warning happes!\n");
+			}
+			break;
+		}
+	}
+	else
+	{
+		// error happens
+		__haserror = true;
+		switch (status)
+		{
+			case -1:
+			{
+				__info_str.append("UMFPack Error: out of memory!\n");
+			}
+			break;
+			case -3:
+			{
+				__info_str.append("UMFPack Error: Numeric object is invalid. You should check umfpack user guide for further infomation!\n");
+			}
+			break;
+			case -4:
+			{
+				__info_str.append("UMFPack Error: Symbolic object is invalid. You should check umfpack user guide for further infomation!\n");
+			}
+			break;
+			case -5:
+			{
+				__info_str.append("UMFPack Error: A NULL pointer is passed while it need to be present. Check that whether Symbolic or Numeric is NULL or not!\n");
+			}
+			break;
+			case -6:
+			{
+				__info_str.append("UMFPack Error: the number of rows and columns should be greater than zero!\n");
+			}
+			break;
+			case -8:
+			{
+				__info_str.append("UMFPack Error: the matrix is invalid!\n");
+			}
+			break;
+			case -11:
+			{
+				__info_str.append("UMFPack Error: different pattern now. Check that whether that you change the matrix between symbolic and numeric factorization.\n");
+			}
+			break;
+			case -13:
+			{
+				__info_str.append("UMFPack Error: sys system argument is invalid!\n");
+			}
+			break;
+			case -15:
+			{
+				__info_str.append("UMFPack Error: the provided permutation vector is invalid!\n");
+			}
+			break;
+			case -17:
+			{
+				__info_str.append("UMFPack Error: file I/O error happens when saving or loading Numeric or Symbolic object!\n");
+			}
+			break;
+			case -18:
+			{
+				__info_str.append("UMFPack Error: the ordering method failed!\n");
+			}
+			break;
+			case -911:
+			{
+				__info_str.append("UMFPack Error: an internal error has occured!\n");
+			}
+			break;
+			default:
+			{
+				__info_str.append("UMFPack Error: unknown error occured!\n");
+			}
+			break;
+		}
+	}
 }
 
-template<class Scalar,class Size>
-UMFLinearSolver<Scalar,Size>::~UMFLinearSolver()
+template<class SpMatrix>
+UMFLinearSolver<SpMatrix>::UMFLinearSolver(
+	const SpMatrix& mat)
+	:
+	__mat(mat),
+	__control(new double[UMFPACK_CONTROL]),
+	__info(new double[UMFPACK_INFO]),
+	__haswarning(false),
+	__haserror(false)
 {
-	umfpack_free_symbolic(__symbolic,Scalar(),Size());
-	umfpack_free_numeric(__numeric,Scalar(),Size());
+	analyzeSymbolic();
+	analyzeNumeric();
+
+	if(__haswarning||__haserror)
+		printInfo();
+	else
+		__info_str.append("factorization success!");
+}
+
+template<class SpMatrix>
+UMFLinearSolver<SpMatrix>::~UMFLinearSolver()
+{
+	umfpack_free_symbolic(&__symbolic,Scalar());
+	umfpack_free_numeric(&__numeric,Scalar());
 	delete[] __control;
 	delete[] __info;
+}
+
+template<class SpMatrix>
+void UMFLinearSolver<SpMatrix>::analyzeSymbolic()
+{
+	int status = umfpack_symbolic(__mat.rows(),__mat.cols(),__mat.columnPointer(),__mat.rowIndex(),__mat.values(),&__symbolic,__control,__info);
+	analyzeStatus(status);
+}
+
+template<class SpMatrix>
+void UMFLinearSolver<SpMatrix>::analyzeNumeric()
+{
+	int status = umfpack_numeric(__mat.columnPointer(),__mat.rowIndex(),__mat.values(),__symbolic,&__numeric,__control,__info);
+	analyzeStatus(status);
+}
+
+template<class SpMatrix>
+VectorBase<typename SpMatrix::ScalarType,typename SpMatrix::SizeType> UMFLinearSolver<SpMatrix>::solve(const VectorBase<Scalar,Size>& vec)
+{
+	Scalar* x= new Scalar[vec.size()];
+	umfpack_solve(UMFPACK_A,__mat.columnPointer(),__mat.rowIndex(),__mat.values(),x,vec.dataPtr(),__numeric,__control,__info);
+	return VectorBase<Scalar,Size>(vec.size(),x);
+	delete[]x;
+}
+
+template<class SpMatrix>
+void UMFLinearSolver<SpMatrix>::printInfo()
+{
+	std::cerr<<__info_str<<std::endl;
 }
 
 }// End of namespace COPT

@@ -25,7 +25,7 @@ int main(int argc,char* argv[])
 	}
 	for ( int i = 0 ; i <= cols ; ++ i )
 		colptr[i] = i;
-	SpMatrix mat(rows,cols,elesize,rowind,colptr,vals);
+	SpMatrix mat(rows,cols,elesize,colptr,rowind,vals);
 	delete[]rowind;
 	delete[]colptr;
 	delete[]vals;
