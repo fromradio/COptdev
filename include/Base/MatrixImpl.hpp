@@ -85,7 +85,15 @@ const typename MatrixBase<ScalarType,Size>::ScalarType& MatrixBase<ScalarType,Si
 
 template<class ScalarType,class Size>
 VectorBase<ScalarType,Size> MatrixBase<ScalarType,Size>::row(const Size num){
-	if ( num >= __rows )
+	if ( num >= __rows || num < 0 )
+		throw COException("MatrixBase error: row index out of range!");
+	else
+		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
+}
+
+template<class ScalarType,class Size>
+const VectorBase<ScalarType,Size> MatrixBase<ScalarType,Size>::row(const Size num )const {
+	if ( num >= __rows || num < 0 )
 		throw COException("MatrixBase error: row index out of range!");
 	else
 		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
@@ -93,7 +101,15 @@ VectorBase<ScalarType,Size> MatrixBase<ScalarType,Size>::row(const Size num){
 
 template<class ScalarType,class Size>
 VectorBase<ScalarType,Size> MatrixBase<ScalarType,Size>::col(const Size num){
-	if ( num >= __cols )
+	if ( num >= __cols || num < 0 )
+		throw COException("MatrixBase error: col index out of range!");
+	else
+		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
+}
+
+template<class ScalarType,class Size>
+const VectorBase<ScalarType,Size> MatrixBase<ScalarType,Size>::col(const Size num) const{
+	if ( num >= __cols || num < 0 )
 		throw COException("MatrixBase error: col index out of range!");
 	else
 		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
@@ -201,14 +217,46 @@ void MatrixBase<ScalarType,Size>::blockFromMatrix(const MatrixBase& mat,const st
 	}
 }
 
+template<class ScalarType,class Size> template<class InputIterator>
+void MatrixBase<ScalarType,Size>::blockFromMatrix(
+	const MatrixBase& mat,
+	const InputIterator& rowbegin,
+	const InputIterator& rowend,
+	const InputIterator& colbegin,
+	const InputIterator& colend)
+{
+	// count the number of columns and rows at first
+	Size rownum = 0, colnum = 0;
+	for (InputIterator iter = rowbegin ; iter != rowend ; ++ iter )
+		++ rownum;
+	for (InputIterator iter = colbegin ; iter != colend ; ++ iter )
+		++ colnum;
+	this->resize(rownum,colnum);
+	Size r = 0, c = 0;
+	for ( InputIterator ri = rowbegin ; ri != rowend ; ++ ri )
+	{
+		c = 0;
+		if ( *ri >= mat.rows () )
+			throw COException("Index out of range in matrix blocking!");
+		for ( InputIterator ci = colbegin ; ci != colend ; ++ ci )
+		{
+			if ( *ci >= mat.cols() )
+				throw COException("Column index out of range in matrix blocking!");
+			this->operator()(r,c) = mat(*ri,*ci);
+			++ c;
+		}
+		++ r;
+	}
+}
+
 template<class ScalarType,class Size>
 void MatrixBase<ScalarType,Size>::columnBlockFromMatrix(const MatrixBase& mat,const std::vector<Size>& colnums)
 {
 	this->resize(mat.rows(),colnums.size());
 	
-	for ( int r = 0 ; r < mat.rows() ; ++ r )
+	for ( Size r = 0 ; r < mat.rows() ; ++ r )
 	{
-		for ( int c = 0 ; c < colnums.size() ; ++ c )
+		for ( Size c = 0 ; c < colnums.size() ; ++ c )
 		{
 			if(colnums[c]>=mat.cols())
 				throw COException("Index out of range in matrix blocking!");
@@ -217,17 +265,64 @@ void MatrixBase<ScalarType,Size>::columnBlockFromMatrix(const MatrixBase& mat,co
 	}
 }
 
+template<class ScalarType,class Size> template<class InputIterator>
+void MatrixBase<ScalarType,Size>::columnBlockFromMatrix(
+	const MatrixBase& mat,
+	const InputIterator& colbegin,
+	const InputIterator& colend)
+{
+	// count the number of columns
+	Size colnum = 0;
+	for ( InputIterator iter = colbegin ; iter != colend ; ++ iter )
+		++ colnum;
+	this->resize(mat.rows(),colnum);
+	for ( Size r = 0 ; r < mat.rows() ; ++ r )
+	{
+		Size c = 0;
+		for ( InputIterator ci = colbegin ; ci != colend ; ++ ci )
+		{
+			if( *ci >= mat.cols())
+				throw COException("Column index out of range in matrix blocking!");
+			this->operator()(r,c) = mat(r,*ci);
+			++ c;
+		}
+	}
+}
+
 template<class ScalarType,class Size>
 void MatrixBase<ScalarType,Size>::rowBlockFromMatrix(const MatrixBase& mat,const std::vector<Size>& rownums)
 {
 	this->resize(rownums.size(),mat.cols());
-	for ( int r = 0 ; r < rownums.size() ; ++ r )
+	for ( Size r = 0 ; r < rownums.size() ; ++ r )
 	{
 		if (rownums[r]>=mat.rows())
 			throw COException("Index out of range in matrix blocking!");
-		for ( int c = 0 ; c < mat.cols() ; ++ c )
+		for ( Size c = 0 ; c < mat.cols() ; ++ c )
 		{
 			this->operator()(r,c)=mat(rownums[r],c);
+		}
+	}
+}
+
+template<class ScalarType, class Size> template<class InputIterator>
+void MatrixBase<ScalarType,Size>::rowBlockFromMatrix(
+	const MatrixBase& mat,
+	const InputIterator& rowbegin,
+	const InputIterator& rowend)
+{
+	// count the number of rows
+	Size rownum = 0;
+	for ( InputIterator iter = rowbegin ; iter != rowend ; ++ iter )
+		++ rownum;
+	this->resize(rownum,mat.cols());
+	Size r = 0;
+	for ( InputIterator ri = rowbegin ; ri != rowend ; ++ ri )
+	{
+		if ( *ri >= mat.rows() || *ri < 0 )
+			throw COException("Index out of range in matrix blocking!");
+		for ( Size c = 0 ; c < mat.cols() ; ++ c )
+		{
+			this->operator()(r,c) = mat(*ri,c);
 		}
 	}
 }

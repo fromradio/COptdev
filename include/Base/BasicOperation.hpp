@@ -21,6 +21,13 @@ const double 	DEFAULT_STEP_FOR_DIFFERENTIAL = 1e-5;
 
 const double INFTY = 1e10;
 
+template<class T>
+struct Infty{
+	static inline T maximal(){
+		return std::numeric_limits<T>::has_infinity()?std::numeric_limits<T>::infinity(): std::numeric_limits<T>::max();
+	}
+};
+
 /*
  *				Judge that whether a scalar is zero
  */

@@ -15,7 +15,7 @@ namespace COPT
  */
 template<class ScalarType,class Size>
 VectorBase<ScalarType,Size>::VectorBase()
-	:Array<ScalarType>()
+	:Array<ScalarType,Size>()
 {
 }
 
@@ -101,6 +101,14 @@ bool VectorBase<ScalarType,Size>::operator!=(const VectorBase<ScalarType,Size>& 
 			return true;
 	}
 	return false;
+}
+
+template<class ScalarType,class Size>
+ScalarType VectorBase<ScalarType,Size>::normalize()
+{
+	ScalarType norm = std::sqrt(squaredNorm());
+	scale(1.0/norm);
+	return norm;
 }
 
 template<class ScalarType,class Size>

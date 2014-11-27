@@ -141,6 +141,12 @@ struct constraint_trait{
 
 struct referred_array{};
 
+
+/** tags */
+struct matrix_tag{};
+struct vector_tag{};
+struct solver_tag{};
+
 }// End of namespace COPT
 
 

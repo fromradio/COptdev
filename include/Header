@@ -17,6 +17,7 @@
 #include <ThirdParty/cblas.h>
 #include <umfpack.h>
 #include <algorithm>
+#include <limits>
 
 
 #define EIGEN 1

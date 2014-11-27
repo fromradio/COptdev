@@ -66,8 +66,10 @@ public:
 
 	/**	obtain the i-th row */
 	Vector row( const Size num );
+	const Vector row( const Size num ) const;
 	/**	obtain the i-th column */
 	Vector col( const Size num );
+	const Vector col( const Size num ) const;
 
 
 	// set element using Arr
@@ -253,15 +255,37 @@ public:
 		const std::vector<Size>& rownums,
 		const std::vector<Size>& colnums);
 
+	/** blocking matrix using iterator */
+	template<class InputIterator>
+	void blockFromMatrix(
+		const MatrixBase& mat,
+		const InputIterator& rowbegin,
+		const InputIterator& rowend,
+		const InputIterator& colbegin,
+		const InputIterator& colend );
+
 	/** Blocking matrix from a given matrix, order is not considered */
 	void columnBlockFromMatrix(
 		const MatrixBase& mat,
 		const std::vector<Size>& colnums);
 
+	/** column blocking from a given matrix */
+	template<class InputIterator>
+	void columnBlockFromMatrix(
+		const MatrixBase& mat,
+		const InputIterator& colbegin,
+		const InputIterator& colend);
+
 	/** Blocking matrix from a given matrix, order is not considered */
 	void rowBlockFromMatrix(
 		const MatrixBase& mat,
 		const std::vector<Size>& rownums);
+
+	template<class InputIterator>
+	void rowBlockFromMatrix(
+		const MatrixBase& mat,
+		const InputIterator& rowbegin,
+		const InputIterator& rowend);
 
 	//%}
 

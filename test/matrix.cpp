@@ -19,11 +19,11 @@ int main(int argc,char* argv[])
 	c.insert(0);
 	c.insert(4);
 	Matrix m;
-	m.blockFromMatrix(mat,r,c);
+	m.blockFromMatrix(mat,r.begin(),r.end(),c.begin(),c.end());
 	std::cout<<"blocking test one:"<<std::endl<<m<<std::endl;
-	m.rowBlockFromMatrix(mat,r);
+	m.rowBlockFromMatrix(mat,r.begin(),r.end());
 	std::cout<<"blocking test two:"<<std::endl<<m<<std::endl;
-	m.columnBlockFromMatrix(mat,c);
+	m.columnBlockFromMatrix(mat,c.begin(),c.end());
 	std::cout<<"blocking test three :"<<std::endl<<m<<std::endl;
 
 	Vector vec(5);

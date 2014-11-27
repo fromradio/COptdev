@@ -65,6 +65,12 @@ public:
 	{
 	}
 
+	VectorBase( const Size size , const referred_array& tag , const ScalarType* data ,const Size inter = 1)
+		:
+		Arr(size,tag,const_cast<ScalarType*>(data),inter)
+	{
+	}
+
 	/*
 		API with vector in stdlib
 	*/
@@ -149,6 +155,9 @@ public:
 		}
 		return result;
 	}
+	/** normalize current vector and previous norm is returned*/
+	ScalarType normalize();
+	
 	// dot operation
 	ScalarType dot(const VectorBase& vec) const{
 		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
@@ -180,7 +189,7 @@ public:
 	// summation operation
 	VectorBase operator+ (const VectorBase& vec) const{
 		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
-		VectorBase<ScalarType> result(this->size());
+		VectorBase result(this->size());
 		for ( int i = 0 ; i < this->size() ; ++ i ){
 			result[i] = this->operator[](i)+vec[i];
 		}
@@ -190,7 +199,7 @@ public:
 	//subtraction operation
 	VectorBase operator- (const VectorBase& vec) const{
 		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
-		VectorBase<ScalarType> result(this->size());
+		VectorBase result(this->size());
 		for ( int i = 0 ; i < this->size() ; ++ i ){
 			result[i] = this->operator[](i)-vec[i];
 		}
@@ -199,7 +208,7 @@ public:
 
 	// 
 	VectorBase operator- () const{
-		VectorBase<ScalarType> result(this->size());
+		VectorBase result(this->size());
 		for ( int i = 0 ; i < this->size() ; ++ i ){
 			result[i] = -this->operator[](i);
 		}
@@ -213,7 +222,9 @@ public:
 		for ( int i = 0 ; i< vec.size()-1 ; ++ i ){
 			os<<vec[i]<<" , ";
 		}
-		os<<vec[vec.size()-1]<<" ]";
+		if(vec.size()>0)
+			os<<vec[vec.size()-1];
+		os<<" ]";
 		return os;
 	}
 
