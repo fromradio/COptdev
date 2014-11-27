@@ -70,21 +70,31 @@ private:
 	bool 					__is_batch;
 
 	/** threshold */
-	Scalar 					__thresh;
+	Scalar 					__error;
 	//%}
 
 	OMPSolver();
-public:
-	inline void 	doSolve();
 
+	/** 	whether zero column exists which is not allowed in the algorithm */
 	inline bool		checkZeroColumn();
 
-	static inline void 	normalizeAtomMatrix( Matrix& A , Vector& norms );
+	/** 	normalize the column of argument */
+	static inline void 	normalizeAtomMatrix( 
+		Matrix& A , 
+		Vector& norms );
 
-	static inline void 	normalizeAtomMatrix( Matrix& A , Matrix& ATA , Vector& norms );
+	/**		normalize the column of the argument and the big D */
+	static inline void 	normalizeAtomMatrix( 
+		Matrix& A , 
+		Matrix& ATA , 
+		Vector& norms );
 
-	static inline Size 	findIndex( const Matrix& A, const Vector& residual );
+	/**		find the next index */
+	static inline Size 	findIndex( 
+		const Matrix& A, 
+		const Vector& residual );
 
+	/** 	update the coefficient of the OMP solver */
 	static inline void 	updateCoefficient( 
 		const Matrix& A,
 		const Matrix& AT,
@@ -92,6 +102,7 @@ public:
 		const std::list<Size>& indices, 
 		Vector& coeff ,
 		Vector& residual);
+
 	/*		Update the coefficient of OMP solver.
 	 *		Batch OMP algorithm is used.
 	 */
@@ -104,7 +115,9 @@ public:
 		Vector& coeff ,
 		Vector& residual);
 
-	inline void 		ompSolve( const Vector& b);
+	/**		kernel iterations of OMP algorithm */
+	inline void 		ompSolve( 
+		const Vector& b);
 
 public:
 
@@ -136,6 +149,12 @@ public:
 
 	/** get the result */
 	const Vector& result() const;
+
+	/** get the final residual */
+	const Vector& finalResidual() const;
+
+	/** get the fitting error */
+	const Scalar& fittingError() const;
 
 	//%}
 
@@ -210,8 +229,6 @@ void OMPSolver<kernel>::updateCoefficient(const Matrix&A , const Matrix&AT, cons
 	Matrix Ab,ATb;
 	Ab.columnBlockFromMatrix(A,indices.begin(),indices.end());
 	ATb.rowBlockFromMatrix(AT,indices.begin(),indices.end());
-	std::cout<<"Ab is "<<std::endl<<Ab<<std::endl;
-	std::cout<<"ATb is "<<std::endl<<ATb<<std::endl;
 	coeff = (ATb*Ab).solve(ATb*b);
 	residual = b - Ab*coeff;
 }
@@ -253,16 +270,14 @@ void OMPSolver<kernel>::ompSolve(const Vector& b)
 				break;
 		}
 	}
-
-	std::cout<<"final error is "<<__residual.squaredNorm()<<std::endl;
 	// set __x
 	__x.resize(__n);
 	Size i = 0;
 	for (typename std::list<Size>::iterator iter = __used_indices.begin() ; iter != __used_indices.end() ; ++ iter )
 	{
-		std::cout<<*iter<<std::endl;
 		__x(*iter) = __coeff(i++)*(1.0/__norms[*iter]);
 	}
+	__error = std::sqrt(__residual.squaredNorm());
 }
 
 template<class kernel>
@@ -287,7 +302,6 @@ OMPSolver<kernel>::OMPSolver(const Matrix& A,const bool isnormalizd)
 	{
 		__AT = __A.transpose();
 	}
-	std::cout<<"AT is "<<std::endl<<__A.transpose()<<std::endl;
 }
 
 template<class kernel>
@@ -319,23 +333,39 @@ void OMPSolver<kernel>::setSparsity(const Size s)
 }
 
 template<class kernel>
-const typename kernel::Size& OMPSolver<kernel>::sparsity() const{
+const typename kernel::Size& OMPSolver<kernel>::sparsity() const
+{
 	return __s;
 }
 
 template<class kernel>
-const typename kernel::Matrix& OMPSolver<kernel>::atomMatrix() const{
+const typename kernel::Matrix& OMPSolver<kernel>::atomMatrix() const
+{
 	return __A;
 }
 
 template<class kernel>
-const typename kernel::Vector& OMPSolver<kernel>::observation() const{
+const typename kernel::Vector& OMPSolver<kernel>::observation() const
+{
 	return __b;
 }
 
 template<class kernel>
-const typename kernel::Vector& OMPSolver<kernel>::result() const{
+const typename kernel::Vector& OMPSolver<kernel>::result() const
+{
 	return __x;
+}
+
+template<class kernel>
+const typename kernel::Vector& OMPSolver<kernel>::finalResidual() const
+{
+	return __residual;
+}
+
+template<class kernel>
+const typename kernel::ScalarType& OMPSolver<kernel>::fittingError() const
+{
+	return __error;
 }
 
 template<class kernel>

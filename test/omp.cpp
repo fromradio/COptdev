@@ -23,9 +23,10 @@ int main(int argc,char*argv[])
 	A(0,1) = 1.0;
 	std::cout<<"A is "<<std::endl<<A<<std::endl;
 	Vector norms;
-	OMPSolver solver(A,A.transpose()*A);
+	OMPSolver solver(A,A.transpose()*A );
 	solver.solve(b,3 );
-	std::cout<<"result is "<<solver.result()<<std::endl;  
+	std::cout<<"result is "<<solver.result()<<std::endl; 
+	std::cout<<"fitting error is "<<solver.fittingError()<<std::endl;
 	// OMPSolver::normalizeAtomMatrix(A,norms);
 	// std::cout<<A<<std::endl;
 	// std::cout<<"norms are "<<norms<<std::endl;
