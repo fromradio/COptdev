@@ -80,6 +80,12 @@ bin/umfpackwrapper: obj/umfpackwrapper.o
 	$(CC) obj/umfpackwrapper.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
 obj/umfpackwrapper.o: test/umfpack_wrapper.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
+
+omp: bin/omp
+bin/omp: obj/omp.o
+	$(CC) obj/omp.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
+obj/omp.o: test/omp.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 

@@ -49,6 +49,7 @@
 #include "Algorithms/NonLinearSolver.hpp"
 #include "Algorithms/NonLinearSolverImpl.hpp"
 #include "Algorithms/Simplex.hpp"
+#include "Algorithms/omp.hpp"
 
 
 #include <time.h>

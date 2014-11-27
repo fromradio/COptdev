@@ -21,9 +21,9 @@ class MatrixBase
 public:
 
 	// the scalar type
-	typedef 			Array<FT>				Arr;
-	typedef typename	Arr::ScalarType 		ScalarType;
-	typedef 			VectorBase<FT>			Vector;
+	typedef 			Array<FT,Size>				Arr;
+	typedef typename	Arr::ScalarType 			ScalarType;
+	typedef 			VectorBase<FT,Size>			Vector;
 
 
 private:
@@ -87,7 +87,7 @@ public:
 	/*
 		Copy operation
 	*/
-	MatrixBase& operator= ( const MatrixBase<ScalarType>& mat ) {
+	MatrixBase& operator= ( const MatrixBase& mat ) {
 		if( __rows != mat.rows() || __cols != mat.cols() ){
 			__rows = mat.rows();
 			__cols = mat.cols();
@@ -107,10 +107,10 @@ public:
 	// summation
 	// need to be tested
 		
-	MatrixBase operator+ (const MatrixBase<ScalarType>& mat) {
+	MatrixBase operator+ (const MatrixBase& mat) {
 		if ( __rows != mat.rows() || __cols != mat.cols() ) 
 			throw COException("MatrixBase summation error: the size of two matrices are not consistent!");
-		MatrixBase<ScalarType> result(__rows,__cols);
+		MatrixBase result(__rows,__cols);
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
 			result.set(i,this->operator[](i)+mat.data(i));
 		return result;
@@ -118,10 +118,10 @@ public:
 
 	// subtraction
 	// need to be tested
-	MatrixBase operator- (const MatrixBase<ScalarType>& mat) {
+	MatrixBase operator- (const MatrixBase& mat) {
 		if ( __rows != mat.rows() || __cols != mat.cols() ) 
 			throw COException("MatrixBase subtraction error: the size of two matrices are not consistent!");
-		MatrixBase<ScalarType> result(__rows,__cols);
+		MatrixBase result(__rows,__cols);
 		for ( int i = 0 ; i < __rows*__cols ; ++ i )
 			result.set(i,this->operator[](i)-mat.data(i));
 		return result;
@@ -129,10 +129,10 @@ public:
 
 	// multiply
 	// need to be tested
-	VectorBase<ScalarType> operator* ( const VectorBase<ScalarType>& vec ) const{
+	VectorBase<ScalarType,Size> operator* ( const VectorBase<ScalarType,Size>& vec ) const{
 		if ( __cols != vec.size() )
 			throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
-		VectorBase<ScalarType> result(__rows);
+		VectorBase<ScalarType,Size> result(__rows);
 		for ( int i = 0 ; i < __rows ; ++ i ){
 			for ( int j = 0 ; j < __cols ; ++ j )
 				result[i]+= operator()(i,j)*vec[j];
@@ -140,10 +140,10 @@ public:
 		return result;
 	}
 	// need to be tested
-	MatrixBase<ScalarType> operator* ( const MatrixBase<ScalarType>& mat ) const{
+	MatrixBase operator* ( const MatrixBase& mat ) const{
 		if ( __cols != mat.rows() )
 			throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
-		MatrixBase<ScalarType> result (__rows,mat.cols());
+		MatrixBase result (__rows,mat.cols());
 		for ( int i = 0 ; i < __rows ; ++ i )
 			for ( int j = 0 ; j < mat.cols() ; ++ j )
 				for ( int k = 0 ; k < __cols ; ++ k )
@@ -153,9 +153,9 @@ public:
 
 
 	// multiplication between a scalar and a matrix
-	friend MatrixBase<ScalarType> operator* (const ScalarType s,const MatrixBase<ScalarType>& mat)
+	friend MatrixBase operator* (const ScalarType s,const MatrixBase& mat)
 	{
-		MatrixBase<ScalarType> result(mat.rows(),mat.cols());
+		MatrixBase result(mat.rows(),mat.cols());
 		for ( int i = 0 ; i < mat.rows() ; ++ i )
 			for ( int j = 0 ; j < mat.cols() ; ++ j )
 				result(i,j) = mat(i,j)*s;
@@ -163,7 +163,7 @@ public:
 	}
 
 	// multiplication between a scalar and a matrix
-	friend MatrixBase<ScalarType> operator* (const MatrixBase<ScalarType>& mat,const ScalarType s)
+	friend MatrixBase operator* (const MatrixBase& mat,const ScalarType s)
 	{
 		return s*mat;
 	}
@@ -193,7 +193,7 @@ public:
 	 *
 	 */
 #ifdef EIGEN
-	VectorBase<ScalarType> solve(const VectorBase<ScalarType>& vec){
+	VectorBase<ScalarType,Size> solve(const VectorBase<ScalarType,Size>& vec){
 		// currently we use eigen to solve it
 		Eigen::Matrix<ScalarType,Eigen::Dynamic,Eigen::Dynamic> matrix(__rows,__cols);
 		for ( int i = 0 ; i < __rows ; ++ i )
@@ -209,7 +209,7 @@ public:
 			vector(i) = vec[i];
 		}
 		Eigen::Matrix<ScalarType,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
-		return VectorBase<ScalarType>(result);
+		return VectorBase<ScalarType,Size>(result);
 	}
 #endif
 

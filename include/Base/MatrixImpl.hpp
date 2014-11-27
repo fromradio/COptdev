@@ -84,19 +84,19 @@ const typename MatrixBase<ScalarType,Size>::ScalarType& MatrixBase<ScalarType,Si
 }
 
 template<class ScalarType,class Size>
-VectorBase<ScalarType> MatrixBase<ScalarType,Size>::row(const Size num){
+VectorBase<ScalarType,Size> MatrixBase<ScalarType,Size>::row(const Size num){
 	if ( num >= __rows )
 		throw COException("MatrixBase error: row index out of range!");
 	else
-		return VectorBase<ScalarType>(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
+		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
 }
 
 template<class ScalarType,class Size>
-VectorBase<ScalarType> MatrixBase<ScalarType,Size>::col(const Size num){
+VectorBase<ScalarType,Size> MatrixBase<ScalarType,Size>::col(const Size num){
 	if ( num >= __cols )
 		throw COException("MatrixBase error: col index out of range!");
 	else
-		return VectorBase<ScalarType>(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
+		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 }
 
 template<class ScalarType,class Size>
