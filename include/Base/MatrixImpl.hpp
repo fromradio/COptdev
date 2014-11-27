@@ -324,6 +324,7 @@ void MatrixBase<ScalarType,Size>::rowBlockFromMatrix(
 		{
 			this->operator()(r,c) = mat(*ri,c);
 		}
+		++ r;
 	}
 }
 
