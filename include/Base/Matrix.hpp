@@ -462,6 +462,14 @@ public:
 		const Size cols,
 		std::vector<Triplet>& triplets);
 
+	/** set from triplet iterator */
+	template<class InputIterator>
+	void setFromTriplets(
+		const Size rows,
+		const Size cols,
+		const InputIterator& begin,
+		const InputIterator& end);
+
 	/** clear the data */
 	void clear();
 

@@ -529,7 +529,89 @@ void SpMatrixBase<ScalarType,Size>::setFromTriplets(
 		__vals[i] = *iter;
 
 	__elesize = rowinds.size();
+}
 
+template<class ScalarType,class Size> template<class InputIterator>
+void SpMatrixBase<ScalarType,Size>::setFromTriplets(
+	const Size rows,
+	const Size cols,
+	const InputIterator& begin,
+	const InputIterator& end)
+{
+	clear();
+	__rows = rows;
+	__cols = cols;
+	// sort the triplets according to the column index at first
+	std::sort(begin,end,columnComparison<Triplet>());
+	// compute how many elements there are in one column
+	Size colind = 0 , ip = 0;
+	InputIterator previter = begin;
+	for ( InputIterator iter = begin ; iter != end ; ++ iter )
+	{
+		if(iter->columnIndex()>colind)
+		{
+			colind = iter->columnIndex();
+			std::sort(previter,iter,rowComparison<Triplet>());
+			previter = iter;
+		}
+	}
+	// last sort
+	std::sort(previter,end,rowComparison<Triplet>());
+	std::vector<Size> 		colcounts(__cols,0);
+	std::list<Size> 		rowinds;
+	std::list<ScalarType>	vals;
+	colind = 0 , ip = 0;
+	previter = begin;
+	Size count = 0;
+	for ( InputIterator iter = begin ; iter != end ; ++ iter )
+	{
+		if(iter->columnIndex()>colind)
+		{
+			colcounts[colind] = count;
+			colind = iter->columnIndex();
+			count = 0;
+		}
+		if(iter == begin)
+		{
+			rowinds.push_back(iter->rowIndex());
+			vals.push_back(iter->value());
+			++count;
+		}
+		else if(iter->rowIndex()==previter->rowIndex())
+		{
+			vals.back() += iter->value();
+		}
+		else
+		{
+			rowinds.push_back(iter->rowIndex());
+			vals.push_back(iter->value());
+			++count;
+		}
+		previter = iter;
+	}
+	// last column
+	colcounts[colind] = count;
+
+	__colptr = new Size[__cols+1];
+	Size columncount = 0;
+	for ( Size i = 0 ; i < __cols ; ++ i )
+	{
+		__colptr[i] = columncount;
+		columncount += colcounts[i];
+	}
+	__colptr[__cols] = columncount;
+
+	__rowind = new Size[rowinds.size()];
+	Size i = 0;
+	for ( typename std::list<Size>::iterator iter = rowinds.begin() ; iter != rowinds.end() ; ++ iter , ++ i )
+		__rowind[i] = *iter;
+
+	__vals = new ScalarType[vals.size()];
+	i = 0;
+	for ( typename std::list<ScalarType>::iterator iter = vals.begin() ; iter != vals.end() ; ++ iter , ++ i )
+		__vals[i] = *iter;
+
+	__elesize = rowinds.size();
 }
 
 template<class ScalarType,class Size>

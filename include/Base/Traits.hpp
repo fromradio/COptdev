@@ -117,11 +117,12 @@ class MatrixBase;
  *		used in a numerical solver. A solver should take trait
  *		as template for flexibility.
  */
-template<class T,class Size = size_t>
+template<class T,class S = size_t>
 class KernelTrait
 {
 public:
-	typedef T 						ScalarType;
+	typedef T 							ScalarType;
+	typedef S 							Size;
 	typedef VectorBase<T,Size>			Vector;
 	typedef MatrixBase<T,Size>			Matrix;
 };

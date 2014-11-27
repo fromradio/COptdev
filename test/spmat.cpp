@@ -45,6 +45,8 @@ int main(int argc,char* argv[])
 	tris.push_back(Triplet(0,1,2));
 	tris.push_back(Triplet(1,1,3));
 	tris.push_back(Triplet(1,0,4));
+	tris.push_back(Triplet(0,0,5));
+	tris.push_back(Triplet(0,1,7));
 	// for ( int i = 0 ; i < tris.size() ; ++ i )
 	// {
 	// 	std::cout<<tris[i].rowIndex()<<' '<<tris[i].columnIndex()<<std::endl;
@@ -57,7 +59,7 @@ int main(int argc,char* argv[])
 	// }
 
 	SpMatrix m;
-	m.setFromTriplets(10,10,tris);
+	m.setFromTriplets(10,10,tris.begin(),tris.end());
 	Vector v(10);
 	v(0) = 1.0;
 	std::cout<<m*v<<std::endl;

@@ -85,6 +85,11 @@ inline int umfpack_solve(
 
 //%}
 
+/*			A wrapper for UMFPack solving sparse linear system.
+ *			The input of the method is a COPT sparse matrix type.
+ *			The wrapper first analyze the input matrix and factorize it.
+ *			Warning and error information is provided
+ */
 template<class SpMatrix>
 class UMFLinearSolver
 	:
