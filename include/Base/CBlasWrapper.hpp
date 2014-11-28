@@ -16,6 +16,9 @@ namespace blas{
 template<class eT>
 void copt_blas_copy( const int N,const eT* X,const int incX, eT* Y,const int incY)
 {
+	for ( int i = 0 ; i < N ; ++ i ){
+		Y[i*incY]=X[i*incX];
+	}
 }
 
 void copt_blas_copy( const int N , const double* X, const int incX , double* Y , const int incY)

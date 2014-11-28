@@ -143,11 +143,11 @@ private:
 	 *    /param mu:        step size
 	 *    /param x:         weight we find after each step
 	 */
-	void LeastMeanSquareUpdate(
-	const VectorBase<Scalar>& a,
-	const Scalar b,
-	const Scalar mu,
-	VectorBase<Scalar>& x
+	static inline void LeastMeanSquareUpdate(
+		const VectorBase<Scalar>& a,
+		const Scalar b,
+		const Scalar mu,
+		VectorBase<Scalar>& x
 	);
 
 	/*
@@ -159,7 +159,7 @@ private:
 	 *    /param lam:       related to the forgetting factor
 	 *    /param delta:     in order to define P(0)   
 	 */
-	void RLS_learning(
+	static inline void RLS_learning(
 		const VectorBase<Scalar>& a,
 		const Scalar b,
 		VectorBase<Scalar>& x,

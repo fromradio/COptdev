@@ -74,6 +74,29 @@ template<>
 struct is_complex_double<std::complex<double> >
 { static const bool value = true;};
 
+template<class T>
+struct is_size
+{ static const bool value = false;};
+
+// template<>
+// struct is_size<size_t>
+// { static const bool value = true;};
+
+// template<>
+// struct is_size<longsize>
+// { static const boll value = true;};
+
+// template<class T>
+// struct integer_type
+// {typedef T type;};
+// template<>
+// struct integer_type<size_t>
+// { typedef int 	type;};
+
+// template<>
+// struct integer_type<longsize>
+// { typedef COPTlong longsize;};
+
 
 
 template<class T>
@@ -85,22 +108,23 @@ struct is_scalar
 
 
 
-template<class T>
+template<class T,class Size>
 class VectorBase;
-template<class T>
+template<class T,class Size>
 class MatrixBase;
 
 /*		A trait class describing basic types that might be
  *		used in a numerical solver. A solver should take trait
  *		as template for flexibility.
  */
-template<class T>
+template<class T,class S = size_t>
 class KernelTrait
 {
 public:
-	typedef T 					ScalarType;
-	typedef VectorBase<T>		Vector;
-	typedef MatrixBase<T>		Matrix;
+	typedef T 							ScalarType;
+	typedef S 							Size;
+	typedef VectorBase<T,Size>			Vector;
+	typedef MatrixBase<T,Size>			Matrix;
 };
 
 
@@ -116,6 +140,12 @@ struct constraint_trait{
 
 
 struct referred_array{};
+
+
+/** tags */
+struct matrix_tag{};
+struct vector_tag{};
+struct solver_tag{};
 
 }// End of namespace COPT
 

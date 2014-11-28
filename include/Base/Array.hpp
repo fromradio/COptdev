@@ -7,7 +7,7 @@
 namespace COPT
 {
 
-template<class T>
+template<class T,class Size = size_t>
 class Array
 {
 public:
@@ -16,9 +16,9 @@ private:
 	/** private variables */
 	//%{
 	/** the total size of the array */
-	size_t 							__size;
+	Size 							__size;
 	/** the interval of the pointer, 1 as default */
-	size_t 							__inter;
+	Size 							__inter;
 	/** the pointer to the data */
 	ScalarType*						__data_ptr;
 	/** whether the array is referred */
@@ -41,7 +41,7 @@ public:
 	{
 	}
 
-	Array ( const size_t size, const ScalarType* data = NULL, const size_t inter = 1 )
+	Array ( const Size size, const ScalarType* data = NULL, const Size inter = 1 )
 		:
 		__size(size),
 		__inter(1),
@@ -57,7 +57,7 @@ public:
 		}
 	}
 
-	Array( const size_t size , const referred_array& , ScalarType* data ,const size_t inter = 1)
+	Array( const Size size , const referred_array& , ScalarType* data ,const Size inter = 1)
 		:
 		__size(size),
 		__inter(inter),
@@ -117,13 +117,13 @@ public:
 	//%{
 
 	/** the size of the array */ 
-	const size_t& size() const{return __size;}
+	const Size& size() const{return __size;}
 
 	/** whether the array is referred */
 	bool isReferred() const{return __referred;}
 
 	/** the interval of the array */
-	size_t interval() const{return __inter;}
+	Size interval() const{return __inter;}
 
 	//%}
 	
@@ -131,7 +131,7 @@ public:
 	 *			resize the array to specific size
 	 *
 	 */
-	void resize( const size_t size , const size_t inter){
+	void resize( const Size size , const Size inter = 1){
 		if(__referred)
 			throw COException("referred array is not allowed to be resized!");
 		else{
@@ -150,9 +150,9 @@ public:
 		}
 	}
 
-	void reset(size_t size){resize(size,__inter);}
+	void reset(Size size){resize(size,__inter);}
 
-	void setArray(const size_t size,const ScalarType* data,const size_t inter = 1)
+	void setArray(const Size size,const ScalarType* data,const Size inter = 1)
 	{
 		if ( __referred )
 			throw COException("referred array is not allowed to be reset ");
@@ -174,9 +174,9 @@ public:
 
 	/** set a referred array */
 	void setReferredArray(
-		const size_t size,
+		const Size size,
 		ScalarType* data,
-		const size_t inter = 1)
+		const Size inter = 1)
 	{
 		__referred = true;
 		__size = size;

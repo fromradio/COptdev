@@ -14,14 +14,14 @@
 namespace COPT
 {
 // declaration
-template <class FT>
+template <class FT,class Size>
 class MatrixBase;
 
-template <class FT>
-class VectorBase : public Array<FT>{
+template <class FT,class Size = size_t>
+class VectorBase : public Array<FT,Size>{
 public:
 	// the type of float number
-	typedef 				Array<FT>				Arr;
+	typedef 				Array<FT,Size>			Arr;
 	typedef 				FT						ScalarType;
 
 public:
@@ -37,7 +37,7 @@ public:
 			if data is NULL, a zero vector is constructed
 	*/
 
-	VectorBase( const size_t size , ScalarType* data = NULL )
+	VectorBase( const Size size , ScalarType* data = NULL )
 		:
 		Arr(size , data)
 	{
@@ -59,9 +59,15 @@ public:
 		}
 	}
 
-	VectorBase( const size_t size , const referred_array& tag , ScalarType* data ,const size_t inter = 1)
+	VectorBase( const Size size , const referred_array& tag , ScalarType* data ,const Size inter = 1)
 		:
 		Arr(size,tag,data,inter)
+	{
+	}
+
+	VectorBase( const Size size , const referred_array& tag , const ScalarType* data ,const Size inter = 1)
+		:
+		Arr(size,tag,const_cast<ScalarType*>(data),inter)
 	{
 	}
 
@@ -112,8 +118,8 @@ public:
 	}
 
 	/** Matlab-like element assignment */
-	ScalarType& operator() (const size_t i );
-	const ScalarType& operator() (const size_t i )const ;
+	ScalarType& operator() (const Size i );
+	const ScalarType& operator() (const Size i )const ;
 
 	/** overload operations*/
 	//%{
@@ -149,6 +155,9 @@ public:
 		}
 		return result;
 	}
+	/** normalize current vector and previous norm is returned*/
+	ScalarType normalize();
+	
 	// dot operation
 	ScalarType dot(const VectorBase& vec) const{
 		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
@@ -180,7 +189,7 @@ public:
 	// summation operation
 	VectorBase operator+ (const VectorBase& vec) const{
 		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
-		VectorBase<ScalarType> result(this->size());
+		VectorBase result(this->size());
 		for ( int i = 0 ; i < this->size() ; ++ i ){
 			result[i] = this->operator[](i)+vec[i];
 		}
@@ -190,7 +199,7 @@ public:
 	//subtraction operation
 	VectorBase operator- (const VectorBase& vec) const{
 		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
-		VectorBase<ScalarType> result(this->size());
+		VectorBase result(this->size());
 		for ( int i = 0 ; i < this->size() ; ++ i ){
 			result[i] = this->operator[](i)-vec[i];
 		}
@@ -199,7 +208,7 @@ public:
 
 	// 
 	VectorBase operator- () const{
-		VectorBase<ScalarType> result(this->size());
+		VectorBase result(this->size());
 		for ( int i = 0 ; i < this->size() ; ++ i ){
 			result[i] = -this->operator[](i);
 		}
@@ -213,7 +222,9 @@ public:
 		for ( int i = 0 ; i< vec.size()-1 ; ++ i ){
 			os<<vec[i]<<" , ";
 		}
-		os<<vec[vec.size()-1]<<" ]";
+		if(vec.size()>0)
+			os<<vec[vec.size()-1];
+		os<<" ]";
 		return os;
 	}
 
@@ -226,7 +237,7 @@ public:
 	 *			/param size:		the size of the VectorBase
 	 *			/param i:			the index of non-zero element
 	 */
-	static VectorBase vecE(size_t size,int i)
+	static VectorBase vecE(Size size,int i)
 	{
 		if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
 		VectorBase vec(size);
@@ -238,7 +249,7 @@ public:
 	 *			/param i:			the index of non-zero element
 	 *			/param s:			the value of non-zero element
 	 */
-	static VectorBase vecE(size_t size,int i,const ScalarType s)
+	static VectorBase vecE(Size size,int i,const ScalarType s)
 	{
 		if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
 		VectorBase vec(size);
@@ -248,18 +259,18 @@ public:
 
 	/*			transpose operations
 	 */
-	MatrixBase<ScalarType> mulTrans(const VectorBase& vec) const;
+	MatrixBase<ScalarType,Size> mulTrans(const VectorBase& vec) const;
 
 	/*			the transpose of the vector multiplies a matrix
 	 */
-	VectorBase transMul(const MatrixBase<ScalarType>& mat) const;
+	VectorBase transMul(const MatrixBase<ScalarType,Size>& mat) const;
 
 	/** blocking operations */
 	//%{
-	VectorBase block(const std::set<size_t>& indices)const;
-	void blockFromVector(const VectorBase& vec,const std::set<size_t>& indices);
-	VectorBase block(const std::vector<size_t>& indices) const;
-	void blockFromVector(const VectorBase& vec,const std::vector<size_t>& indices);
+	VectorBase block(const std::set<Size>& indices)const;
+	void blockFromVector(const VectorBase& vec,const std::set<Size>& indices);
+	VectorBase block(const std::vector<Size>& indices) const;
+	void blockFromVector(const VectorBase& vec,const std::vector<Size>& indices);
 	//%}
 
 	/** combination operations */

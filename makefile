@@ -3,30 +3,18 @@
 # powered by 'MathU'
 # copyright@MathU
 
+<<<<<<< HEAD
 DIR_INC += -IE:/libs/eigen -I./include/Base -I./include/LeastSquares -I./include/FunctionRepository -I./include/Algorithms -I./include/ThirdParty -I./include
 DIR_SRC += ./src/Frame ./src/LeastSquares ./src
 DIR_OBJ = ./obj
 DIR_BIN = ./bin
 DIR_LIB = -LE:/libs
+=======
+include ./Makefile.in
+>>>>>>> upstream/master
 
-SRC = $(foreach n, $(DIR_SRC),$(wildcard $(n)/*.cpp))
-# TT = $(patsubst %.cpp,%.o,$(SRC))
-# TT = $(notdir $(SRC))
-OBJ = $(patsubst %.cpp,$(DIR_OBJ)/%.o,$(notdir $(SRC)))
 
-TEST_BIN = $(DIR_BIN)/test
-TEST_OBJ = $(DIR_OBJ)/test.o
-TEST_SRC = ./test/simplex.cpp
 
-TARGET = all
-BIN_TARGET = $(DIR_BIN)/$(TARGET)
-
-CC = g++
-CFLAGS = -g -Wall $(DIR_INC)
-
-vpath %.cpp ./src/Frame
-vpath %.cpp ./src/LeastSquares
-vpath %.cpp ./src
 
 #objects = test.o basicmath.o
 
@@ -57,11 +45,11 @@ clean:
 # 	@echo $(TT)
 # 	@echo "end"
 
-test: $(TEST_BIN)
 
-matrix: bin/matrix
+
 
 # test for matrix
+matrix: bin/matrix
 bin/matrix: obj/matrix.o
 	$(CC) obj/matrix.o $(DIR_LIB) -o $@ -lcblas -lblas
 obj/matrix.o: test/matrix.cpp
@@ -79,6 +67,32 @@ vecmat: bin/vecmat
 bin/vecmat: obj/vecmat.o
 	$(CC) obj/vecmat.o $(DIR_LIB) -o $@ -lcblas -lblas
 obj/vecmat.o: test/matrix_vector.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# test for sparse matrix
+spmat: bin/spmat
+bin/spmat: obj/spmat.o
+	$(CC) obj/spmat.o $(DIR_LIB) -o $@ -lcblas -lblas
+obj/spmat.o:test/spmat.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+# test for umfpack
+umfpack: bin/umfpack
+bin/umfpack: obj/umfpack.o
+	$(CC) obj/umfpack.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
+obj/umfpack.o:test/umfpack.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+umfpackwrapper: bin/umfpackwrapper
+bin/umfpackwrapper: obj/umfpackwrapper.o
+	$(CC) obj/umfpackwrapper.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
+obj/umfpackwrapper.o: test/umfpack_wrapper.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+omp: bin/omp
+bin/omp: obj/omp.o
+	$(CC) obj/omp.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
+obj/omp.o: test/omp.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
