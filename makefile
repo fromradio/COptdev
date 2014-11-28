@@ -3,15 +3,7 @@
 # powered by 'MathU'
 # copyright@MathU
 
-<<<<<<< HEAD
-DIR_INC += -IE:/libs/eigen -I./include/Base -I./include/LeastSquares -I./include/FunctionRepository -I./include/Algorithms -I./include/ThirdParty -I./include
-DIR_SRC += ./src/Frame ./src/LeastSquares ./src
-DIR_OBJ = ./obj
-DIR_BIN = ./bin
-DIR_LIB = -LE:/libs
-=======
 include ./Makefile.in
->>>>>>> upstream/master
 
 
 
@@ -79,13 +71,13 @@ obj/spmat.o:test/spmat.cpp
 # test for umfpack
 umfpack: bin/umfpack
 bin/umfpack: obj/umfpack.o
-	$(CC) obj/umfpack.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
+	$(CC) obj/umfpack.o $(DIR_LIB) -o $@ -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -lcblas -lblas -lgfortran -llapack
 obj/umfpack.o:test/umfpack.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 umfpackwrapper: bin/umfpackwrapper
 bin/umfpackwrapper: obj/umfpackwrapper.o
-	$(CC) obj/umfpackwrapper.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
+	$(CC) obj/umfpackwrapper.o $(DIR_LIB) -o $@  -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -lcblas -lblas -lgfortran
 obj/umfpackwrapper.o: test/umfpack_wrapper.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
