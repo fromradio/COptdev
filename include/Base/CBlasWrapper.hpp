@@ -1,5 +1,5 @@
-//				Copyright (C) 2014 Ruimin Wang, ruimin.wang13@gmail.com
-//				Copyright (C) 2014 MathU
+// Copyright (C) 2014 Ruimin Wang, ruimin.wang13@gmail.com
+// Copyright (C) 2014 MathU
 
 
 

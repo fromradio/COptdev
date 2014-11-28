@@ -117,14 +117,14 @@ class MatrixBase;
  *		used in a numerical solver. A solver should take trait
  *		as template for flexibility.
  */
-template<class T,class S = size_t>
+template<class T,class S = longsize>
 class KernelTrait
 {
 public:
 	typedef T 							ScalarType;
-	typedef S 							Size;
-	typedef VectorBase<T,Size>			Vector;
-	typedef MatrixBase<T,Size>			Matrix;
+	typedef S 							SizeType;
+	typedef VectorBase<T,S>				Vector;
+	typedef MatrixBase<T,S>				Matrix;
 };
 
 
@@ -143,8 +143,10 @@ struct referred_array{};
 
 
 /** tags */
-struct matrix_tag{};
-struct vector_tag{};
+
+struct data_tag{};
+struct matrix_tag: public data_tag{};
+struct vector_tag: public data_tag{};
 struct solver_tag{};
 
 }// End of namespace COPT

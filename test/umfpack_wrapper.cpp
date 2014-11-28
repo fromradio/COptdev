@@ -1,37 +1,56 @@
 #include <Header>
+#include <IO>
 
 typedef double		 					FT;
 typedef COPT::Array<FT> 				Array;
-typedef COPT::VectorBase<FT,long>			Vector;
-typedef COPT::MatrixBase<FT,long>	 		Matrix;
-typedef COPT::SpMatrixBase<FT,long>			SpMatrix;
+typedef COPT::VectorBase<FT>			Vector;
+typedef COPT::MatrixBase<FT>	 		Matrix;
+typedef COPT::SpMatrixBase<FT>			SpMatrix;
 typedef COPT::UMFLinearSolver<SpMatrix>	UMFPackSolver;
+
+void initrand()
+{
+    srand((unsigned)(time(0)));
+}
+
+double randdouble()
+{
+    return rand()/(double(RAND_MAX)+1);
+}
 
 int main(int argc , char* argv[])
 {
-	long rows = 10;
-	long cols = 10;
-	long elesize = 10;
-	long* rowind = new long[elesize];
-	long* colptr = new long[cols+1];
-	FT*	vals = new FT[elesize];
-	for ( int i = 0 ; i < elesize ; ++ i )
+	std::cout<<argc<<std::endl;
+	if( argc == 0 )
+		return 0;
+	else if (argc == 2)
 	{
-		rowind[i]=i;
-		vals[i]=2.0;
+		SpMatrix m;
+		Vector vec;
+		readMtxFile(argv[1],m);
+		std::cout<<"m's element size is "<<m.elementSize()<<std::endl;
+		Vector v;
+		v.resize(m.rows());
+		initrand();
+		for ( int i = 0 ; i < m.rows() ; ++ i )
+			v[i] = randdouble();
+		vec = m*v;
+		std::cout<<"v is "<<v<<std::endl;
+		Vector result = m.solve(vec);
+		std::cout<<"result is "<<result<<std::endl;
+		std::cout<<"error is "<<std::sqrt((result-v).squaredNorm())<<std::endl;
 	}
-	for ( int i = 0 ; i <= cols ; ++ i )
-		colptr[i] = i;
-	SpMatrix mat(rows,cols,elesize,colptr,rowind,vals);
-	mat = 2*mat;
-
-	UMFPackSolver solver(mat);
-	// solver.printInfo();
-	Vector v(10);
-	v(0) = 1.0;
-	std::cout<<solver.solve(v)<<std::endl;
-	std::cout<<mat.solve(v)<<std::endl;
-	delete[]rowind;
-	delete[]colptr;
-	delete[]vals;
+	else if ( argc == 3 )
+	{
+		SpMatrix m;
+		Vector vec;
+		readMtxFile(argv[2],vec); 
+		readMtxFile(argv[1],m);
+		std::cout<<"m's element size is "<<m.elementSize()<<std::endl;
+		Vector result = m.solve(vec);
+		std::cout<<"result is "<<result<<std::endl;
+		std::cout<<"error is "<<std::sqrt((m*result-vec).squaredNorm())<<std::endl;
+	}
+	else
+		return 0;
 }

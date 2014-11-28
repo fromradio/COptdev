@@ -7,11 +7,24 @@
 namespace COPT
 {
 
-template<class T,class Size = size_t>
+/*		class Array describes a base class for basic dense data types used in COPT
+ *		like vector and matrix. The array can be referred to another array or independent 
+ *		array. 
+ */
+template<class T,class S = longsize>
 class Array
 {
 public:
-	typedef 				T 		ScalarType;
+	/**		define the scalar type 			*/
+	typedef 				T 					ScalarType;
+	/** 	define the size type 			*/
+	typedef 				S 					Size;
+	/**		define the category 			*/
+	typedef 				data_tag 			Category;
+	/** 	define the kernel trait 		*/
+	typedef 				KernelTrait<T,S>	Kernel;
+
+
 private:
 	/** private variables */
 	//%{
@@ -28,7 +41,6 @@ private:
 
 	/* 				 protected functions
 	 */
-	
 	
 public:
 
@@ -52,7 +64,7 @@ public:
 			blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
 		}
 		else{
-			for ( int i = 0 ; i < __size ; ++ i )
+			for ( Size i = 0 ; i < __size ; ++ i )
 				__data_ptr[i] = static_cast<ScalarType>(0.0);
 		}
 	}
@@ -140,11 +152,11 @@ public:
 				__inter = inter;
 				SAFE_DELETE_ARRAY(__data_ptr);
 				__data_ptr = new ScalarType[__size*__inter];
-				for ( int i = 0 ; i < __size ; ++ i )
+				for ( Size i = 0 ; i < __size ; ++ i )
 					__data_ptr[i*__inter] = static_cast<ScalarType>(0.0);
 			}
 			else{
-				for ( int i = 0 ; i < __size ; ++ i )
+				for ( Size i = 0 ; i < __size ; ++ i )
 					__data_ptr[i*__inter] = static_cast<ScalarType>(0.0);
 			}
 		}
@@ -197,7 +209,7 @@ public:
 	 *
 	 *
 	 */
-	ScalarType& operator[] ( int i ){
+	ScalarType& operator[] ( Size i ){
 		if ( i < 0 ){
 			// index less than zero
 			throw COException("Vector error, index less than zero.");
@@ -209,7 +221,7 @@ public:
 		else
 			return __data_ptr[i*__inter];
 	}
-	const ScalarType& operator[] ( int i ) const {
+	const ScalarType& operator[] ( Size i ) const {
 		return const_cast<Array&>(*this).operator[](i);
 	}
 
@@ -235,7 +247,7 @@ public:
 	/**			overloaded stream */
 	friend std::ostream& operator<<(std::ostream& os,const Array& arr){
 		os<<"[ ";
-		for ( int i = 0 ; i< arr.size()-1 ; ++ i ){
+		for ( Size i = 0 ; i< arr.size()-1 ; ++ i ){
 			os<<arr[i]<<" , ";
 		}
 		os<<arr[arr.size()-1]<<" ]";

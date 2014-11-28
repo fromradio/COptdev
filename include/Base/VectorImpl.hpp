@@ -36,7 +36,7 @@ bool VectorBase<ScalarType,Size>::operator<(const VectorBase<ScalarType,Size>& v
 {
 	if (this->size() != vec.size() )
 		return false;
-	for ( int i = 0 ; i < this->size() ; ++ i ){
+	for ( Size i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)>=vec[i])
 			return false;
 	}
@@ -48,7 +48,7 @@ bool VectorBase<ScalarType,Size>::operator<=(const VectorBase<ScalarType,Size>& 
 {
 	if (this->size() != vec.size() )
 		return false;
-	for ( int i = 0 ; i < this->size() ; ++ i ){
+	for ( Size i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)>vec[i])
 			return false;
 	}
@@ -60,7 +60,7 @@ bool VectorBase<ScalarType,Size>::operator>(const VectorBase<ScalarType,Size>& v
 {
 	if (this->size() != vec.size() )
 		return false;
-	for ( int i = 0 ; i < this->size() ; ++ i ){
+	for ( Size i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)<=vec[i])
 			return false;
 	}
@@ -72,7 +72,7 @@ bool VectorBase<ScalarType,Size>::operator>=(const VectorBase<ScalarType,Size>& 
 {
 	if (this->size() != vec.size() )
 		return false;
-	for ( int i = 0 ; i < this->size() ; ++ i ){
+	for ( Size i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)<vec[i])
 			return false;
 	}
@@ -84,7 +84,7 @@ bool VectorBase<ScalarType,Size>::operator==(const VectorBase<ScalarType,Size>& 
 {
 	if (this->size() != vec.size() )
 		return false;
-	for ( int i = 0 ; i < this->size() ; ++ i ){
+	for ( Size i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)!=vec[i])
 			return false;
 	}
@@ -96,7 +96,7 @@ bool VectorBase<ScalarType,Size>::operator!=(const VectorBase<ScalarType,Size>& 
 {
 	if ( this->size() != vec.size() )
 		return true;
-	for ( int i = 0 ; i < this->size() ; ++ i ){
+	for ( Size i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)!=vec[i])
 			return true;
 	}
@@ -117,8 +117,8 @@ MatrixBase<ScalarType,Size> VectorBase<ScalarType,Size>::mulTrans(const VectorBa
 	Size 					m = this->size();
 	Size 					n = vec.size();
 	MatrixBase<ScalarType,Size> 	result(m,n);
-	for ( int i = 0 ; i < m ; ++ i )
-		for ( int j = 0 ; j < n ; ++ j )
+	for ( Size i = 0 ; i < m ; ++ i )
+		for ( Size j = 0 ; j < n ; ++ j )
 			result(i,j) = this->operator[](i)*vec[j];
 	return result;
 }
@@ -140,7 +140,7 @@ VectorBase<ScalarType,Size> VectorBase<ScalarType,Size>::block(const std::set<Si
 		throw COException("Index out of range in Vector blocking!");
 	}
 	VectorBase<ScalarType,Size> result(indices.size());
-	int i = 0;
+	Size i = 0;
 	for ( typename std::set<Size>::const_iterator iter = indices.begin() ; iter != indices.end() ; ++ iter ){
 		result[i] = this->operator[](*iter);
 		++ i;
@@ -156,7 +156,7 @@ void VectorBase<ScalarType,Size>::blockFromVector(const VectorBase& vec,const st
 		throw COException("Index out of range in Vector blocking!");
 	}
 	this->resize(indices.size());
-	int i = 0;
+	Size i = 0;
 	for ( typename std::set<Size>::const_iterator iter = indices.begin() ; iter != indices.end() ; ++ iter ){
 		this->operator[](i) = vec[*iter];
 		++ i;
@@ -167,7 +167,7 @@ template<class ScalarType,class Size>
 VectorBase<ScalarType,Size> VectorBase<ScalarType,Size>::block(const std::vector<Size>& indices) const
 {
 	VectorBase<ScalarType,Size> result(indices.size());
-	for ( int i = 0 ; i < indices.size() ; ++ i ){
+	for ( Size i = 0 ; i < indices.size() ; ++ i ){
 		if (indices[i] >= this->size())
 		{
 			throw COException("Index out of range in Vector blocking!");
@@ -181,7 +181,7 @@ template<class ScalarType,class Size>
 void VectorBase<ScalarType,Size>::blockFromVector(const VectorBase& vec,const std::vector<Size>& indices)
 {
 	this->resize(indices.size());
-	for ( int i = 0 ; i < indices.size() ; ++ i ){
+	for ( Size i = 0 ; i < indices.size() ; ++ i ){
 		if(indices[i] >= vec.size() )
 		{
 			throw COException("Index out of range in Vector blocking!");

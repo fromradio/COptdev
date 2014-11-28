@@ -35,12 +35,20 @@ inline void umfpack_free_symbolic(void **Symbolic,double)
 // 	*Symbolic = NULL;
 // }
 
-inline int umfpack_symbolic(
-	int rows,int cols,
+inline COPTlong umfpack_symbolic(
+	COPTlong rows,COPTlong cols,
 	const COPTlong* colptr,const COPTlong* rowind,const double* vals,void **Symbolic,
 	const double* Control,double* Info)
 {
 	return umfpack_dl_symbolic(rows,cols,colptr,rowind,vals,Symbolic,Control,Info);
+}
+
+inline COPTlong umfpack_symbolic(
+	longsize rows,longsize cols,
+	const longsize* colptr,const longsize* rowind,const double*vals,void **Symbolic,
+	const double* Control , double *Info)
+{
+	return umfpack_dl_symbolic((COPTlong)rows,(COPTlong)cols,(const COPTlong*)colptr,(const COPTlong*)rowind,vals,Symbolic,Control,Info);
 }
 
 // inline int umfpack_symbolic(
@@ -51,12 +59,20 @@ inline int umfpack_symbolic(
 // 	return umfpack_zl_symbolic(rows,cols,colptr,rowind,vals,0,Symbolic,Control,Info);
 // }
 
-inline int umfpack_numeric(
+inline COPTlong umfpack_numeric(
 	const COPTlong *colptr, const COPTlong* rowind, const double* vals,
 	void *Symbolic, void **Numeric,
 	const double* Control,double *Info)
 {
 	return umfpack_dl_numeric(colptr,rowind,vals,Symbolic,Numeric,Control,Info);
+}
+
+inline COPTlong umfpack_numeric(
+	const longsize* colptr , const longsize* rowind , const double* vals,
+	void *Symbolic, void **Numeric,
+	const double* Control,double *Info)
+{
+	return umfpack_dl_numeric((const COPTlong*)colptr,(const COPTlong*)rowind,vals,Symbolic,Numeric,Control,Info);
 }
 
 // inline int umfpack_numeric(
@@ -67,12 +83,20 @@ inline int umfpack_numeric(
 // 	return umfpack_zl_numeric(colptr,rowind,vals,Symbolic,Numeric,Control,Info);
 // }
 
-inline int umfpack_solve(
+inline COPTlong umfpack_solve(
 	int sys,const COPTlong *colptr,const COPTlong* rowind, const double* vals,
 	double* X, const double* B, void *Numeric,
 	const double *Control,double *Info)
 {
 	return umfpack_dl_solve(sys,colptr,rowind,vals,X,B,Numeric,Control,Info);
+}
+
+inline COPTlong umfpack_solve(
+	int sys,const longsize* colptr, const longsize* rowind, const double* vals,
+	double* X, const double* B, void *Numeric,
+	const double* Control, double* Info)
+{
+	return umfpack_dl_solve(sys,(const COPTlong*)colptr,(const COPTlong*)rowind,vals,X,B,Numeric,Control,Info);
 }
 
 // inline int umfpack_solve(
@@ -97,7 +121,7 @@ class UMFLinearSolver
 {
 private:
 	typedef		typename SpMatrix::ScalarType		Scalar;
-	typedef 	typename SpMatrix::SizeType			Size;
+	typedef 	typename SpMatrix::Size 			Size;
 
 	/**	private variables */
 	//%{
@@ -306,7 +330,7 @@ void UMFLinearSolver<SpMatrix>::analyzeNumeric()
 }
 
 template<class SpMatrix>
-VectorBase<typename SpMatrix::ScalarType,typename SpMatrix::SizeType> UMFLinearSolver<SpMatrix>::solve(const VectorBase<Scalar,Size>& vec)
+VectorBase<typename SpMatrix::ScalarType,typename SpMatrix::Size> UMFLinearSolver<SpMatrix>::solve(const VectorBase<Scalar,Size>& vec)
 {
 	Scalar* x= new Scalar[vec.size()];
 	umfpack_solve(UMFPACK_A,__mat.columnPointer(),__mat.rowIndex(),__mat.values(),x,vec.dataPtr(),__numeric,__control,__info);

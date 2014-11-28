@@ -17,13 +17,23 @@ namespace COPT
 template <class FT,class Size>
 class MatrixBase;
 
-template <class FT,class Size = size_t>
-class VectorBase : public Array<FT,Size>{
+template <class FT,class S = longsize>
+class VectorBase 
+	: 
+	public Array<FT,S>{
 public:
-	// the type of float number
-	typedef 				Array<FT,Size>			Arr;
+	/** 	scalar type 	*/
 	typedef 				FT						ScalarType;
+	/** 	size type 		*/
+	typedef 				S 						Size;
+	/**		define the category 	*/
+	typedef 				vector_tag 				Category;
+	/**		define the kernel 		*/
+	typedef 				KernelTrait<FT,Size>	Kernel;
 
+private:
+	/**		definitions used in implementation */
+	typedef 				Array<FT,Size>			Arr;
 public:
 
 	// Constructor
@@ -59,15 +69,15 @@ public:
 		}
 	}
 
-	VectorBase( const Size size , const referred_array& tag , ScalarType* data ,const Size inter = 1)
+	VectorBase( const Size size , const referred_array& tag , ScalarType* data ,const Size Sizeer = 1)
 		:
-		Arr(size,tag,data,inter)
+		Arr(size,tag,data,Sizeer)
 	{
 	}
 
-	VectorBase( const Size size , const referred_array& tag , const ScalarType* data ,const Size inter = 1)
+	VectorBase( const Size size , const referred_array& tag , const ScalarType* data ,const Size Sizeer = 1)
 		:
-		Arr(size,tag,const_cast<ScalarType*>(data),inter)
+		Arr(size,tag,const_cast<ScalarType*>(data),Sizeer)
 	{
 	}
 
@@ -80,7 +90,7 @@ public:
 		Arr()
 	{
 		this->resize(vec.size(),1);
-		for ( int i = 0 ; i < this->size() ; ++ i )
+		for ( Size i = 0 ; i < this->size() ; ++ i )
 			this->operator[](i) = vec[i];
 	}
 
@@ -89,7 +99,7 @@ public:
 		:
 		Arr(vec.size())
 	{
-		for ( int i = 0 ; i < this->size() ; ++ i ){
+		for ( Size i = 0 ; i < this->size() ; ++ i ){
 			this->operator[](i)  = vec(i);
 		}
 	}
@@ -150,7 +160,7 @@ public:
 	 */
 	ScalarType squaredNorm() const{
 		ScalarType result = 0;
-		for ( int i = 0 ; i < this->size() ; ++ i ){
+		for ( Size i = 0 ; i < this->size() ; ++ i ){
 			result += this->operator[](i)*this->operator[](i);
 		}
 		return result;
@@ -190,7 +200,7 @@ public:
 	VectorBase operator+ (const VectorBase& vec) const{
 		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
 		VectorBase result(this->size());
-		for ( int i = 0 ; i < this->size() ; ++ i ){
+		for ( Size i = 0 ; i < this->size() ; ++ i ){
 			result[i] = this->operator[](i)+vec[i];
 		}
 		return result;
@@ -200,7 +210,7 @@ public:
 	VectorBase operator- (const VectorBase& vec) const{
 		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
 		VectorBase result(this->size());
-		for ( int i = 0 ; i < this->size() ; ++ i ){
+		for ( Size i = 0 ; i < this->size() ; ++ i ){
 			result[i] = this->operator[](i)-vec[i];
 		}
 		return result;
@@ -209,7 +219,7 @@ public:
 	// 
 	VectorBase operator- () const{
 		VectorBase result(this->size());
-		for ( int i = 0 ; i < this->size() ; ++ i ){
+		for ( Size i = 0 ; i < this->size() ; ++ i ){
 			result[i] = -this->operator[](i);
 		}
 		return result;
@@ -218,12 +228,16 @@ public:
 	/* overload of stream
 	 */
 	friend std::ostream& operator<<(std::ostream& os,const VectorBase& vec){
+		if ( vec.size() == 0 )
+		{
+			os<<"[ ]";
+			return os;
+		}
 		os<<"[ ";
-		for ( int i = 0 ; i< vec.size()-1 ; ++ i ){
+		for ( Size i = 0 ; i< vec.size()-1 ; ++ i ){
 			os<<vec[i]<<" , ";
 		}
-		if(vec.size()>0)
-			os<<vec[vec.size()-1];
+		os<<vec[vec.size()-1];
 		os<<" ]";
 		return os;
 	}
@@ -237,7 +251,7 @@ public:
 	 *			/param size:		the size of the VectorBase
 	 *			/param i:			the index of non-zero element
 	 */
-	static VectorBase vecE(Size size,int i)
+	static VectorBase vecE(Size size,Size i)
 	{
 		if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
 		VectorBase vec(size);
@@ -249,7 +263,7 @@ public:
 	 *			/param i:			the index of non-zero element
 	 *			/param s:			the value of non-zero element
 	 */
-	static VectorBase vecE(Size size,int i,const ScalarType s)
+	static VectorBase vecE(Size size,Size i,const ScalarType s)
 	{
 		if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
 		VectorBase vec(size);

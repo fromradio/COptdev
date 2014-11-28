@@ -86,6 +86,12 @@ bin/omp: obj/omp.o
 	$(CC) obj/omp.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
 obj/omp.o: test/omp.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
+
+ls: bin/ls
+bin/ls: obj/ls.o
+	$(CC) obj/ls.o $(DIR_LIB) -o $@ -lcblas -lblas
+obj/ls.o: test/ls.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 
