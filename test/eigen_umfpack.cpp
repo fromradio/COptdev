@@ -108,10 +108,10 @@ int main(int argc ,char*argv[])
 {
 	SpMat m;
 	Vector vec;
-	readMtxFile("data/bcsstk17.mtx",m);
+	readMtxFile("data/ecology1.mtx",m);
 
-	CSpMat mm;
-	COPT::readMtxFile("data/bcsstk17.mtx",mm);
+	// CSpMat mm;
+	// COPT::readMtxFile("data/bcsstk17.mtx",mm);
 	// std::cout<<"m's element size is "<<m.elementSize()<<std::endl;
 	Vector v;
 	// v.resize(m.rows());
@@ -121,34 +121,34 @@ int main(int argc ,char*argv[])
 	// 	v[i] = randdouble();
 	vec = m*v;
 	// std::cout<<"v is "<<v<<std::endl;
-	Eigen::SparseLU<SpMat> solver;
-	solver.compute(m);
-	Vector result = solver.solve(vec);
+	// Eigen::SparseLU<SpMat> solver;
+	// solver.compute(m);
+	// Vector result = solver.solve(vec);
 	// Vector result = m.SimplicialLDLT().solve(vec);
 	// std::cout<<"result is "<<result<<std::endl;
-	std::cout<<"error is "<<std::sqrt((result-v).squaredNorm())<<std::endl;
+	// std::cout<<"ldlterror is "<<std::sqrt((result-v).squaredNorm())<<std::endl;
 	Eigen::UmfPackLU<SpMat> solver2;
 	solver2.compute(m);
-	result = solver2.solve(vec);
+	Vector result = solver2.solve(vec);
 	// Vector result = m.SimplicialLDLT().solve(vec);
 	// std::cout<<"result is "<<result<<std::endl;
-	std::cout<<"error is "<<std::sqrt((result-v).squaredNorm())<<std::endl;
+	std::cout<<"umfpack error is "<<std::sqrt((result-v).squaredNorm())<<std::endl;
 
-	void* symbolic,*numeric;
-	int s1 = COPT::umfpack_symbolic(mm.rows(),mm.cols(),mm.columnPointer(),mm.rowIndex(),mm.values(),&symbolic,0,0);
+	// void* symbolic,*numeric;
 
-	std::cout<<s1<<std::endl;
-	int s2 = COPT::umfpack_numeric(mm.columnPointer(),mm.rowIndex(),mm.values(),symbolic,&numeric,0,0);
-	std::cout<<s2<<std::endl;
-	Vector vvv(vec.size());
+	// // const double *control = new double[UMFPACK_CONTROL];
+	// double *info = new double[UMFPACK_INFO];
+	// int s1 = COPT::umfpack_symbolic(mm.rows(),mm.cols(),mm.columnPointer(),mm.rowIndex(),mm.values(),&symbolic,0,info);
 
-	CVec vv(v),vvec(vec);
-	int ec = COPT::umfpack_solve(UMFPACK_A,mm.columnPointer(),mm.rowIndex(),mm.values(),&vvv.col(0).coeffRef(0),vvec.dataPtr(),numeric,0,0);
+	// std::cout<<s1<<std::endl;
+	// int s2 = COPT::umfpack_numeric(mm.columnPointer(),mm.rowIndex(),mm.values(),symbolic,&numeric,0,info);
+	// std::cout<<s2<<std::endl;
+	// Vector vvv(vec.size());
 
+	// CVec vv(v),vvec(vec),rr(vec.size());
+	// int ec = COPT::umfpack_solve(UMFPACK_A,mm.columnPointer(),mm.rowIndex(),mm.values(),rr.dataPtr(),vvec.dataPtr(),numeric,0,info);
 
-
-	CVec rr = mm.solve(vec);
-	std::cout<<"error is "<<std::sqrt((vvv-v).squaredNorm())<<std::endl;
-	std::cout<<"lala is "<<std::sqrt((vv-rr).squaredNorm())<<std::endl;
+	// // std::cout<<"error is "<<std::sqrt((vvv-v).squaredNorm())<<std::endl;
+	// std::cout<<"lala is "<<std::sqrt((vv-rr).squaredNorm())<<std::endl;
 
 }

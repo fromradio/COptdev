@@ -13,112 +13,112 @@ namespace COPT
 /*			Default construction
  *			a null vector with size zero is created
  */
-template<class ScalarType,class Size>
-VectorBase<ScalarType,Size>::VectorBase()
-	:Array<ScalarType,Size>()
+template<class scalar,class index>
+VectorBase<scalar,index>::VectorBase()
+	:Array<scalar,index>()
 {
 }
 
-template<class ScalarType,class Size>
-ScalarType& VectorBase<ScalarType,Size>::operator() ( const Size i )
-{
-	return this->operator[](i);
-}
-
-template<class ScalarType,class Size>
-const ScalarType& VectorBase<ScalarType,Size>::operator() (const Size i ) const
+template<class scalar,class index>
+scalar& VectorBase<scalar,index>::operator() ( const index i )
 {
 	return this->operator[](i);
 }
 
-template<class ScalarType,class Size>
-bool VectorBase<ScalarType,Size>::operator<(const VectorBase<ScalarType,Size>& vec)const
+template<class scalar,class index>
+const scalar& VectorBase<scalar,index>::operator() (const index i ) const
+{
+	return this->operator[](i);
+}
+
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator<(const VectorBase<scalar,index>& vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
-	for ( Size i = 0 ; i < this->size() ; ++ i ){
+	for ( index i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)>=vec[i])
 			return false;
 	}
 	return true;
 }
 
-template<class ScalarType,class Size>
-bool VectorBase<ScalarType,Size>::operator<=(const VectorBase<ScalarType,Size>& vec)const
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator<=(const VectorBase<scalar,index>& vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
-	for ( Size i = 0 ; i < this->size() ; ++ i ){
+	for ( index i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)>vec[i])
 			return false;
 	}
 	return true;
 }
 
-template<class ScalarType,class Size>
-bool VectorBase<ScalarType,Size>::operator>(const VectorBase<ScalarType,Size>& vec)const
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator>(const VectorBase<scalar,index>& vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
-	for ( Size i = 0 ; i < this->size() ; ++ i ){
+	for ( index i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)<=vec[i])
 			return false;
 	}
 	return true;
 }
 
-template<class ScalarType,class Size>
-bool VectorBase<ScalarType,Size>::operator>=(const VectorBase<ScalarType,Size>& vec)const
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator>=(const VectorBase<scalar,index>& vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
-	for ( Size i = 0 ; i < this->size() ; ++ i ){
+	for ( index i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)<vec[i])
 			return false;
 	}
 	return true;
 }
 
-template<class ScalarType,class Size>
-bool VectorBase<ScalarType,Size>::operator==(const VectorBase<ScalarType,Size>& vec)const
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator==(const VectorBase<scalar,index>& vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
-	for ( Size i = 0 ; i < this->size() ; ++ i ){
+	for ( index i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)!=vec[i])
 			return false;
 	}
 	return true;
 }
 
-template<class ScalarType,class Size>
-bool VectorBase<ScalarType,Size>::operator!=(const VectorBase<ScalarType,Size>& vec)const
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator!=(const VectorBase<scalar,index>& vec)const
 {
 	if ( this->size() != vec.size() )
 		return true;
-	for ( Size i = 0 ; i < this->size() ; ++ i ){
+	for ( index i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)!=vec[i])
 			return true;
 	}
 	return false;
 }
 
-template<class ScalarType,class Size>
-ScalarType VectorBase<ScalarType,Size>::normalize()
+template<class scalar,class index>
+scalar VectorBase<scalar,index>::normalize()
 {
-	ScalarType norm = std::sqrt(squaredNorm());
+	scalar norm = std::sqrt(squaredNorm());
 	scale(1.0/norm);
 	return norm;
 }
 
-template<class ScalarType,class Size>
-MatrixBase<ScalarType,Size> VectorBase<ScalarType,Size>::mulTrans(const VectorBase<ScalarType,Size>& vec) const
+template<class scalar,class index>
+MatrixBase<scalar,index> VectorBase<scalar,index>::mulTrans(const VectorBase<scalar,index>& vec) const
 {
-	Size 					m = this->size();
-	Size 					n = vec.size();
-	MatrixBase<ScalarType,Size> 	result(m,n);
-	for ( Size i = 0 ; i < m ; ++ i )
-		for ( Size j = 0 ; j < n ; ++ j )
+	index 					m = this->size();
+	index 					n = vec.size();
+	MatrixBase<scalar,index> 	result(m,n);
+	for ( index i = 0 ; i < m ; ++ i )
+		for ( index j = 0 ; j < n ; ++ j )
 			result(i,j) = this->operator[](i)*vec[j];
 	return result;
 }
@@ -126,48 +126,48 @@ MatrixBase<ScalarType,Size> VectorBase<ScalarType,Size>::mulTrans(const VectorBa
 
 /*			the transpose of a matrix multiplies a vector
  */
-template<class ScalarType,class Size>
-VectorBase<ScalarType,Size> VectorBase<ScalarType,Size>::transMul(const MatrixBase<ScalarType,Size>& mat) const
+template<class scalar,class index>
+VectorBase<scalar,index> VectorBase<scalar,index>::transMul(const MatrixBase<scalar,index>& mat) const
 {
 	return mat.transpose()*(*this);
 }
 
-template<class ScalarType,class Size>
-VectorBase<ScalarType,Size> VectorBase<ScalarType,Size>::block(const std::set<Size>& indices) const
+template<class scalar,class index>
+VectorBase<scalar,index> VectorBase<scalar,index>::block(const std::set<index>& indices) const
 {
 	if( *indices.rbegin() >= this->size() )
 	{
 		throw COException("Index out of range in Vector blocking!");
 	}
-	VectorBase<ScalarType,Size> result(indices.size());
-	Size i = 0;
-	for ( typename std::set<Size>::const_iterator iter = indices.begin() ; iter != indices.end() ; ++ iter ){
+	VectorBase<scalar,index> result(indices.size());
+	index i = 0;
+	for ( typename std::set<index>::const_iterator iter = indices.begin() ; iter != indices.end() ; ++ iter ){
 		result[i] = this->operator[](*iter);
 		++ i;
 	} 
 	return result;
 }
 
-template<class ScalarType,class Size>
-void VectorBase<ScalarType,Size>::blockFromVector(const VectorBase& vec,const std::set<Size>& indices)
+template<class scalar,class index>
+void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec,const std::set<index>& indices)
 {
 	if( *indices.rbegin() >= vec.size() )
 	{
 		throw COException("Index out of range in Vector blocking!");
 	}
 	this->resize(indices.size());
-	Size i = 0;
-	for ( typename std::set<Size>::const_iterator iter = indices.begin() ; iter != indices.end() ; ++ iter ){
+	index i = 0;
+	for ( typename std::set<index>::const_iterator iter = indices.begin() ; iter != indices.end() ; ++ iter ){
 		this->operator[](i) = vec[*iter];
 		++ i;
 	}
 }
 
-template<class ScalarType,class Size>
-VectorBase<ScalarType,Size> VectorBase<ScalarType,Size>::block(const std::vector<Size>& indices) const
+template<class scalar,class index>
+VectorBase<scalar,index> VectorBase<scalar,index>::block(const std::vector<index>& indices) const
 {
-	VectorBase<ScalarType,Size> result(indices.size());
-	for ( Size i = 0 ; i < indices.size() ; ++ i ){
+	VectorBase<scalar,index> result(indices.size());
+	for ( index i = 0 ; i < indices.size() ; ++ i ){
 		if (indices[i] >= this->size())
 		{
 			throw COException("Index out of range in Vector blocking!");
@@ -177,11 +177,11 @@ VectorBase<ScalarType,Size> VectorBase<ScalarType,Size>::block(const std::vector
 	return result;
 }
 
-template<class ScalarType,class Size>
-void VectorBase<ScalarType,Size>::blockFromVector(const VectorBase& vec,const std::vector<Size>& indices)
+template<class scalar,class index>
+void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec,const std::vector<index>& indices)
 {
 	this->resize(indices.size());
-	for ( Size i = 0 ; i < indices.size() ; ++ i ){
+	for ( index i = 0 ; i < indices.size() ; ++ i ){
 		if(indices[i] >= vec.size() )
 		{
 			throw COException("Index out of range in Vector blocking!");
@@ -190,20 +190,20 @@ void VectorBase<ScalarType,Size>::blockFromVector(const VectorBase& vec,const st
 	}
 }
 
-template<class ScalarType,class Size>
-void VectorBase<ScalarType,Size>::combine(const VectorBase& v1,const VectorBase& v2)
+template<class scalar,class index>
+void VectorBase<scalar,index>::combine(const VectorBase& v1,const VectorBase& v2)
 {
 	VectorBase::stCombine(v1,v2,*this);
 }
 
-template<class ScalarType,class Size>
-void VectorBase<ScalarType,Size>::stCombine(const VectorBase& v1,const VectorBase& v2,VectorBase& v)
+template<class scalar,class index>
+void VectorBase<scalar,index>::stCombine(const VectorBase& v1,const VectorBase& v2,VectorBase& v)
 {
 	v.resize(v1.size()+v2.size());
-	Size n = v1.size();
-	for ( Size i = 0 ; i < n ; ++ i )
+	index n = v1.size();
+	for ( index i = 0 ; i < n ; ++ i )
 		v[i] = v1[i];
-	for ( Size i = 0 ; i < v2.size() ; ++ i )
+	for ( index i = 0 ; i < v2.size() ; ++ i )
 		v[i+n] = v2[i];
 }
 

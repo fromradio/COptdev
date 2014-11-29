@@ -19,7 +19,7 @@ inline void readMtxFile( const std::string& filename , SpMatrix& mat , const mat
 			return;
 		}
 		std::string temp;
-		typename SpMatrix::Size rows,cols,nnz;
+		typename SpMatrix::index rows,cols,nnz;
 		bool first = true;
 		std::vector<typename SpMatrix::Triplet> tris;
 		while(fin)
@@ -40,11 +40,10 @@ inline void readMtxFile( const std::string& filename , SpMatrix& mat , const mat
 					std::back_inserter(tokens));
 				if( first )
 				{
-					std::cout<<"temp is "<<std::endl;
 					if(tokens.size() == 3)
 					{
 						// matrix
-						if(sizeof(typename SpMatrix::Size)==4)
+						if(sizeof(typename SpMatrix::index)==4)
 						{
 							rows = atoi(tokens[0].c_str());
 							cols = atoi(tokens[1].c_str());
@@ -56,7 +55,6 @@ inline void readMtxFile( const std::string& filename , SpMatrix& mat , const mat
 							rows = atol(tokens[0].c_str());
 							cols = atol(tokens[1].c_str());
 							nnz = atol(tokens[2].c_str());
-							std::cout<<"rows is "<<rows<<std::endl;
 						}
 						tris.reserve(nnz);
 					}
@@ -68,7 +66,7 @@ inline void readMtxFile( const std::string& filename , SpMatrix& mat , const mat
 				}
 				else
 				{
-					if(sizeof(typename SpMatrix::Size)==4)
+					if(sizeof(typename SpMatrix::index)==4)
 					{
 
 						tris.push_back(typename SpMatrix::Triplet(atoi(tokens[0].c_str())-1,atoi(tokens[1].c_str())-1,atof(tokens[2].c_str())));
@@ -80,7 +78,8 @@ inline void readMtxFile( const std::string& filename , SpMatrix& mat , const mat
 				}
 			}
 		}
-		mat.setFromTriplets(rows,cols,tris.begin(),tris.end());
+		mat.fastSetFromTriplets(rows,cols,tris.begin(),tris.end());
+		fin.close();
 	}
 	else
 		return;
@@ -145,6 +144,7 @@ inline void readMtxFile( const std::string& filename , Vector& vec , const vecto
 				}
 			}
 		}
+		fin.close();
 	}
 	else
 		return;

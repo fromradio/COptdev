@@ -138,6 +138,20 @@ inline COPTlong umfpack_solve(
 // 	return umfpack_zl_solve(sys,colptr,rowind,vals,0,X,0,B,0,Numeric,Control,Info);
 // }
 
+/** default umfpack control */
+void umfpack_defaults(
+	double Control[UMFPACK_CONTROL], double, int)
+{
+	umfpack_di_defaults(Control);
+}
+
+void umfpack_defaults(
+	double Control[UMFPACK_CONTROL],double, COPTlong)
+{
+	umfpack_dl_defaults(Control);
+}
+	
+
 //%}
 
 /*			A wrapper for UMFPack solving sparse linear system.
@@ -151,8 +165,8 @@ class UMFLinearSolver
 	noncopyable
 {
 private:
-	typedef		typename SpMatrix::ScalarType		Scalar;
-	typedef 	typename SpMatrix::Size 			Size;
+	typedef		typename SpMatrix::scalar		Scalar;
+	typedef 	typename SpMatrix::index 			index;
 
 	/**	private variables */
 	//%{
@@ -161,10 +175,10 @@ private:
 	const SpMatrix& 	__mat;
 
 	/** umfpack numeric */
-	void*				__numeric;
+	void*				__symbolic;
 
 	/** umfpack numeric */
-	void*				__symbolic;
+	void*				__numeric;
 
 	/** UMFPack Control */
 	double* 			__control;
@@ -172,11 +186,20 @@ private:
 	/** UMFPack Info */
 	double*				__info;
 
+	/** the last computation time */
+	double 				__compute_time;
+
+	/** the last solving time */
+	double 				__solve_time;
+
 	/** whether warning happens */
 	bool				__haswarning;
 
 	/** whether error happens */
 	bool				__haserror;
+
+	/** whether the matrix is square */
+	bool 				__issquare;
 
 	/** status information */
 	std::string 		__info_str;
@@ -191,6 +214,9 @@ public:
 	UMFLinearSolver( const SpMatrix& mat);
 	~UMFLinearSolver();
 
+	/** initialization of umfpack solver */
+	void init();
+
 	/** given the matrix first analyze the symbolic */
 	void analyzeSymbolic();
 
@@ -198,10 +224,17 @@ public:
 	void analyzeNumeric();
 
 	/** solve a linear system */
-	VectorBase<Scalar,Size> solve(const VectorBase<Scalar,Size>& vec);
+	VectorBase<Scalar,index> solve(const VectorBase<Scalar,index>& vec);
 
 	/** print information */
 	void printInfo();
+
+	/** compute time in seconds */
+	double computeTime();
+
+	/** solve time in seconds */
+	double solveTime();
+
 
 };
 
@@ -323,13 +356,23 @@ UMFLinearSolver<SpMatrix>::UMFLinearSolver(
 	const SpMatrix& mat)
 	:
 	__mat(mat),
-	__control(new double[UMFPACK_CONTROL]),
-	__info(new double[UMFPACK_INFO]),
+	__symbolic(NULL),
+	__numeric(NULL),
+	__control(NULL),
+	__info(NULL),
+	__compute_time(0.0),
+	__solve_time(0.0),
 	__haswarning(false),
 	__haserror(false)
 {
+	init();
+
+	clock_t compute_start = clock() , compute_end;
 	analyzeSymbolic();
 	analyzeNumeric();
+	compute_end = clock();
+
+	__compute_time = static_cast<double>(compute_end-compute_start)/CLOCKS_PER_SEC;
 
 	if(__haswarning||__haserror)
 		printInfo();
@@ -338,12 +381,24 @@ UMFLinearSolver<SpMatrix>::UMFLinearSolver(
 }
 
 template<class SpMatrix>
+void UMFLinearSolver<SpMatrix>::init()
+{
+	if (__mat.rows()==__mat.cols())
+		__issquare = true;
+	else
+		__issquare = false;
+	__control = new double[UMFPACK_CONTROL];
+	__info = new double[UMFPACK_INFO];
+	umfpack_defaults(__control,Scalar(),index());
+}
+
+template<class SpMatrix>
 UMFLinearSolver<SpMatrix>::~UMFLinearSolver()
 {
-	umfpack_free_symbolic(&__symbolic,Scalar(),Size());
-	umfpack_free_numeric(&__numeric,Scalar(),Size());
-	delete[] __control;
-	delete[] __info;
+	umfpack_free_symbolic(&__symbolic,Scalar(),index());
+	umfpack_free_numeric(&__numeric,Scalar(),index());
+	SAFE_DELETE_ARRAY(__info);
+	SAFE_DELETE_ARRAY(__control);
 }
 
 template<class SpMatrix>
@@ -361,18 +416,36 @@ void UMFLinearSolver<SpMatrix>::analyzeNumeric()
 }
 
 template<class SpMatrix>
-VectorBase<typename SpMatrix::ScalarType,typename SpMatrix::Size> UMFLinearSolver<SpMatrix>::solve(const VectorBase<Scalar,Size>& vec)
+VectorBase<typename SpMatrix::scalar,typename SpMatrix::index> UMFLinearSolver<SpMatrix>::solve(const VectorBase<Scalar,index>& vec)
 {
-	Scalar* x= new Scalar[vec.size()];
-	umfpack_solve(UMFPACK_A,__mat.columnPointer(),__mat.rowIndex(),__mat.values(),x,vec.dataPtr(),__numeric,__control,__info);
-	return VectorBase<Scalar,Size>(vec.size(),x);
-	delete[]x;
+	VectorBase<Scalar,index>result (vec.size());
+	clock_t solve_start = clock() , solve_end;
+	umfpack_solve(UMFPACK_A,__mat.columnPointer(),__mat.rowIndex(),__mat.values(),result.dataPtr(),vec.dataPtr(),__numeric,__control,__info);
+	solve_end = clock();
+	__solve_time = static_cast<double>(solve_end-solve_start)/CLOCKS_PER_SEC;
+	return result;
 }
 
 template<class SpMatrix>
 void UMFLinearSolver<SpMatrix>::printInfo()
 {
 	std::cerr<<__info_str<<std::endl;
+	for ( int i = 0 ; i < UMFPACK_INFO ; ++ i )
+	{
+		std::cout<<i<<" "<<__info[i]<<std::endl;
+	}
+}
+
+template<class SpMatrix>
+double UMFLinearSolver<SpMatrix>::computeTime()
+{
+	return __compute_time;
+}
+
+template<class SpMatrix>
+double UMFLinearSolver<SpMatrix>::solveTime()
+{
+	return __solve_time;
 }
 
 }// End of namespace COPT

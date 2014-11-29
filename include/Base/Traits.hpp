@@ -97,6 +97,49 @@ struct is_size
 // struct integer_type<longsize>
 // { typedef COPTlong longsize;};
 
+template<class T>
+struct is_index
+{ 
+	typedef T size;
+	static const bool value = false;
+};
+
+template<>
+struct is_index<int>
+{ 
+	typedef unsigned int size;
+	static const bool value = true;
+};
+
+template<>
+struct is_index<long>
+{ 
+	typedef unsigned long size;
+	static const bool value = true;
+};
+
+template<class T>
+struct is_unsigned_size
+{ 
+	typedef T index;
+	static const bool value = false;
+};
+
+template<>
+struct is_unsigned_size<unsigned int>
+{ 
+	typedef 	int 			index;
+	static const bool value = true;
+};
+
+template<>
+struct is_unsigned_size<unsigned long>
+{ 
+	typedef 	long 			index;
+	static const bool value = true;
+};
+
+
 
 
 template<class T>
@@ -108,23 +151,27 @@ struct is_scalar
 
 
 
-template<class T,class Size>
+template<class T,class Index>
 class VectorBase;
-template<class T,class Size>
+template<class T,class Index>
 class MatrixBase;
 
 /*		A trait class describing basic types that might be
  *		used in a numerical solver. A solver should take trait
  *		as template for flexibility.
  */
-template<class T,class S = longsize>
+template<class T,class I = int >
 class KernelTrait
 {
 public:
-	typedef T 							ScalarType;
-	typedef S 							SizeType;
-	typedef VectorBase<T,S>				Vector;
-	typedef MatrixBase<T,S>				Matrix;
+	typedef T 							scalar;
+	typedef I 							index;
+	typedef typename is_index<I>::size	size;
+	// whether the kernel is valid:
+	static const bool valid  = is_scalar<T>::value&&is_index<I>::value;
+
+	typedef VectorBase<T,I>				Vector;
+	typedef MatrixBase<T,I>				Matrix;
 };
 
 

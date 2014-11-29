@@ -20,7 +20,8 @@ template<class kernel>
 class SimplexSolver
 {
 private:
-	typedef typename kernel::ScalarType			ScalarType;
+	typedef typename kernel::scalar				scalar;
+	typedef typename kernel::index 				index;
 	typedef typename kernel::Vector				Vector;
 	typedef typename kernel::Matrix				Matrix;
 
@@ -42,9 +43,9 @@ private:
 	/** the variable of the problem*/
 	//%{
 	/** the dimension of the problem */
-	size_t 				__n;
+	index 				__n;
 	/** the dimension of right hand vector b */
-	size_t 				__m;
+	index 				__m;
 	/** the matrix A in equal constraint */
 	Matrix 				__A;
 	/** the right hand vector b */
@@ -54,7 +55,7 @@ private:
 	/** the variable */
 	Vector				__x;
 	/** the final evaluation of the function */
-	ScalarType			__val;
+	scalar				__val;
 	/** the status of the solver */
 	AlgoType 			__type;
 	//%} end of variables
@@ -92,7 +93,7 @@ public:
 	/** result x */
 	const Vector& result() const;
 	/** evaluation value */
-	const ScalarType& val() const;
+	const scalar& val() const;
 	//%} end of getter and setter
 
 public:
@@ -108,7 +109,7 @@ public:
 	static inline void solveBlockingSystem(
 						const Matrix& A,
 						const Vector& b,
-						const std::vector<size_t>& indb,
+						const std::vector<index>& indb,
 						Vector& x);
 
 	/*		Find the complete solution with a linear system and blocking vector
@@ -120,7 +121,7 @@ public:
 	static inline void solveCompleteBlockingSystem(
 						const Matrix& A,
 						const Vector& b,
-						const std::vector<size_t>& indb,
+						const std::vector<index>& indb,
 						Vector& x);
 
 	/*		One step of a simplex algorithm for solving a Linear Programming
@@ -135,15 +136,15 @@ public:
  						const Matrix& A,
  						const Vector& b,
  						const Vector& c,
- 						std::vector<size_t>& indb,
- 						std::vector<size_t>& indn);
+ 						std::vector<index>& indb,
+ 						std::vector<index>& indn);
 
  	static inline bool findPivoting(
  						const Vector& xb,
  						const Vector& d,
  						const int q,
- 						std::vector<size_t>& indb,
- 						std::vector<size_t>& indn);
+ 						std::vector<index>& indb,
+ 						std::vector<index>& indn);
 
  	/* 		The first phase of simplex method. The target is to find the feasible
 	 *		point of the problem. 
@@ -159,13 +160,13 @@ public:
 	 *		/param indz:
 	 */
 	static inline bool findFeasiblePoint(
-						const size_t m,
-						const size_t n,
+						const index m,
+						const index n,
 						const Matrix& A,
 						const Vector& b,
-						std::vector<size_t>& indb,
-						std::vector<size_t>& indn,
-						std::vector<size_t>& indz);
+						std::vector<index>& indb,
+						std::vector<index>& indn,
+						std::vector<index>& indz);
 
 
  	/* 		Simplex method algorithm when initial point is known.
@@ -184,9 +185,9 @@ public:
  						const Vector& b,
  						const Vector& c,
  						Vector& x,
- 						ScalarType& val,
- 						std::vector<size_t>& indb,
- 						std::vector<size_t>& indn);
+ 						scalar& val,
+ 						std::vector<index>& indb,
+ 						std::vector<index>& indn);
 
  	/*		Phase two of simplex method:
  	 *		The input contains the current indices of used B. indz indicates
@@ -209,10 +210,10 @@ public:
  						const Vector& b,
  						const Vector& c,
  						Vector& x,
- 						ScalarType& val,
- 						std::vector<size_t>& indb,
- 						std::vector<size_t>& indn,
- 						std::vector<size_t>& indz);
+ 						scalar& val,
+ 						std::vector<index>& indb,
+ 						std::vector<index>& indn,
+ 						std::vector<index>& indz);
  	//%} end of static methods
 }; // End of class SimplexSolver
 
@@ -311,7 +312,7 @@ const typename kernel::Vector& SimplexSolver<kernel>::result() const
 }
 
 template<class kernel>
-const typename kernel::ScalarType& SimplexSolver<kernel>::val() const
+const typename kernel::scalar& SimplexSolver<kernel>::val() const
 {
 	return __val;
 }
@@ -329,7 +330,7 @@ bool SimplexSolver<kernel>::consistencyJudgement() const
 template<class kernel>
 typename SimplexSolver<kernel>::AlgoType SimplexSolver<kernel>::solve()
 {
-	std::vector<size_t> indb,indn,indz;
+	std::vector<index> indb,indn,indz;
 	if( findFeasiblePoint(__m,__n,__A,__b,indb,indn,indz) )
 	{
 		// the problem is feasible
@@ -346,7 +347,7 @@ template<class kernel>
 void SimplexSolver<kernel>::solveBlockingSystem(
 	const Matrix& A,
 	const Vector& b,
-	const std::vector<size_t>& indb,
+	const std::vector<index>& indb,
 	Vector& x)
 {
 	Matrix B;
@@ -358,7 +359,7 @@ template<class kernel>
 void SimplexSolver<kernel>::solveCompleteBlockingSystem(
 	const Matrix& A,
 	const Vector& b,
-	const std::vector<size_t>& indb,
+	const std::vector<index>& indb,
 	Vector& x)
 {
 	x.resize(A.cols());
@@ -369,10 +370,10 @@ void SimplexSolver<kernel>::solveCompleteBlockingSystem(
 }
 
 template<class kernel>
-bool SimplexSolver<kernel>::findPivoting(const Vector& xb,const Vector& d,const int q,std::vector<size_t>& indb,std::vector<size_t>& indn)
+bool SimplexSolver<kernel>::findPivoting(const Vector& xb,const Vector& d,const int q,std::vector<index>& indb,std::vector<index>& indn)
 {
 	int p = -1;
-	ScalarType min = INFTY;
+	scalar min = INFTY;
 	for ( int i = 0 ; i < d.size() ; ++ i ){
 		if( d[i] > 0 ){
 			if(xb[i]/d[i]<min){
@@ -395,8 +396,8 @@ typename SimplexSolver<kernel>::StepType SimplexSolver<kernel>::oneSimplexStep(
 	const Matrix& A,
 	const Vector& b,
 	const Vector& c,
-	std::vector<size_t>& indb,
-	std::vector<size_t>& indn
+	std::vector<index>& indb,
+	std::vector<index>& indn
 	)
 {
 	Matrix B,N;
@@ -432,20 +433,20 @@ typename SimplexSolver<kernel>::StepType SimplexSolver<kernel>::oneSimplexStep(
 
 template<class kernel>
 bool SimplexSolver<kernel>::findFeasiblePoint(
-	const size_t m,
-	const size_t n,
+	const index m,
+	const index n,
 	const Matrix& A,
 	const Vector& b,
-	std::vector<size_t>& indb,
-	std::vector<size_t>& indn,
-	std::vector<size_t>& indz)
+	std::vector<index>& indb,
+	std::vector<index>& indn,
+	std::vector<index>& indz)
 {
 	Matrix E = Matrix::identity(m,m),AE;
 	for ( int i = 0 ; i < m ; ++ i ){
 		if(b(i)<0)
-			E(i,i) = static_cast<ScalarType>(-1.0);
+			E(i,i) = static_cast<scalar>(-1.0);
 		else
-			E(i,i) = static_cast<ScalarType>(1.0);
+			E(i,i) = static_cast<scalar>(1.0);
 	}
 	Matrix::stCombineAlongColumn(A,E,AE);
 	Vector e(m+n);
@@ -454,27 +455,27 @@ bool SimplexSolver<kernel>::findFeasiblePoint(
 	Vector xz(m+n);
 	for ( int i = 0 ; i < m ; ++ i )
 		xz(i+n) = std::abs(b(i));
-	std::vector<size_t> iindb(m),iindn(n); // the indices for B and N
-	for ( size_t i = 0 ; i < m ; ++ i )
+	std::vector<index> iindb(m),iindn(n); // the indices for B and N
+	for ( index i = 0 ; i < m ; ++ i )
 		iindb[i] = n+i;
-	for ( size_t i = 0 ; i < n ; ++ i )
+	for ( index i = 0 ; i < n ; ++ i )
 		iindn[i] = i;
 	Vector x;
-	ScalarType val;
+	scalar val;
 	AlgoType t = simplexMethodWithInitalization(m,n,AE,b,e,x,val,iindb,iindn);
 
 	// compute indb and indn. index less than n is kept
 	indb.clear();indb.reserve(iindb.size());
 	indn.clear();indn.reserve(iindn.size());
 	indz.clear();indz.reserve(iindb.size());
-	for ( size_t i = 0 ; i < iindb.size() ; ++ i )
+	for ( index i = 0 ; i < iindb.size() ; ++ i )
 	{
 		if(iindb[i]<n)
 			indb.push_back(iindb[i]);
 		else
 			indz.push_back(iindb[i]-n);
 	}
-	for (size_t i = 0 ; i < iindn.size() ; ++ i )
+	for (index i = 0 ; i < iindn.size() ; ++ i )
 	{
 		if(iindn[i]<n)
 			indn.push_back(iindn[i]);
@@ -496,9 +497,9 @@ typename SimplexSolver<kernel>::AlgoType SimplexSolver<kernel>::simplexMethodWit
 	const Vector& b,
 	const Vector& c,
 	Vector& x,
-	ScalarType& val,
-	std::vector<size_t>&indb,
-	std::vector<size_t>&indn)
+	scalar& val,
+	std::vector<index>&indb,
+	std::vector<index>&indn)
 {
 	StepType type;
 	do{
@@ -521,13 +522,13 @@ typename SimplexSolver<kernel>::AlgoType SimplexSolver<kernel>::simplexMethodWit
 	const Vector& b,
 	const Vector& c,
 	Vector& x,
-	ScalarType& val,
-	std::vector<size_t>&indb,
-	std::vector<size_t>&indn,
-	std::vector<size_t>&indz)
+	scalar& val,
+	std::vector<index>&indb,
+	std::vector<index>&indn,
+	std::vector<index>&indz)
 {
 	// the difference is that some artificial variables still remains
-	size_t zsize = indz.size();
+	index zsize = indz.size();
 	// new c
 	Vector nc(n+2*zsize);
 	for ( int i = 0 ; i < n ; ++ i )
@@ -547,7 +548,7 @@ typename SimplexSolver<kernel>::AlgoType SimplexSolver<kernel>::simplexMethodWit
 	for ( int i = 0 ; i < m ; ++ i )
 		nb(i) = b(i);
 	Vector nx;
-	std::vector<size_t> iindb(indb);
+	std::vector<index> iindb(indb);
 	for ( int i = 0 ; i < zsize ; ++ i )
 		iindb.push_back(n+i);
 	AlgoType t = simplexMethodWithInitalization(m,n,nA,nb,nc,nx,val,iindb,indn);

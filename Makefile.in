@@ -14,6 +14,7 @@ SRC = $(foreach n, $(DIR_SRC),$(wildcard $(n)/*.cpp))
 # TT = $(notdir $(SRC))
 OBJ = $(patsubst %.cpp,$(DIR_OBJ)/%.o,$(notdir $(SRC)))
 
+LIBS = -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -lcblas -lblas
 
 TARGET = all
 BIN_TARGET = $(DIR_BIN)/$(TARGET)
