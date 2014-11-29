@@ -98,7 +98,7 @@ inline void readMtxFile( const std::string& filename , Vector& vec , const vecto
 			return;
 		}
 		std::string temp;
-		typename Vector::Size size,i = 0;
+		typename Vector::index size,i = 0;
 		bool first = true;
 		while(fin)
 		{
@@ -121,7 +121,7 @@ inline void readMtxFile( const std::string& filename , Vector& vec , const vecto
 					if(tokens.size() == 2)
 					{
 						// matrix
-						if(sizeof(typename Vector::Size)==4)
+						if(sizeof(typename Vector::index)==4)
 						{
 							size = atoi(tokens[0].c_str());
 						}

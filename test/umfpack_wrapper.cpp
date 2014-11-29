@@ -23,7 +23,7 @@ double randdouble()
 }
 
 int main(int argc , char* argv[])
-{
+{ 
 	std::cout<<argc<<std::endl;
 	if( argc == 0 )
 		return 0;
