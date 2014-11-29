@@ -71,13 +71,13 @@ obj/spmat.o:test/spmat.cpp
 # test for umfpack
 umfpack: bin/umfpack
 bin/umfpack: obj/umfpack.o
-	$(CC) obj/umfpack.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
+	$(CC) obj/umfpack.o $(DIR_LIB) -o $@ -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -lcblas -lblas -lgfortran -llapack
 obj/umfpack.o:test/umfpack.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 umfpackwrapper: bin/umfpackwrapper
 bin/umfpackwrapper: obj/umfpackwrapper.o
-	$(CC) obj/umfpackwrapper.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
+	$(CC) obj/umfpackwrapper.o $(DIR_LIB) -o $@  -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -lcblas -lblas -lgfortran
 obj/umfpackwrapper.o: test/umfpack_wrapper.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
