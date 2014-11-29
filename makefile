@@ -92,6 +92,12 @@ bin/ls: obj/ls.o
 	$(CC) obj/ls.o $(DIR_LIB) -o $@ -lcblas -lblas
 obj/ls.o: test/ls.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
+
+eigen: bin/eigen
+bin/eigen: obj/eigen.o
+	$(CC) obj/eigen.o $(DIR_LIB) -o $@ -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -lcblas -lblas
+obj/eigen.o: test/eigen_umfpack.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 
