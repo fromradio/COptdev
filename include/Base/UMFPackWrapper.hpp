@@ -10,8 +10,12 @@ namespace COPT
 
 /** wrappers for umf functions */
 //%{
+inline void umfpack_free_numeric(void **Numeric,double,int)
+{
+	umfpack_di_free_numeric(Numeric);
+}
 
-inline void umfpack_free_numeric(void **Numeric,double)
+inline void umfpack_free_numeric(void **Numeric,double,COPTlong)
 { 
 	umfpack_dl_free_numeric(Numeric); 
 	*Numeric = NULL;
@@ -22,8 +26,12 @@ inline void umfpack_free_numeric(void **Numeric,double)
 // 	umfpack_zl_free_numeric(Numeric);
 // 	*Numeric = NULL;
 // }
+inline void umfpack_free_symbolic(void **Symbolic,double,int)
+{
+	umfpack_di_free_symbolic(Symbolic);
+}
 
-inline void umfpack_free_symbolic(void **Symbolic,double)
+inline void umfpack_free_symbolic(void **Symbolic,double,COPTlong)
 {
 	umfpack_dl_free_symbolic(Symbolic);
 	*Symbolic = NULL;
@@ -34,6 +42,14 @@ inline void umfpack_free_symbolic(void **Symbolic,double)
 // 	umfpack_zl_free_symbolic(Symbolic);
 // 	*Symbolic = NULL;
 // }
+
+inline int umfpack_symbolic(
+	int rows,int cols,
+	const int* colptr,const int* rowind, const double*vals,void **Symbolic,
+	const double* Control,double* Info)
+{
+	return umfpack_di_symbolic(rows,cols,colptr,rowind,vals,Symbolic,Control,Info);
+}
 
 inline COPTlong umfpack_symbolic(
 	COPTlong rows,COPTlong cols,
@@ -59,6 +75,14 @@ inline COPTlong umfpack_symbolic(
 // 	return umfpack_zl_symbolic(rows,cols,colptr,rowind,vals,0,Symbolic,Control,Info);
 // }
 
+inline int umfpack_numeric(
+	const int* colptr, const int* rowind, const double*vals,
+	void *Symbolic, void **Numeric,
+	const double* Control, double* Info)
+{
+	return umfpack_di_numeric(colptr,rowind,vals,Symbolic,Numeric,Control,Info);
+}
+
 inline COPTlong umfpack_numeric(
 	const COPTlong *colptr, const COPTlong* rowind, const double* vals,
 	void *Symbolic, void **Numeric,
@@ -83,6 +107,13 @@ inline COPTlong umfpack_numeric(
 // 	return umfpack_zl_numeric(colptr,rowind,vals,Symbolic,Numeric,Control,Info);
 // }
 
+inline int umfpack_solve(
+	int sys,const int* colptr,const int* rowind, const double* vals,
+	double* X, const double* B,void *Numeric,
+	const double* Control, double* Info)
+{
+	return umfpack_di_solve(sys,colptr,rowind,vals,X,B,Numeric,Control,Info);
+}
 inline COPTlong umfpack_solve(
 	int sys,const COPTlong *colptr,const COPTlong* rowind, const double* vals,
 	double* X, const double* B, void *Numeric,
@@ -309,8 +340,8 @@ UMFLinearSolver<SpMatrix>::UMFLinearSolver(
 template<class SpMatrix>
 UMFLinearSolver<SpMatrix>::~UMFLinearSolver()
 {
-	umfpack_free_symbolic(&__symbolic,Scalar());
-	umfpack_free_numeric(&__numeric,Scalar());
+	umfpack_free_symbolic(&__symbolic,Scalar(),Size());
+	umfpack_free_numeric(&__numeric,Scalar(),Size());
 	delete[] __control;
 	delete[] __info;
 }

@@ -6,8 +6,6 @@
 
 namespace COPT
 {
-
-
 template<class SpMatrix>
 inline void readMtxFile( const std::string& filename , SpMatrix& mat , const matrix_tag& )
 {
