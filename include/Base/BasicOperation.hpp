@@ -51,9 +51,22 @@ inline void SAFE_DELETE_ARRAY(T* array)
 
 /*		Basic class for iterator
  */
+template<class T>
 class Iterator
 {
+private:
+	T*			__iter;
+public:
+	Iterator():__iter(NULL){}
+	Iterator()
+};
 
+template<class T>
+class ConstIterator
+{
+private:
+public:
+	ConstIterator():
 };
 
 /**		base class who is not copyable */

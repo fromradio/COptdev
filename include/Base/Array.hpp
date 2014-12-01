@@ -11,7 +11,10 @@ namespace COPT
  *		like vector and matrix. The array can be referred to another array or independent 
  *		array. 
  */
-template<class T,class I = int>
+template<class T>
+
+
+template<class T,class I>
 class Array
 {
 public:
