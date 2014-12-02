@@ -95,8 +95,14 @@ obj/ls.o: test/ls.cpp
 
 eigen: bin/eigen
 bin/eigen: obj/eigen.o
-	$(CC) obj/eigen.o $(DIR_LIB) -o $@ -lumfpack $(LIBS)
+	$(CC) obj/eigen.o $(DIR_LIB) -o $@ $(LIBS)
 obj/eigen.o: test/eigen_umfpack.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+lapack: bin/lapack
+bin/lapack: obj/lapack.o
+	$(CC) obj/lapack.o $(DIR_LIB) -o $@ $(LIBS)
+obj/lapack.o: test/lapack_test.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
