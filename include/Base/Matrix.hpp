@@ -333,13 +333,15 @@ public:
 /*
  *		class Triplet for sparse matrix assignment
  */
-template<class Scalar,class I = int>
+template<class Scalar,class I>
 struct TripletBase
 {
 
 public:
-	typedef Scalar 				scalar;
-	typedef I 					index;
+	typedef Scalar 								scalar;
+	typedef I 									index;
+	typedef KernelTrait<Scalar,I>				kernel;
+	typedef typename kernel::size 				size;
 private:
 	/** private variables */
 	//%{
@@ -413,7 +415,7 @@ struct columnComparison
 template<class SpMatrix>
 class UMFLinearSolver;
 
-template<class T,class I = int>
+template<class T,class I>
 class SpMatrixBase
 {
 public:
@@ -421,6 +423,7 @@ public:
 	typedef  	I 	 					index;
 	typedef 	TripletBase<T,I>		Triplet;
 	typedef 	matrix_tag 				Category;
+	typedef 	KernelTrait<T,I>		kernel;
 private:
 
 	typedef 	VectorBase<T,I>			Vector;
@@ -443,7 +446,7 @@ private:
 	index*				__rowind;
 
 	/** the values */
-	scalar*		 	__vals;
+	scalar*		 		__vals;
 
 	/** static zero */
 	static const scalar __zero;
@@ -595,9 +598,9 @@ public:
 
 /** Sparse matrix related operator */
 template<class scalar,class index>
-SpMatrixBase<scalar,index> operator* (const scalar s,const SpMatrixBase<scalar>& mat);
+SpMatrixBase<scalar,index> operator* (const scalar s,const SpMatrixBase<scalar,index>& mat);
 template<class scalar,class index,class T>
-SpMatrixBase<scalar,index> operator* (const T s,const SpMatrixBase<scalar>& mat);
+SpMatrixBase<scalar,index> operator* (const T s,const SpMatrixBase<scalar,index>& mat);
 
 
 }// End of namespace COPT

@@ -2,21 +2,21 @@
 
 
 typedef double		 					FT;
-typedef COPT::Array<FT> 				Array;
-typedef COPT::VectorBase<FT>			Vector;
-typedef COPT::MatrixBase<FT>	 		Matrix;
 typedef COPT::KernelTrait<FT>			kernel;
+typedef kernel::Array 					Array;
+typedef kernel::Vector 					Vector;
+typedef kernel::Matrix 					Matrix;
 typedef COPT::TripletBase<FT>		 	Triplet;
-typedef COPT::SpMatrixBase<FT>			SpMatrix;
+typedef COPT::SpMatrixBase<FT,int>		SpMatrix;
 
 int main(int argc,char* argv[])
 {
 	std::cout<<"!!!!"<<std::endl; 
-	size_t rows = 10;
-	size_t cols = 10;
-	size_t elesize = 10;
-	size_t* rowind = new size_t[elesize];
-	size_t* colptr = new size_t[cols+1];
+	int rows = 10;
+	int cols = 10;
+	int elesize = 10;
+	int* rowind = new int[elesize];
+	int* colptr = new int[cols+1];
 	FT*	vals = new FT[elesize];
 	for ( int i = 0 ; i < elesize ; ++ i )
 	{
@@ -40,7 +40,7 @@ int main(int argc,char* argv[])
 	std::vector<Triplet> tris;
 	tris.push_back(Triplet(0,0,1));
 	tris.push_back(Triplet(1,0,2));
-	tris.push_back(Triplet(0,1,1));
+	tris.push_back(Triplet(0,1,1)); 
 	tris.push_back(Triplet(0,0,2));
 	tris.push_back(Triplet(0,1,2));
 	tris.push_back(Triplet(1,1,3));

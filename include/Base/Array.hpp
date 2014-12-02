@@ -11,11 +11,11 @@ namespace COPT
  *		like vector and matrix. The array can be referred to another array or independent 
  *		array. 
  */
-template<class T>
-
 
 template<class T,class I>
 class Array
+	:
+	public COPTObject
 {
 public:
 	/**		define the scalar type 			*/
@@ -49,6 +49,7 @@ public:
 
 	Array()
 		:
+		COPTObject(),
 		__size(0),
 		__inter(1),
 		__data_ptr(NULL),
@@ -58,6 +59,7 @@ public:
 
 	Array ( const index size, const scalar* data = NULL, const index inter = 1 )
 		:
+		COPTObject(),
 		__size(size),
 		__inter(1),
 		__data_ptr(new scalar[size]),
@@ -74,6 +76,7 @@ public:
 
 	Array( const index size , const referred_array& , scalar* data ,const index inter = 1)
 		:
+		COPTObject(),
 		__size(size),
 		__inter(inter),
 		__data_ptr(data),
@@ -82,6 +85,8 @@ public:
 	}
 
 	Array( const Array& arr )
+		:
+		COPTObject()
 	{
 		if(arr.isReferred())
 			setReferredArray(arr.size(),arr.dataPtr(),arr.interval());

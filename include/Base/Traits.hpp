@@ -150,11 +150,14 @@ struct is_scalar
 };
 
 
-
-template<class T,class Index>
+template<class T,class I>
+class Array;
+template<class T,class I>
 class VectorBase;
-template<class T,class Index>
+template<class T,class I>
 class MatrixBase;
+template<class T,class I>
+class SpMatrixBase;
 
 /*		A trait class describing basic types that might be
  *		used in a numerical solver. A solver should take trait
@@ -170,15 +173,23 @@ public:
 	// whether the kernel is valid:
 	static const bool valid  = is_scalar<T>::value&&is_index<I>::value;
 
+	typedef Array<T,I> 					Array;
 	typedef VectorBase<T,I>				Vector;
 	typedef MatrixBase<T,I>				Matrix;
+	typedef SpMatrixBase<T,I>			SpMatrix;
 };
 
-
+/** tags */
+struct referred_array{};
+struct data_tag{};
+struct matrix_tag:data_tag{};
+struct vector_tag:data_tag{};
+struct solver_tag{};
+struct constraint_tag{};
 /** traits of constraints and functions*/
-struct linear_constraint_tag{};
-struct quadratic_constraint_tag{};
-struct non_linear_constraint_tag{};
+struct linear_constraint_tag:constraint_tag{};
+struct quadratic_constraint_tag:constraint_tag{};
+struct non_linear_constraint_tag:constraint_tag{};
 
 template<class Constraint>
 struct constraint_trait{
@@ -186,15 +197,11 @@ struct constraint_trait{
 };
 
 
-struct referred_array{};
 
 
-/** tags */
 
-struct data_tag{};
-struct matrix_tag: public data_tag{};
-struct vector_tag: public data_tag{};
-struct solver_tag{};
+
+
 
 }// End of namespace COPT
 

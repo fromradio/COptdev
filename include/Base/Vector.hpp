@@ -20,7 +20,8 @@ class MatrixBase;
 template <class FT,class I = int>
 class VectorBase 
 	: 
-	public Array<FT,I>{
+	public Array<FT,I>
+{
 public:
 	/** 	scalar type 	*/
 	typedef 				FT						scalar;

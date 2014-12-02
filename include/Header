@@ -26,6 +26,7 @@
 #include <Eigen/Dense>
 #endif
 
+#include "Base/Object.hpp"
 #include "Base/BasicOperation.hpp"
 #include "Base/COException.hpp"
 #include "Base/Traits.hpp"
