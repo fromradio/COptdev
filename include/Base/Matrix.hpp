@@ -33,7 +33,7 @@ public:
 private:
 	/** definition used in implementation */
 	typedef 			VectorBase<FT,index>			Vector;
-	typedef 			Array<FT,index>				Arr;
+	typedef 			Array<FT,index>					Arr;
 
 	/**			private variables			*/
 	//%{
@@ -208,6 +208,24 @@ public:
 	/*				solve linear system
 	 *
 	 */
+
+	 Vector lapackSolve( const Vector& vec ){
+		if (__rows != __cols )
+			throw COException("Solving Error: the matrix is not square!");
+		if (__rows != vec.size() )
+			throw COException("Solving Error: the size of right hand vector is wrong!");
+		Vector v(vec);
+		int pivot[__rows], c2 = 1,info;
+		scalar* a = new scalar[__rows*__cols];
+		blas::copt_blas_copy(__rows*__cols,this->dataPtr(),1,a,1);
+		copt_lapack_gesv(&__rows,&c2,a,
+			&__rows,pivot,v.dataPtr(),
+			&__rows,
+			&info);
+		delete[] a; // delete the temporaray array
+		return v;
+	}
+	
 #ifdef EIGEN
 	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec){
 		// currently we use eigen to solve it
@@ -227,7 +245,18 @@ public:
 		Eigen::Matrix<scalar,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
 		return VectorBase<scalar,index>(result);
 	}
+#else
+	Vector solve( const Vector& vec ){
+		return lapackSolve(vec);
+	}
 #endif
+
+	Vector leastSquareSolve( const Vector& vec ){
+		if( __cols != vec.size() )
+			throw COException("least square error: the size is not consistent!");
+	}
+
+	
 
 
 	/*			Special MatrixBase

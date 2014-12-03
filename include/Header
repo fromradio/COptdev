@@ -15,6 +15,7 @@
 
 #include <complex>
 #include <ThirdParty/cblas.h>
+#include <ThirdParty/clapack.h>
 #include <umfpack.h>
 #include <algorithm>
 #include <limits>
@@ -33,6 +34,7 @@
 
 
 #include "Base/CBlasWrapper.hpp"
+#include "Base/LapackWrapper.hpp"
 #include "Base/UmfPackWrapper.hpp"
 #include "Base/Array.hpp"
 #include "Base/Vector.hpp"

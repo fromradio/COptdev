@@ -4,6 +4,19 @@
 namespace COPT
 {
 
+// #if defined(__LP__64)
+	typedef int 		copt_int;
+	typedef int 		copt_logical;
+	typedef float 		copt_real;
+	typedef double 		copt_doublereal;
+// #else
+	// typedef long int 	copt_int;
+	// typedef long int 	copt_logical;
+	// typedef float 		copt_real;
+	// typedef double 		copt_doublereal;
+// #endif
+
+	
 #ifdef _WIN64
 typedef __int64 		COPTlong;
 #else
