@@ -45,6 +45,7 @@
 #include "Algorithms/AlternatingDirectionMethodOfMultipliers.hpp"
 #include "Algorithms/NonLinearSolver.hpp"
 #include "Algorithms/NonLinearSolverImpl.hpp"
+#include "Algorithms/LevenbergMarquardt.hpp"
 #include "Algorithms/Simplex.hpp"
 
 
