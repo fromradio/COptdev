@@ -14,30 +14,44 @@ namespace COPT
 	Class of 'MatrixBase'
 		the data is stored column by column
 */
-template<class FT>
+template<class FT,class I = int>
 class MatrixBase
-	: public Array<FT>
+	:
+	public Array<FT,I>
 {
 public:
 
-	// the scalar type
-	typedef 			Array<FT>				Arr;
-	typedef typename	Arr::ScalarType 		ScalarType;
-	typedef 			VectorBase<FT>			Vector;
-
+	/** the scalar type */
+	typedef 			FT 				 			scalar;
+	/** the size type used */
+	typedef 			I 							index;						
+	/** define fthe category */
+	typedef 			matrix_tag 					Category;
+	/** define the trait */
+	typedef 			KernelTrait<FT,index>		Kernel;
 
 private:
+	/** definition used in implementation */
+	typedef 			VectorBase<FT,index>			Vector;
+	typedef 			Array<FT,index>					Arr;
+
+	/**			private variables			*/
+	//%{
+
 	/** the size of rows */
-	size_t					__rows;
+	index					__rows;
+
 	/** the size of columns */
-	size_t 					__cols;
+	index 					__cols;
+
+	//%}
 public:
 	/** constructor and deconstructor */
 	//%{
 	/** default constructor */
 	MatrixBase();
 
-	MatrixBase(const size_t m, const size_t n,ScalarType* data=NULL);
+	MatrixBase(const index m, const index n,scalar* data=NULL);
 
 	/** Copy assignment */
 	MatrixBase(const MatrixBase& mat);
@@ -51,28 +65,30 @@ public:
 	/**	getters and setters*/
 	//%{
 	/** get the number of rows */
-	const size_t&		rows() const;
+	const index&		rows() const;
 
 	/** get the number of columns */
-	const size_t& 		cols() const;
+	const index& 		cols() const;
 
 	/**	matlab-like element getter */
-	ScalarType& operator() ( const int i , const int j);
+	scalar& operator() ( const index i , const index j);
 
-	const ScalarType& operator() ( const int i, const int j) const;
+	const scalar& operator() ( const index i, const index j) const;
 
 	/** get the element using Arr */
-	const ScalarType& data( const int i ) const;
+	const scalar& data( const index i ) const;
 
 	/**	obtain the i-th row */
-	Vector row( const size_t num );
+	Vector row( const index num );
+	const Vector row( const index num ) const;
 	/**	obtain the i-th column */
-	Vector col( const size_t num );
+	Vector col( const index num );
+	const Vector col( const index num ) const;
 
 
 	// set element using Arr
 
-	void set ( int i , ScalarType value ){
+	void set ( const index i , scalar value ){
 		if ( i < 0 )
 			throw COException("MatrixBase error: index is less that zero!");
 		else if ( i >= __rows*__cols )
@@ -82,12 +98,12 @@ public:
 	}
 
 	/** resize the matrix */
-	void resize ( size_t m , size_t n );
+	void resize ( index m , index n );
 
 	/*
 		Copy operation
 	*/
-	MatrixBase& operator= ( const MatrixBase<ScalarType>& mat ) {
+	MatrixBase& operator= ( const MatrixBase& mat ) {
 		if( __rows != mat.rows() || __cols != mat.cols() ){
 			__rows = mat.rows();
 			__cols = mat.cols();
@@ -95,7 +111,7 @@ public:
 			this->reset(__rows*__cols);
 		}
 
-		for ( int i = 0 ; i < __rows*__cols ; ++ i )
+		for ( index i = 0 ; i < __rows*__cols ; ++ i )
 			this->operator[](i) = mat.data(i);
 		return *this;
 	}
@@ -107,63 +123,63 @@ public:
 	// summation
 	// need to be tested
 		
-	MatrixBase operator+ (const MatrixBase<ScalarType>& mat) {
+	MatrixBase operator+ (const MatrixBase& mat) {
 		if ( __rows != mat.rows() || __cols != mat.cols() ) 
 			throw COException("MatrixBase summation error: the size of two matrices are not consistent!");
-		MatrixBase<ScalarType> result(__rows,__cols);
-		for ( int i = 0 ; i < __rows*__cols ; ++ i )
+		MatrixBase result(__rows,__cols);
+		for ( index i = 0 ; i < __rows*__cols ; ++ i )
 			result.set(i,this->operator[](i)+mat.data(i));
 		return result;
 	}
 
 	// subtraction
 	// need to be tested
-	MatrixBase operator- (const MatrixBase<ScalarType>& mat) {
+	MatrixBase operator- (const MatrixBase& mat) {
 		if ( __rows != mat.rows() || __cols != mat.cols() ) 
 			throw COException("MatrixBase subtraction error: the size of two matrices are not consistent!");
-		MatrixBase<ScalarType> result(__rows,__cols);
-		for ( int i = 0 ; i < __rows*__cols ; ++ i )
+		MatrixBase result(__rows,__cols);
+		for ( index i = 0 ; i < __rows*__cols ; ++ i )
 			result.set(i,this->operator[](i)-mat.data(i));
 		return result;
 	}
 
 	// multiply
 	// need to be tested
-	VectorBase<ScalarType> operator* ( const VectorBase<ScalarType>& vec ) const{
+	VectorBase<scalar,index> operator* ( const VectorBase<scalar,index>& vec ) const{
 		if ( __cols != vec.size() )
 			throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
-		VectorBase<ScalarType> result(__rows);
-		for ( int i = 0 ; i < __rows ; ++ i ){
-			for ( int j = 0 ; j < __cols ; ++ j )
+		VectorBase<scalar,index> result(__rows);
+		for ( index i = 0 ; i < __rows ; ++ i ){
+			for ( index j = 0 ; j < __cols ; ++ j )
 				result[i]+= operator()(i,j)*vec[j];
 		}
 		return result;
 	}
 	// need to be tested
-	MatrixBase<ScalarType> operator* ( const MatrixBase<ScalarType>& mat ) const{
+	MatrixBase operator* ( const MatrixBase& mat ) const{
 		if ( __cols != mat.rows() )
 			throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
-		MatrixBase<ScalarType> result (__rows,mat.cols());
-		for ( int i = 0 ; i < __rows ; ++ i )
-			for ( int j = 0 ; j < mat.cols() ; ++ j )
-				for ( int k = 0 ; k < __cols ; ++ k )
+		MatrixBase result (__rows,mat.cols());
+		for ( index i = 0 ; i < __rows ; ++ i )
+			for ( index j = 0 ; j < mat.cols() ; ++ j )
+				for ( index k = 0 ; k < __cols ; ++ k )
 					result(i,j) += operator()(i,k)*mat(k,j);
 		return result;
 	}
 
 
 	// multiplication between a scalar and a matrix
-	friend MatrixBase<ScalarType> operator* (const ScalarType s,const MatrixBase<ScalarType>& mat)
+	friend MatrixBase operator* (const scalar s,const MatrixBase& mat)
 	{
-		MatrixBase<ScalarType> result(mat.rows(),mat.cols());
-		for ( int i = 0 ; i < mat.rows() ; ++ i )
-			for ( int j = 0 ; j < mat.cols() ; ++ j )
+		MatrixBase result(mat.rows(),mat.cols());
+		for ( index i = 0 ; i < mat.rows() ; ++ i )
+			for ( index j = 0 ; j < mat.cols() ; ++ j )
 				result(i,j) = mat(i,j)*s;
 		return result;
 	}
 
 	// multiplication between a scalar and a matrix
-	friend MatrixBase<ScalarType> operator* (const MatrixBase<ScalarType>& mat,const ScalarType s)
+	friend MatrixBase operator* (const MatrixBase& mat,const scalar s)
 	{
 		return s*mat;
 	}
@@ -171,8 +187,8 @@ public:
 	// transpose
 	MatrixBase transpose() const{
 		MatrixBase result(__cols,__rows);
-		for ( int i = 0 ; i < __cols ; ++ i )
-			for ( int j = 0 ; j < __rows ; ++ j )
+		for ( index i = 0 ; i < __cols ; ++ i )
+			for ( index j = 0 ; j < __rows ; ++ j )
 				result(i,j) = this->operator()(j,i);
 		return result;
 	}
@@ -181,8 +197,8 @@ public:
 	 */
 	friend std::ostream& operator<<(std::ostream& os,const MatrixBase& mat)
 	{
-		for ( int i = 0 ; i < mat.rows() ; ++ i ){
-			for ( int j = 0 ; j < mat.cols() ; ++ j )
+		for ( index i = 0 ; i < mat.rows() ; ++ i ){
+			for ( index j = 0 ; j < mat.cols() ; ++ j )
 				os<<mat(i,j)<<' ';
 			os<<std::endl;
 		}
@@ -192,41 +208,70 @@ public:
 	/*				solve linear system
 	 *
 	 */
+
+	 Vector lapackSolve( const Vector& vec ){
+		if (__rows != __cols )
+			throw COException("Solving Error: the matrix is not square!");
+		if (__rows != vec.size() )
+			throw COException("Solving Error: the size of right hand vector is wrong!");
+		Vector v(vec);
+		int pivot[__rows], c2 = 1,info;
+		scalar* a = new scalar[__rows*__cols];
+		blas::copt_blas_copy(__rows*__cols,this->dataPtr(),1,a,1);
+		copt_lapack_gesv(&__rows,&c2,a,
+			&__rows,pivot,v.dataPtr(),
+			&__rows,
+			&info);
+		delete[] a; // delete the temporaray array
+		return v;
+	}
+	
 #ifdef EIGEN
-	VectorBase<ScalarType> solve(const VectorBase<ScalarType>& vec){
+	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec){
 		// currently we use eigen to solve it
-		Eigen::Matrix<ScalarType,Eigen::Dynamic,Eigen::Dynamic> matrix(__rows,__cols);
-		for ( int i = 0 ; i < __rows ; ++ i )
+		Eigen::Matrix<scalar,Eigen::Dynamic,Eigen::Dynamic> matrix(__rows,__cols);
+		for ( index i = 0 ; i < __rows ; ++ i )
 		{
-			for ( int j = 0 ;  j < __cols ; ++ j )
+			for ( index j = 0 ;  j < __cols ; ++ j )
 			{
 				matrix(i,j) = this->operator()(i,j);
 			}
 		}
-		Eigen::Matrix<ScalarType,Eigen::Dynamic,1> vector(vec.size());
-		for ( int i = 0 ; i < vec.size() ; ++ i )
+		Eigen::Matrix<scalar,Eigen::Dynamic,1> vector(vec.size());
+		for ( index i = 0 ; i < vec.size() ; ++ i )
 		{
 			vector(i) = vec[i];
 		}
-		Eigen::Matrix<ScalarType,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
-		return VectorBase<ScalarType>(result);
+		Eigen::Matrix<scalar,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
+		return VectorBase<scalar,index>(result);
+	}
+#else
+	Vector solve( const Vector& vec ){
+		return lapackSolve(vec);
 	}
 #endif
+
+	Vector leastSquareSolve( const Vector& vec ){
+		if( __cols != vec.size() )
+			throw COException("least square error: the size is not consistent!");
+	}
+
+	
 
 
 	/*			Special MatrixBase
 	 *
 	 */
-	static MatrixBase identity(size_t m,size_t n){
+	static MatrixBase identity(index m,index n){
 		MatrixBase result(m,n);
 		// std::cout<<result<<std::endl;
-		size_t min = std::min(m,n);
-		for ( int i = 0 ; i < min ; ++ i )
-			result(i,i) = static_cast<ScalarType>(1.0);
+		index min = std::min(m,n);
+		for ( index i = 0 ; i < min ; ++ i )
+			result(i,i) = static_cast<scalar>(1.0);
 		return result;
 	}
 
-	static MatrixBase identity(size_t m,size_t n,const ScalarType s);
+	static MatrixBase identity(index m,index n,const scalar s);
 
 	/** Blocking methods */
 	//%{
@@ -234,34 +279,56 @@ public:
 	/** Blocking matrix from a given matrix with specific row numbers and column numbers*/
 	void blockFromMatrix(
 		const MatrixBase& mat,
-		const std::set<size_t>& rownums,
-		const std::set<size_t>& colnums);
+		const std::set<index>& rownums,
+		const std::set<index>& colnums);
 	
 	/** Blocking matrix from a given matrix with just columns */
 	void columnBlockFromMatrix(
 		const MatrixBase& mat,
-		const std::set<size_t>& colnums);
+		const std::set<index>& colnums);
 	
 	/** Blocking matrix from a given matrix with just rows */
 	void rowBlockFromMatrix(
 		const MatrixBase& mat,
-		const std::set<size_t>& rownums);
+		const std::set<index>& rownums);
 
 	/** Blocking matrix from a given matrix, order is not considered */
 	void blockFromMatrix(
 		const MatrixBase& mat,
-		const std::vector<size_t>& rownums,
-		const std::vector<size_t>& colnums);
+		const std::vector<index>& rownums,
+		const std::vector<index>& colnums);
+
+	/** blocking matrix using iterator */
+	template<class InputIterator>
+	void blockFromMatrix(
+		const MatrixBase& mat,
+		const InputIterator& rowbegin,
+		const InputIterator& rowend,
+		const InputIterator& colbegin,
+		const InputIterator& colend );
 
 	/** Blocking matrix from a given matrix, order is not considered */
 	void columnBlockFromMatrix(
 		const MatrixBase& mat,
-		const std::vector<size_t>& colnums);
+		const std::vector<index>& colnums);
+
+	/** column blocking from a given matrix */
+	template<class InputIterator>
+	void columnBlockFromMatrix(
+		const MatrixBase& mat,
+		const InputIterator& colbegin,
+		const InputIterator& colend);
 
 	/** Blocking matrix from a given matrix, order is not considered */
 	void rowBlockFromMatrix(
 		const MatrixBase& mat,
-		const std::vector<size_t>& rownums);
+		const std::vector<index>& rownums);
+
+	template<class InputIterator>
+	void rowBlockFromMatrix(
+		const MatrixBase& mat,
+		const InputIterator& rowbegin,
+		const InputIterator& rowend);
 
 	//%}
 
@@ -295,21 +362,24 @@ public:
 /*
  *		class Triplet for sparse matrix assignment
  */
-template<class Scalar>
+template<class Scalar,class I>
 struct TripletBase
 {
 
 public:
-	typedef Scalar 				ScalarType;
+	typedef Scalar 								scalar;
+	typedef I 									index;
+	typedef KernelTrait<Scalar,I>				kernel;
+	typedef typename kernel::size 				size;
 private:
 	/** private variables */
 	//%{
 
 	/** row index */
-	size_t				__r;
+	index				__r;
 
 	/** column index */
-	size_t 				__c;
+	index 				__c;
 
 	/** value */
 	Scalar 				__v;
@@ -328,8 +398,8 @@ public:
 
 	/** the only constructor */
 	TripletBase(
-		const size_t r,
-		const size_t c,
+		const index r,
+		const index c,
 		const Scalar v);
 
 	~TripletBase();
@@ -339,13 +409,13 @@ public:
 	//%{
 
 	/** row index */
-	const size_t& rowIndex() const;
+	const index& rowIndex() const;
 
 	/** column index */
-	const size_t& columnIndex() const;
+	const index& columnIndex() const;
 
 	/** value */
-	const ScalarType& value() const;
+	const scalar& value() const;
 	//%}
 };
 
@@ -358,7 +428,7 @@ struct rowComparison
 	bool operator()(const Triplet& t1,const Triplet& t2);
 };
 
-/*		compare two triplets accordint to column index
+/*		compare two triplets accordSize to column index
  *
  */
 template<class Triplet>
@@ -367,42 +437,48 @@ struct columnComparison
 	bool operator()(const Triplet& t1,const Triplet& t2);
 };
 
-
 /*		Sparse matrix class
  *		the sparse matrix is designed for solve sparse linear systems
  */
-template<class S>
+
+template<class SpMatrix>
+class UMFLinearSolver;
+
+template<class T,class I>
 class SpMatrixBase
 {
 public:
-	typedef 	S 					ScalarType;
-	typedef 	TripletBase<S>		Triplet;
+	typedef 	T 						scalar;
+	typedef  	I 	 					index;
+	typedef 	TripletBase<T,I>		Triplet;
+	typedef 	matrix_tag 				Category;
+	typedef 	KernelTrait<T,I>		kernel;
 private:
 
-	typedef 	VectorBase<S>		Vector;
+	typedef 	VectorBase<T,I>			Vector;
 	/** private variables */
 	//%{
 
 	/** the number of rows */
-	size_t 				__rows;
+	index 				__rows;
 
 	/** the number of columns */
-	size_t 				__cols;
+	index 				__cols;
 
 	/** the number of elements */
-	size_t 				__elesize;
+	index 				__elesize;
+
+	/** the col poSizeers */
+	index*				__colptr;
 
 	/** the indices of the rows */
-	size_t*				__rowind;
-
-	/** the col pointers */
-	size_t*				__colptr;
+	index*				__rowind;
 
 	/** the values */
-	ScalarType*		 	__vals;
+	scalar*		 		__vals;
 
 	/** static zero */
-	static const ScalarType __zero;
+	static const scalar __zero;
 
 	//%}
 
@@ -423,12 +499,12 @@ public:
 	SpMatrixBase();
 
 	SpMatrixBase(
-		const size_t 				rows,
-		const size_t 				cols,
-		const size_t 				size,
-		const size_t*				rowind,
-		const size_t*			 	colptr,
-		const ScalarType*			vals);
+		const index 				rows,
+		const index 				cols,
+		const index 				elesize,
+		const index*			 	colptr,
+		const index*				rowind,
+		const scalar*				vals);
 
 	SpMatrixBase(
 		const SpMatrixBase& );
@@ -442,45 +518,61 @@ public:
 
 	/** traditional setter of sparse matrix*/
 	void setSparseMatrix(
-		const size_t 					rows,
-		const size_t 					cols,
-		const size_t 					size,
-		const size_t*			 		rowind,
-		const size_t*			 		colptr,
-		const ScalarType*			 	vals);
+		const index 					rows,
+		const index 					cols,
+		const index 					elesize,
+		const index*			 		colptr,
+		const index*			 		rowind,
+		const scalar*			 		vals);
 
 	/** overload of operator = */
 	SpMatrixBase& operator = (const SpMatrixBase& );
 
 	/** set from triplets */
 	void setFromTriplets(
-		const size_t rows,
-		const size_t cols,
+		const index rows,
+		const index cols,
 		std::vector<Triplet>& triplets);
+
+	/** set from triplet iterator */
+	template<class InputIterator>
+	void setFromTriplets(
+		const index rows,
+		const index cols,
+		const InputIterator& begin,
+		const InputIterator& end);
+
+	/** fast setting from triplets iterator (like mtx file) */
+	template<class InputIterator>
+	void fastSetFromTriplets(
+		const index rows,
+		const index cols,
+		const InputIterator& begin,
+		const InputIterator& end);
 
 	/** clear the data */
 	void clear();
 
 	/** get the row number */
-	const size_t& rows() const;
+	const index& rows() const;
 
 	/** get the column number */
-	const size_t& cols() const;
+	const index& cols() const;
 
 	/** get the element size */
-	const size_t& elementSize() const;
+	const index& elementSize() const;
 
-	/** get the column pointer */
-	const size_t* columnPointer() const; 
+	/** get the column poSizeer */
+	const index* columnPointer() const; 
 
 	/** get the row indices */
-	const size_t* rowIndex() const;
+	const index* rowIndex() const;
 
 	/** get the values */
-	const ScalarType* values() const;
+	const scalar* values() const;
 
 	/** scale with a scalar s */
-	void scale(const ScalarType s);
+	void scale(const scalar s);
 
 	/** negative sign of the matrix */
 	void neg();
@@ -495,9 +587,9 @@ public:
 	//%{
 
 	/** only const access is allowed */
-	const ScalarType& operator()(
-		const size_t i,
-		const size_t j) const;
+	const scalar& operator()(
+		const index i,
+		const index j) const;
 
 	//%}
 
@@ -520,10 +612,13 @@ public:
 	Vector operator*(const Vector& vec) const;
 
 	/** multiplication with scalar */
-	SpMatrixBase operator*(const ScalarType s) const;
+	SpMatrixBase operator*(const scalar s) const;
 
 	/** transform to a dense matrix */
-	MatrixBase<ScalarType> toDenseMatrix() const;
+	MatrixBase<scalar,index> toDenseMatrix() const;
+
+	/** solve a linear system */
+	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec);
 
 	//%}
 
@@ -531,10 +626,10 @@ public:
 
 
 /** Sparse matrix related operator */
-template<class ScalarType>
-SpMatrixBase<ScalarType> operator* (const ScalarType s,const SpMatrixBase<ScalarType>& mat);
-template<class ScalarType,class T>
-SpMatrixBase<ScalarType> operator* (const T s,const SpMatrixBase<ScalarType>& mat);
+template<class scalar,class index>
+SpMatrixBase<scalar,index> operator* (const scalar s,const SpMatrixBase<scalar,index>& mat);
+template<class scalar,class index,class T>
+SpMatrixBase<scalar,index> operator* (const T s,const SpMatrixBase<scalar,index>& mat);
 
 
 }// End of namespace COPT

@@ -43,36 +43,66 @@ clean:
 # test for matrix
 matrix: bin/matrix
 bin/matrix: obj/matrix.o
-	$(CC) obj/matrix.o $(DIR_LIB) -o $@ -lcblas -lblas
+	$(CC) obj/matrix.o $(DIR_LIB) -o $@ $(LIBS)
 obj/matrix.o: test/matrix.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # test for simplex method
 simplex: bin/simplex
 bin/simplex: obj/simplex.o
-	$(CC) obj/simplex.o $(DIR_LIB) -o $@ -lcblas -lblas
+	$(CC) obj/simplex.o $(DIR_LIB) -o $@ $(LIBS)
 obj/simplex.o: test/simplex.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # test for matrix vector
 vecmat: bin/vecmat
 bin/vecmat: obj/vecmat.o
-	$(CC) obj/vecmat.o $(DIR_LIB) -o $@ -lcblas -lblas
+	$(CC) obj/vecmat.o $(DIR_LIB) -o $@ $(LIBS)
 obj/vecmat.o: test/matrix_vector.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # test for sparse matrix
 spmat: bin/spmat
 bin/spmat: obj/spmat.o
-	$(CC) obj/spmat.o $(DIR_LIB) -o $@ -lcblas -lblas
+	$(CC) obj/spmat.o $(DIR_LIB) -o $@ $(LIBS)
 obj/spmat.o:test/spmat.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
 # test for umfpack
 umfpack: bin/umfpack
 bin/umfpack: obj/umfpack.o
-	$(CC) obj/umfpack.o $(DIR_LIB) -o $@ -lcblas -lblas -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd
+	$(CC) obj/umfpack.o $(DIR_LIB) -o $@ $(LIBS)
 obj/umfpack.o:test/umfpack.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+umfpackwrapper: bin/umfpackwrapper
+bin/umfpackwrapper: obj/umfpackwrapper.o
+	$(CC) obj/umfpackwrapper.o $(DIR_LIB) -o $@ $(LIBS)
+obj/umfpackwrapper.o: test/umfpack_wrapper.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+omp: bin/omp
+bin/omp: obj/omp.o
+	$(CC) obj/omp.o $(DIR_LIB) -o $@ $(LIBS)
+obj/omp.o: test/omp.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+ls: bin/ls
+bin/ls: obj/ls.o
+	$(CC) obj/ls.o $(DIR_LIB) -o $@ $(LIBS)
+obj/ls.o: test/ls.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+eigen: bin/eigen
+bin/eigen: obj/eigen.o
+	$(CC) obj/eigen.o $(DIR_LIB) -o $@ $(LIBS)
+obj/eigen.o: test/eigen_umfpack.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+lapack: bin/lapack
+bin/lapack: obj/lapack.o
+	$(CC) obj/lapack.o $(DIR_LIB) -o $@ $(LIBS)
+obj/lapack.o: test/lapack_test.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas

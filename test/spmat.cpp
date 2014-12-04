@@ -2,20 +2,21 @@
 
 
 typedef double		 					FT;
-typedef COPT::Array<FT> 				Array;
-typedef COPT::VectorBase<FT>			Vector;
-typedef COPT::MatrixBase<FT>	 		Matrix;
 typedef COPT::KernelTrait<FT>			kernel;
-typedef COPT::TripletBase<FT>			Triplet;
-typedef COPT::SpMatrixBase<FT>			SpMatrix;
+typedef kernel::Array 					Array;
+typedef kernel::Vector 					Vector;
+typedef kernel::Matrix 					Matrix;
+typedef COPT::TripletBase<FT>		 	Triplet;
+typedef COPT::SpMatrixBase<FT,int>		SpMatrix;
 
 int main(int argc,char* argv[])
 {
-	size_t rows = 10;
-	size_t cols = 10;
-	size_t elesize = 10;
-	size_t* rowind = new size_t[elesize];
-	size_t* colptr = new size_t[cols+1];
+	std::cout<<"!!!!"<<std::endl; 
+	int rows = 10;
+	int cols = 10;
+	int elesize = 10;
+	int* rowind = new int[elesize];
+	int* colptr = new int[cols+1];
 	FT*	vals = new FT[elesize];
 	for ( int i = 0 ; i < elesize ; ++ i )
 	{
@@ -24,7 +25,7 @@ int main(int argc,char* argv[])
 	}
 	for ( int i = 0 ; i <= cols ; ++ i )
 		colptr[i] = i;
-	SpMatrix mat(rows,cols,elesize,rowind,colptr,vals);
+	SpMatrix mat(rows,cols,elesize,colptr,rowind,vals);
 	delete[]rowind;
 	delete[]colptr;
 	delete[]vals;
@@ -39,11 +40,13 @@ int main(int argc,char* argv[])
 	std::vector<Triplet> tris;
 	tris.push_back(Triplet(0,0,1));
 	tris.push_back(Triplet(1,0,2));
-	tris.push_back(Triplet(0,1,1));
+	tris.push_back(Triplet(0,1,1)); 
 	tris.push_back(Triplet(0,0,2));
 	tris.push_back(Triplet(0,1,2));
 	tris.push_back(Triplet(1,1,3));
 	tris.push_back(Triplet(1,0,4));
+	tris.push_back(Triplet(0,0,5));
+	tris.push_back(Triplet(0,1,7));
 	// for ( int i = 0 ; i < tris.size() ; ++ i )
 	// {
 	// 	std::cout<<tris[i].rowIndex()<<' '<<tris[i].columnIndex()<<std::endl;
@@ -56,7 +59,7 @@ int main(int argc,char* argv[])
 	// }
 
 	SpMatrix m;
-	m.setFromTriplets(10,10,tris);
+	m.setFromTriplets(10,10,tris.begin(),tris.end());
 	Vector v(10);
 	v(0) = 1.0;
 	std::cout<<m*v<<std::endl;
@@ -71,5 +74,8 @@ int main(int argc,char* argv[])
 	std::cout<<(m+mat).toDenseMatrix()<<std::endl;
 	std::cout<<(m-mat).toDenseMatrix()<<std::endl; 
 	std::cout<<(mat-m).toDenseMatrix()<<std::endl;
-	std::cout<<((mat-m)*mat).toDenseMatrix()<<std::endl;
+	std::cout<<((mat-m)*mat).toDenseMatrix()<<std::endl; 
+
+	SpMatrix mm(m);
+	std::cout<<mm.toDenseMatrix()<<std::endl;
 }

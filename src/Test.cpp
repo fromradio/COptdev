@@ -107,28 +107,41 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 /*LeastSquare test
 
 */
- // int main(int argc,char* argv[])
- // {
- // 	Matrix A(4,2); 
- // 	A(0,0) = 1; A(0,1) = -1;
- // 	A(1,0) = -1;A(1,1) = 1; 
- // 	A(2,0) = 2; A(2,1) = -2;
- // 	A(3,0) = -3;A(3,1) = 1;
- // 	Vector b(4);
- // 	b[0] = 1;
- // 	b[1] = 2;
- // 	b[2] = 3;
- // 	b[3] = 4;
- // 	std::cout<<A<<std::endl;
- // 	std::cout<<b<<std::endl;
- // 	Vector x(2);
- // 	COPT::LeastMeanSquareMethod(A,b,0.01,x);
- // 	std::cout<<x<<std::endl;
- // 	COPT::LeastSquareMethod(A,b,x);
- // 	std::cout<<x<<std::endl;
- // 	COPT::RLS_Method(A,b,x);
- // 	std::cout<<x<<std::endl;
- // } 
+
+/*
+ int main(int argc,char* argv[])
+ {
+ 	Matrix A(4,2); 
+ 	A(0,0) = 1; A(0,1) = -1;
+ 	A(1,0) = -1;A(1,1) = 1; 
+ 	A(2,0) = 2; A(2,1) = -2;
+ 	A(3,0) = -3;A(3,1) = 1;
+ 	Vector b(4);
+ 	b[0] = 1;
+ 	b[1] = 2;
+ 	b[2] = 3;
+ 	b[3] = 4;
+ 	std::cout<<A<<std::endl;
+ 	std::cout<<b<<std::endl;
+ 	Vector x(2);
+
+ 	typedef COPT::LeastSquaresSolver<FT>      LeastSquares;
+ 	LeastSquares ls(A,b);
+
+
+ 	ls.solve(x);
+ 	ls.printInfo();
+ 	ls.setType(LeastSquares::LS);
+ 	ls.solve(x);
+ 	ls.printInfo();
+ 	ls.setType(LeastSquares::RLS);
+ 	ls.solve(x);
+ 	ls.printInfo();
+ 	std::cout<<x<<"______asdfasdf"<<std::endl;
+ 	x = ls.result();
+ 	std::cout<<x<<"+++++++asdfasdf"<<std::endl;
+ } 
+*/
 /*
  *			Matrix test
  */

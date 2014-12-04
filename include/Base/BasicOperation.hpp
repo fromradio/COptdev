@@ -4,6 +4,26 @@
 namespace COPT
 {
 
+// #if defined(__LP__64)
+	typedef int 		copt_int;
+	typedef int 		copt_logical;
+	typedef float 		copt_real;
+	typedef double 		copt_doublereal;
+// #else
+	// typedef long int 	copt_int;
+	// typedef long int 	copt_logical;
+	// typedef float 		copt_real;
+	// typedef double 		copt_doublereal;
+// #endif
+
+	
+#ifdef _WIN64
+typedef __int64 		COPTlong;
+#else
+typedef long 			COPTlong;
+#endif
+typedef unsigned long 	longsize;
+/** COPTlong */
 
 
 const double ZERO_THRESH = 1e-10;				// the threshold to judge whether a scalar is zero
@@ -13,6 +33,13 @@ const double	DEFAULT_CONVERGE_ERROR = 1e-5; 	// default converge error
 const double 	DEFAULT_STEP_FOR_DIFFERENTIAL = 1e-5;
 
 const double INFTY = 1e10;
+
+template<class T>
+struct Infty{
+	static inline T maximal(){
+		return std::numeric_limits<T>::has_infinity()?std::numeric_limits<T>::infinity(): std::numeric_limits<T>::max();
+	}
+};
 
 /*
  *				Judge that whether a scalar is zero
@@ -35,12 +62,15 @@ inline void SAFE_DELETE_ARRAY(T* array)
 	if ( array ) { delete[] array;}
 }
 
-/*		Basic class for iterator
- */
-class Iterator
+/**		base class who is not copyable */
+class noncopyable
 {
-
+	noncopyable(const noncopyable& );
+	const noncopyable& operator=(const noncopyable&);
+protected:
+	noncopyable(){}
+	~noncopyable(){}
 };
 
-};
+} // End of namespace COPT
 #endif

@@ -54,6 +54,7 @@ private:
     /** the main algorithm */
 	void            doSolve();	
 
+public:
 	/** constructor and deconstructor */
 	//%{
 	LeastSquaresSolver(
@@ -95,7 +96,7 @@ public:
 	 *    /param mu:         step size
 	 *    /param x:          weight we want to find
 	 */
-	static inline void LeastMeanSquareMethod(
+	static inline void leastMeanSquareMethod(
 		const MatrixBase<Scalar>& A,
 		const VectorBase<Scalar>& b,
 		const Scalar mu,
@@ -108,7 +109,7 @@ public:
 	 *    /param b:          constant vector
 	 *    /param x:          weight we want to find
 	 */
-	static inline void LeastSquareMethod(
+	static inline void leastSquareMethod(
 		const MatrixBase<Scalar>& A,
 		const VectorBase<Scalar>& b,
 		VectorBase<Scalar>& x
@@ -122,7 +123,7 @@ public:
 	 *    /param lam:       related to the forgetting factor
 	 *    /param delta:     in order to define P(0)   
 	 */
-	static inline void RLS_Method(
+	static inline void recursiveLeastSquareMethod(
 		const MatrixBase<Scalar>& A,
 		const VectorBase<Scalar>& b,
 		VectorBase<Scalar>& x,
@@ -143,7 +144,7 @@ private:
 	 *    /param mu:        step size
 	 *    /param x:         weight we find after each step
 	 */
-	static inline void LeastMeanSquareUpdate(
+	static inline void leastMeanSquareUpdate(
 		const VectorBase<Scalar>& a,
 		const Scalar b,
 		const Scalar mu,
@@ -159,7 +160,7 @@ private:
 	 *    /param lam:       related to the forgetting factor
 	 *    /param delta:     in order to define P(0)   
 	 */
-	static inline void RLS_learning(
+	static inline void recursiveLeastSquareUpdate(
 		const VectorBase<Scalar>& a,
 		const Scalar b,
 		VectorBase<Scalar>& x,
@@ -206,7 +207,7 @@ void LeastSquaresSolver<Scalar>::doSolve()
 	{
 	case LMS:
 	{
-		LeastMeanSquareMethod(
+		leastMeanSquareMethod(
 			__A,
 			__b,
 			__mu,
@@ -215,7 +216,7 @@ void LeastSquaresSolver<Scalar>::doSolve()
 	break;
 	case LS:
 	{
-		LeastSquareMethod(
+		leastSquareMethod(
 			__A,
 			__b,
 			__x);
@@ -223,7 +224,7 @@ void LeastSquaresSolver<Scalar>::doSolve()
 	break;
 	case RLS:
 	{
-		RLS_Method(
+		recursiveLeastSquareMethod(
 			__A,
 			__b,
 			__x,
@@ -269,7 +270,7 @@ void LeastSquaresSolver<Scalar>::printInfo()
 }
 
 template<class Scalar>
-void LeastSquaresSolver<Scalar>::LeastMeanSquareUpdate(
+void LeastSquaresSolver<Scalar>::leastMeanSquareUpdate(
 	const VectorBase<Scalar>& a,
 	const Scalar b,
 	const Scalar mu,
@@ -281,7 +282,7 @@ void LeastSquaresSolver<Scalar>::LeastMeanSquareUpdate(
 }
 
 template<class Scalar>
-void LeastSquaresSolver<Scalar>::LeastMeanSquareMethod(
+void LeastSquaresSolver<Scalar>::leastMeanSquareMethod(
 	const MatrixBase<Scalar>& A,
 	const VectorBase<Scalar>& b,
 	const Scalar mu,
@@ -290,12 +291,12 @@ void LeastSquaresSolver<Scalar>::LeastMeanSquareMethod(
 {
 	int n = A.rows();
 	for(int i = 0;i < n;i++)
-		LeastMeanSquareUpdate(A.row(i),b[i],mu,x);
+		leastMeanSquareUpdate(A.row(i),b[i],mu,x);
 
 }
 
 template<class Scalar>
-void LeastSquaresSolver<Scalar>::LeastSquareMethod(
+void LeastSquaresSolver<Scalar>::leastSquareMethod(
 	const MatrixBase<Scalar>& A,
 	const VectorBase<Scalar>& b,
 	VectorBase<Scalar>& x
@@ -305,7 +306,7 @@ void LeastSquaresSolver<Scalar>::LeastSquareMethod(
 }
 
 template<class Scalar>
-void LeastSquaresSolver<Scalar>::RLS_learning(
+void LeastSquaresSolver<Scalar>::recursiveLeastSquareUpdate(
 	const VectorBase<Scalar>& a,
 	const Scalar b,
 	VectorBase<Scalar>& x,
@@ -324,7 +325,7 @@ void LeastSquaresSolver<Scalar>::RLS_learning(
 }
 
 template<class Scalar>
-void LeastSquaresSolver<Scalar>::RLS_Method(
+void LeastSquaresSolver<Scalar>::recursiveLeastSquareMethod(
 	const MatrixBase<Scalar>& A,
 	const VectorBase<Scalar>& b,
 	VectorBase<Scalar>& x,
@@ -335,7 +336,7 @@ void LeastSquaresSolver<Scalar>::RLS_Method(
 	int n = A.cols();
 	MatrixBase<Scalar> p = delta*MatrixBase<Scalar>::identity(n,n);
 	for(int i = 0;i < n;i++)
-		RLS_learning(A.row(i),b[i],x,p,lam,delta);
+		recursiveLeastSquareUpdate(A.row(i),b[i],x,p,lam,delta);
 }
 
 }// End of namespace COPT
