@@ -251,9 +251,21 @@ public:
 	}
 #endif
 
-	Vector leastSquareSolve( const Vector& vec ){
+	Vector leastSquareSolve( const Vector& vec){
 		if( __cols != vec.size() )
 			throw COException("least square error: the size is not consistent!");
+		scalar *a = new scalar[__rows*__cols];
+		scalar *b = new scalar[vec.size()];
+		scalar *s = new scalar[std::min(__rows,__cols)];
+		index info = -1;
+		index rank;
+		blas::copt_blas_copy(__rows*__cols,this->dataPtr(),1,a,1);
+		blas::copt_blas_copy(vec.size(),vec.dataPtr(),1,b,1);
+		copt_lapack_gelss(__rows,__cols,1,a,__rows,b,vec.size(),s,-1.0,&rank,&info);
+		Vector result(__cols,b);
+		delete[]a;
+		delete[]b;
+		return result;
 	}
 
 	

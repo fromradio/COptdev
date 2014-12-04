@@ -18,7 +18,55 @@ class ProximalOperator
 
 };
 
+class QuardraticProximal
+{
+private:
+public:
 
+};
+
+class LogFunction
+{
+public:
+	typedef		log_scalar_function_tag 	function_category;
+	template<class FT>
+	FT operator()(const FT x){
+		return -log(x);
+	}
+};
+
+class AbsFunction
+{
+public:
+	typedef 	abs_scalar_function_tag 	function_category;
+	template<class FT>
+	FT operator()(const FT x){
+		return std::abs(x);
+	}
+};
+
+template<class T,class scalar>
+T computeProximal( const LogFunction& func , const T& v , const scalar lambda , const log_scalar_function_tag& )
+{
+	return (v+std::sqrt(v*v+4*lambda))/2;
+}
+
+template<class T,class scalar>
+T computeProximal( const LogFunction& func const T& v , const scalar lambda , const abs_scalar_function_tag& )
+{
+	if ( v >= lambda )
+		return (v-lambda);
+	else if ( v <= -lambda )
+		return (v+lambda);
+	else
+		return 0;
+}
+
+template<class Function,class T,class scalar>
+T computeProximal( const Function& func , const T& v , const scalar lambda )
+{
+	return computeScalarProximal(func,v,lambda,typename Function::function_category());
+}
 }
 
 #endif
