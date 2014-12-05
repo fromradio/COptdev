@@ -52,7 +52,7 @@ T computeProximal( const LogFunction& func , const T& v , const scalar lambda , 
 }
 
 template<class T,class scalar>
-T computeProximal( const LogFunction& func const T& v , const scalar lambda , const abs_scalar_function_tag& )
+T computeProximal( const LogFunction& func , const T& v , const scalar lambda , const abs_scalar_function_tag& )
 {
 	if ( v >= lambda )
 		return (v-lambda);

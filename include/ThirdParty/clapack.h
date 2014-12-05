@@ -49,7 +49,7 @@ extern "C" {
 typedef struct { __CLPK_real r, i; } __CLPK_complex;
 typedef struct { __CLPK_doublereal r, i; } __CLPK_doublecomplex;
 
-#include <Availability.h>
+// #include <Availability.h>
 
 int cbdsqr_(char *__uplo, __CLPK_integer *__n, __CLPK_integer *__ncvt,
         __CLPK_integer *__nru, __CLPK_integer *__ncc, __CLPK_real *__d__,

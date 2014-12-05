@@ -9,7 +9,7 @@ int main(int argc,char* argv[])
 {
 	// int i,j,c1,c2,pivot[size],ok;
 	// float A[size][size],b[size],AT[size*size];
-
+ 
 	Matrix m(3,3);
 
 	m(0,0) = 1.0; m(0,1) = 1; m(0,2) = -1.0;
