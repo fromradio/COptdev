@@ -110,6 +110,12 @@ bin/proximal: obj/proximal.o
 	$(CC) obj/proximal.o $(DIR_LIB) -o $@ $(LIBS)
 obj/proximal.o: test/proximal.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
+
+mpitest: bin/mpitest
+bin/mpitest: obj/mpitest.o
+	mpic++ obj/mpitest.o $(DIR_LIB) -o $@ $(LIBS)
+obj/mpitest.o: test/openmpi_test.cpp
+	mpic++ $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 
