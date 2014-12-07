@@ -11,7 +11,7 @@
 #include <list>
 #include <set>
 #include <cmath>
-
+#include <random>
 
 #include <complex>
 #include <ThirdParty/cblas.h>
@@ -52,9 +52,9 @@
 #include "Algorithms/AlternatingDirectionMethodOfMultipliers.hpp"
 #include "Algorithms/NonLinearSolver.hpp"
 #include "Algorithms/NonLinearSolverImpl.hpp"
-#include "Algorithms/LevenbergMarquardt.hpp"
 #include "Algorithms/Simplex.hpp"
 #include "Algorithms/omp.hpp"
+#include "Algorithms/ProximalOperator.hpp"
 
 
 #include <time.h>
