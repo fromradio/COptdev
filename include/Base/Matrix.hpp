@@ -44,6 +44,9 @@ private:
 	/** the size of columns */
 	index 					__cols;
 
+	/** whether the matrix is symmetric */
+	bool					__sym;
+
 	//%}
 public:
 	/** constructor and deconstructor */
@@ -86,23 +89,19 @@ public:
 	const Vector col( const index num ) const;
 
 
-	// set element using Arr
+	/** set element using Arr */
 
-	void set ( const index i , scalar value ){
-		if ( i < 0 )
-			throw COException("MatrixBase error: index is less that zero!");
-		else if ( i >= __rows*__cols )
-			throw COException("MatrixBase error: index is out of range!");
-		else
-			this->operator[](i) = value;
-	}
+	void set ( const index i , const scalar value );
+
 
 	/** resize the matrix */
 	void resize ( index m , index n );
 
-	/*
-		Copy operation
-	*/
+	/** set the matrix to be symmetric */
+	void setSymmetricFlag( bool sym );
+	bool isSymmetric() const;
+
+	/** Copy operation */
 	MatrixBase& operator= ( const MatrixBase& mat ) {
 		if( __rows != mat.rows() || __cols != mat.cols() ){
 			__rows = mat.rows();
@@ -143,29 +142,30 @@ public:
 		return result;
 	}
 
-	// multiply
+	/** matrix multiplications */
+	VectorBase<scalar,index> operator* ( const VectorBase<scalar,index>& vec ) const;
+	// {
+	// 	if ( __cols != vec.size() )
+	// 		throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
+	// 	VectorBase<scalar,index> result(__rows);
+	// 	for ( index i = 0 ; i < __rows ; ++ i ){
+	// 		for ( index j = 0 ; j < __cols ; ++ j )
+	// 			result[i]+= operator()(i,j)*vec[j];
+	// 	}
+	// 	return result;
+	// }
 	// need to be tested
-	VectorBase<scalar,index> operator* ( const VectorBase<scalar,index>& vec ) const{
-		if ( __cols != vec.size() )
-			throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
-		VectorBase<scalar,index> result(__rows);
-		for ( index i = 0 ; i < __rows ; ++ i ){
-			for ( index j = 0 ; j < __cols ; ++ j )
-				result[i]+= operator()(i,j)*vec[j];
-		}
-		return result;
-	}
-	// need to be tested
-	MatrixBase operator* ( const MatrixBase& mat ) const{
-		if ( __cols != mat.rows() )
-			throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
-		MatrixBase result (__rows,mat.cols());
-		for ( index i = 0 ; i < __rows ; ++ i )
-			for ( index j = 0 ; j < mat.cols() ; ++ j )
-				for ( index k = 0 ; k < __cols ; ++ k )
-					result(i,j) += operator()(i,k)*mat(k,j);
-		return result;
-	}
+	MatrixBase operator* ( const MatrixBase& mat ) const;
+	// {
+	// 	if ( __cols != mat.rows() )
+	// 		throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
+	// 	MatrixBase result (__rows,mat.cols());
+	// 	for ( index i = 0 ; i < __rows ; ++ i )
+	// 		for ( index j = 0 ; j < mat.cols() ; ++ j )
+	// 			for ( index k = 0 ; k < __cols ; ++ k )
+	// 				result(i,j) += operator()(i,k)*mat(k,j);
+	// 	return result;
+	// }
 
 
 	// multiplication between a scalar and a matrix

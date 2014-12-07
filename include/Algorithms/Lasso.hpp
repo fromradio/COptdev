@@ -24,6 +24,8 @@ private:
 	scalar 						__beta;
 	index 						__maxiteration;
 
+	Eigen::LDLT<Eigen::MatrixXd>				__linear_solver;
+
 	void init();
 public:
 	LassoProximalSolver(
@@ -89,6 +91,11 @@ void LassoProximalSolver<Problem>::init()
 {
 	__s.matA().mtm(__mtm);
 	__mt = __s.matA().transpose();
+	Eigen::MatrixXd mat(__mtm.rows(),__mtm.cols());
+	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
+		for ( int j = 0 ; j < __mtm.cols() ; ++ j )
+			mat(i,j) = __mtm(i,j);
+	__linear_solver.compute(mat);
 }
 
 template<class Problem>
@@ -144,14 +151,26 @@ typename LassoProximalSolver<Problem>::scalar LassoProximalSolver<Problem>::fMu(
 template<class Problem>
 bool LassoProximalSolver<Problem>::iteration( const Vector& xk , Vector& xn)
 {
-	xn = gProximal(xk-__mu*fGradient(xk));
+	// std::cout<<"gradient is "<<fGradient(xk)<<std::endl;
+	Eigen::VectorXd vec(xk.size());
+	Vector temp = fGradient(xk);
+	for ( int i = 0 ; i < temp.size() ;++ i )
+		vec(i) = temp(i);
+	vec = __linear_solver.solve(vec);
+	for ( int i = 0 ; i < temp.size() ; ++ i )
+		temp(i) = vec(i);
+	xn = xk-__mu*temp;
+	// xn = gProximal(xk-__mu*fGradient(xk));
+	// std::cout<<xn<<std::endl;
 	scalar f1 = f(xn) , f2 = fMu(xn,xk);
 	if ( f1 <= f2 )
 	{
+		std::cout<<"situation 1 is reached!"<<std::endl;
 		return true;
 	}
 	else if (IS_ZERO(f1-f2))
 	{
+		std::cout<<"situation 2 is reached"<<std::endl;
 		return true;
 	}
 	else{

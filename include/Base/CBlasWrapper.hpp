@@ -126,6 +126,46 @@ void copt_blas_scal(const int N,const double alpha,std::complex<double>* X,const
 	cblas_zdscal(N,alpha,X,incX);
 }
 
+/** level 2 operations */
+
+void copt_blas_gemv(const enum CBLAS_ORDER order,const enum CBLAS_TRANSPOSE TransA , const int M , const int N, const float alpha, const float *A , const int lda , const float*X , const int incX , const float beta , float *Y , const int incY)
+{
+	cblas_sgemv(order,TransA,M,N,alpha,A,lda,X,incX,beta,Y,incY);
+}
+
+void copt_blas_gemv(const enum CBLAS_ORDER order, const enum CBLAS_TRANSPOSE TransA , const int M , const int N,const double alpha , const double* A , const int lda , const double*X , const int incX , const double beta , double *Y , const int incY )
+{
+	cblas_dgemv(order,TransA,M,N,alpha,A,lda,X,incX,beta,Y,incY);
+}
+
+void copt_blas_gemv(const enum CBLAS_ORDER order , const enum CBLAS_TRANSPOSE TransA , const int M , const int N , const std::complex<float>& alpha , const std::complex<float>* A , const int lda , const std::complex<float>* X , const int incX , const std::complex<float>& beta , std::complex<float>* Y , const int incY )
+{
+	cblas_cgemv(order,TransA,M,N,&alpha,A,lda,X,incX,&beta,Y,incY);
+}
+
+void copt_blas_gemv(const enum CBLAS_ORDER order , const enum CBLAS_TRANSPOSE TransA , const int M , const int N , const std::complex<double>& alpha , const std::complex<double>* A, const int lda , const std::complex<double>* X , const int incX , const std::complex<double>& beta , std::complex<double>* Y , const int incY )
+{
+	cblas_zgemv(order,TransA,M,N,&alpha,A,lda,X,incX,&beta,Y,incY);
+}
+
+/** level three operations */
+
+void copt_blas_gemm(const enum CBLAS_ORDER order , const enum CBLAS_TRANSPOSE TransA,
+	const enum CBLAS_TRANSPOSE TransB , const int M , const int N , const int K , const float alpha , const float*A ,
+	const int lda , const float* B , const int ldb,
+	const float beta , float *C , const int ldc )
+{
+	cblas_sgemm(order,TransA,TransB,M,N,K,alpha,A,lda,B,ldb,beta,C,ldc);
+}
+
+void copt_blas_gemm(const enum CBLAS_ORDER order , const enum CBLAS_TRANSPOSE TransA,
+	const enum CBLAS_TRANSPOSE TransB , const int M , const int N , const int K , const double alpha , const double* A,
+	const int lda , const double *B , const int ldb,
+	const double beta , double *C , const int ldc )
+{
+	cblas_dgemm(order,TransA,TransB,M,N,K,alpha,A,lda,B,ldb,beta,C,ldc);
+}
+
 void copt_blas_syrk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
                  const enum CBLAS_TRANSPOSE Trans, const int n, const int k, const float alpha,const float*A , const int lda , const float beta , float* C, const int ldc)
 {

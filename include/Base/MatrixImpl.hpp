@@ -12,7 +12,8 @@ MatrixBase<scalar,index>::MatrixBase()
 	:
 	Arr(),
 	__rows(0),
-	__cols(0)
+	__cols(0),
+	__sym(false)
 {
 }
 
@@ -24,7 +25,8 @@ MatrixBase<scalar,index>::MatrixBase(
 	:
 	Arr(m*n,data),
 	__rows(m),
-	__cols(n)
+	__cols(n),
+	__sym(false)
 {
 }
 
@@ -34,7 +36,8 @@ MatrixBase<scalar,index>::MatrixBase(
 	:
 	Arr(mat.rows()*mat.cols(),mat.dataPtr()),
 	__rows(mat.rows()),
-	__cols(mat.cols())
+	__cols(mat.cols()),
+	__sym(false)
 {
 }
 
@@ -62,6 +65,13 @@ typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::operator() 
 		throw COException("MatrixBase error: index is less than zero!");
 	else if (i>=__rows||j>=__cols)
 		throw COException("MatrixBase error: index is out of range!");
+	else if (__sym)
+	{
+		if ( i <= j )
+			return this->operator[](j*__rows+i);
+		else
+			return this->operator[](i*__rows+j);
+	}
 	else{
 		return this->operator[](j*__rows+i);
 	}
@@ -71,6 +81,17 @@ template<class scalar,class index>
 const typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::operator() ( const index i , const index j ) const
 {
 	return const_cast<MatrixBase&>(*this).operator()(i,j);
+}
+
+template<class scalar,class index>
+void MatrixBase<scalar,index>::set(const index i , const scalar value)
+{
+	if ( i < 0 )
+		throw COException("MatrixBase error: index is less that zero!");
+	else if ( i >= __rows*__cols )
+		throw COException("MatrixBase error: index is out of range!");
+	else
+		this->operator[](i) = value;
 }
 
 template<class scalar,class index>
@@ -116,11 +137,43 @@ const VectorBase<scalar,index> MatrixBase<scalar,index>::col(const index num) co
 }
 
 template<class scalar,class index>
+void MatrixBase<scalar,index>::setSymmetricFlag( bool sym )
+{
+	__sym = sym;
+}
+
+template<class scalar,class index>
+bool MatrixBase<scalar,index>::isSymmetric() const
+{
+	return __sym;
+}
+
+template<class scalar,class index>
 void MatrixBase<scalar,index>::resize(index m,index n)
 {
 	__rows = m;
 	__cols = n;
 	this->reset(m*n);
+}
+
+template<class scalar,class index>
+VectorBase<scalar,index> MatrixBase<scalar,index>::operator*(const VectorBase<scalar,index>& vec )const
+{
+	if ( __cols != vec.size() )
+		throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
+	VectorBase<scalar,index> result(__rows);
+	blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__rows,__cols,1.0,this->dataPtr(),__rows,vec.dataPtr(),1,0.0,result.dataPtr(),1);
+	return result;
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::operator*(const MatrixBase& mat )const
+{
+	if ( __cols != mat.rows() )
+		throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
+	MatrixBase result(__rows,mat.cols());
+	blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+	return result;
 }
 
 template<class scalar,class index>
@@ -400,16 +453,9 @@ void MatrixBase<scalar,index>::mtm( MatrixBase& mat ) const
 {
 	int m = this->rows();
 	int n = this->cols();
-	// scalar *s = new scalar[n*n];
 	mat.resize(n,n);
 	blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
-	for ( int i = 0 ; i < n ; ++ i )
-	{
-		for ( int j = 0 ; j < i ; ++ j )
-		{
-			mat(i,j) = mat(j,i);
-		}
-	}
+	mat.setSymmetricFlag(true);
 }
 
 /*******************Implementation of Triplet******************/
