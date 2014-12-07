@@ -166,10 +166,9 @@ void LassoProximalSolver<Problem>::solve()
 	Vector xp,xn;
 	xp = Vector(__s.matA().cols());
 	int i = 0;
-	int max = 20;
 	while(!iteration(xp,xn)){
 		++i;
-		if (i>max)
+		if (i>__maxiteration)
 			break;
 		xp = xn;
 		std::cout<<i<<std::endl;

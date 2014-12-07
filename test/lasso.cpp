@@ -8,8 +8,8 @@ typedef COPT::LassoProximalSolver<problem>	solver;
 
 int main(int argc,char*argv[])
 {
-	Matrix A = Matrix::random(5000,2000);
-	Vector b = Vector::random(5000);
+	Matrix A = Matrix::random(50,20);
+	Vector b = Vector::random(50);
 	///b(3) = 2.0;
 	//b(4) = 1.0;
 	problem sol(A,b,0.2);
