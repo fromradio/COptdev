@@ -198,10 +198,10 @@ struct constraint_trait{
 
 
 
-
-
-
-
+/** trais of functions */
+struct scalar_function_tag{};
+struct log_scalar_function_tag:public scalar_function_tag{};
+struct abs_scalar_function_tag:public scalar_function_tag{};
 
 }// End of namespace COPT
 

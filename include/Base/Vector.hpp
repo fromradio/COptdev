@@ -301,6 +301,9 @@ public:
 		VectorBase& v);
 	//%}
 
+	/** generate a random vector */
+	static inline VectorBase random( const index i );
+
 };
 
 }	// end of namespace COPT

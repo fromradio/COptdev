@@ -1,15 +1,15 @@
 #include <Header>
 #define size 3
 
-typedef COPT::KernelTrait<float> 		kernel;
+typedef COPT::KernelTrait<double> 		kernel;
 typedef kernel::Vector 					Vector;
 typedef kernel::Matrix 					Matrix;
 
 int main(int argc,char* argv[])
 {
-	int i,j,c1,c2,pivot[size],ok;
+	// int i,j,c1,c2,pivot[size],ok;
 	// float A[size][size],b[size],AT[size*size];
-
+ 
 	Matrix m(3,3);
 
 	m(0,0) = 1.0; m(0,1) = 1; m(0,2) = -1.0;
@@ -20,29 +20,11 @@ int main(int argc,char* argv[])
 	b[0] = -1.3;
 	b[1] = -0.1;
 	b[2] = 1.8;
-
-	// for ( i = 0 ; i < size ; ++ i )
-	// {
-	// 	for ( j = 0 ; j < size ; ++ j )
-	// 		AT[j+size*i]=A[j][i];
-	// }
-
-	// c1 = size;
-	// c2 = 1;
-
-	// COPT::copt_lapack_gesv(&c1,&c2,AT,&c1,pivot,b,&c1,&ok);
-
-	// Vector vec(c1,b);
-	// Matrix mat(size,size,AT);
-	// mat = Matrix::identity(size,size);
-
 	std::cout<<m<<std::endl;
-
-	clock_t start, end;
-	start = clock();
 	std::cout<<m.lapackSolve(b)<<std::endl;
 	std::cout<<"b is "<<b<<std::endl;
 	std::cout<<m.solve(b)<<std::endl;
+	std::cout<<m.leastSquareSolve(b)<<std::endl;
 
 	Vector v = m.solve(b);
 	Vector  vv = m.lapackSolve(b);
@@ -50,6 +32,4 @@ int main(int argc,char* argv[])
 	std::cout<<"vv is "<<vv<<std::endl;
 	std::cout<<m*vv<<std::endl;
 	std::cout<<b<<std::endl;
-
-	for ( j = 0 ; j < size ; ++ j ) printf("%e\n",b[j]);
 }
