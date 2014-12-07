@@ -126,6 +126,30 @@ void copt_blas_scal(const int N,const double alpha,std::complex<double>* X,const
 	cblas_zdscal(N,alpha,X,incX);
 }
 
+void copt_blas_syrk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
+                 const enum CBLAS_TRANSPOSE Trans, const int n, const int k, const float alpha,const float*A , const int lda , const float beta , float* C, const int ldc)
+{
+	cblas_ssyrk(Order,Uplo,Trans,n,k,alpha,A,lda,beta,C,ldc);
+}
+
+void copt_blas_syrk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
+                 const enum CBLAS_TRANSPOSE Trans, const int n, const int k, const double alpha,const double* A, const int lda, const double beta , double* C, const int ldc )
+{
+	cblas_dsyrk(Order,Uplo,Trans,n,k,alpha,A,lda,beta,C,ldc);
+}
+
+void copt_blas_syrk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
+                 const enum CBLAS_TRANSPOSE Trans , const int n, const int k , const std::complex<float>& alpha , const std::complex<float>* A , const int lda , const std::complex<float>& beta , std::complex<float>* C , const int ldc )
+{
+	cblas_csyrk(Order,Uplo,Trans,n,k,&alpha,A,lda,&beta,C,ldc);
+}
+
+void copt_blas_syrk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
+                 const enum CBLAS_TRANSPOSE Trans, const int n , const int k , const std::complex<double>& alpha , const std::complex<double>* A , const int lda , const std::complex<double>& beta , std::complex<double>* C , const int ldc )
+{
+	cblas_zsyrk(Order,Uplo,Trans,n,k,&alpha,A,lda,&beta,C,ldc);
+}
+
 /*				summation
 */
 

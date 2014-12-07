@@ -166,6 +166,15 @@ public:
 		}
 		return result;
 	}
+
+	scalar absNorm() const{
+		scalar result = 0;
+		for (index i = 0 ; i < this->size() ; ++ i )
+		{
+			result += std::abs(this->operator[](i));
+		}
+		return result;
+	}
 	/** normalize current vector and previous norm is returned*/
 	scalar normalize();
 	

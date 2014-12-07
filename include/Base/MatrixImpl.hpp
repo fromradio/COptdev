@@ -374,7 +374,45 @@ void MatrixBase<scalar,index>::stCombineAlongColumn(const MatrixBase& m1,const M
 	}
 }
 
-/**			Implementation of Triplet			*/
+template<class scalar,class index>
+void MatrixBase<scalar,index>::setRandom(const index rows,const index cols)
+{
+	if(rows<0||cols<0)
+		throw COException("Please make sure that the number of row and column is bigger than zero!");
+	std::mt19937 eng(time(NULL));
+	std::uniform_real_distribution<scalar> unif(0.0,1.0);
+	this->resize(rows,cols);
+	for ( int i = 0 ; i < rows ; ++ i )
+		for ( int j = 0 ; j < cols ; ++ j )
+			this->operator()(i,j)=unif(eng);
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::random(const index rows,const index cols)
+{
+	MatrixBase result;
+	result.setRandom(rows,cols);
+	return result;
+}
+
+template<class scalar,class index>
+void MatrixBase<scalar,index>::mtm( MatrixBase& mat ) const
+{
+	int m = this->rows();
+	int n = this->cols();
+	// scalar *s = new scalar[n*n];
+	mat.resize(n,n);
+	blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
+	for ( int i = 0 ; i < n ; ++ i )
+	{
+		for ( int j = 0 ; j < i ; ++ j )
+		{
+			mat(i,j) = mat(j,i);
+		}
+	}
+}
+
+/*******************Implementation of Triplet******************/
 
 template<class scalar,class index>
 TripletBase<scalar,index>::TripletBase(

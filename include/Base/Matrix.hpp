@@ -368,6 +368,12 @@ public:
 		MatrixBase& m);
 	//%}
 
+	/** set a random matrix */
+	void setRandom( const index rows, const index cols);
+	static inline MatrixBase random( const index rows, const index cols);
+	/** compute A^TA of a given matrix */
+	void mtm(MatrixBase& mat) const;
+
 };// End of class MatrixBase
 
 

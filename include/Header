@@ -55,6 +55,7 @@
 #include "Algorithms/Simplex.hpp"
 #include "Algorithms/omp.hpp"
 #include "Algorithms/ProximalOperator.hpp"
+#include "Algorithms/Lasso.hpp"
 
 
 #include <time.h>

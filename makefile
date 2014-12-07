@@ -116,6 +116,12 @@ bin/mpitest: obj/mpitest.o
 	mpic++ obj/mpitest.o $(DIR_LIB) -o $@ $(LIBS)
 obj/mpitest.o: test/openmpi_test.cpp
 	mpic++ $(CFLAGS) -c $< -o $@
+
+lasso: bin/lasso
+bin/lasso: obj/lasso.o
+	$(CC) obj/lasso.o $(DIR_LIB) -o $@ $(LIBS)
+obj/lasso.o: test/lasso.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 

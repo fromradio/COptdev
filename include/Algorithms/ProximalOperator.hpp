@@ -52,7 +52,7 @@ T computeProximal( const LogFunction& func , const T& v , const scalar lambda , 
 }
 
 template<class T,class scalar>
-T computeProximal( const LogFunction& func , const T& v , const scalar lambda , const abs_scalar_function_tag& )
+T computeProximal( const AbsFunction& func , const T& v , const scalar lambda , const abs_scalar_function_tag& )
 {
 	if ( v >= lambda )
 		return (v-lambda);
@@ -65,7 +65,7 @@ T computeProximal( const LogFunction& func , const T& v , const scalar lambda , 
 template<class Function,class T,class scalar>
 T computeProximal( const Function& func , const T& v , const scalar lambda )
 {
-	return computeScalarProximal(func,v,lambda,typename Function::function_category());
+	return computeProximal(func,v,lambda,typename Function::function_category());
 }
 }
 
