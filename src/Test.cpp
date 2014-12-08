@@ -2,7 +2,7 @@
 
 
 typedef double		 					FT;
-//typedef COPT::Array<FT> 				Array;
+typedef COPT::Array<FT> 				Array;
 typedef COPT::VectorBase<FT>			Vector;
 typedef COPT::MatrixBase<FT>	 		Matrix;
 
@@ -211,7 +211,6 @@ int main(int argc,char* argv[])
 	std::cout<<"first trial of SDM method "<<std::endl;
 	nls.solve(x);
 	nls.printInfo();    
-
 	// std::cout<<std::endl<<"second trial of SDM method "<<std::endl;
 	// nls.setIterationNum(100000);
 	// nls.solve(x);
