@@ -17,12 +17,13 @@ private:
 	typedef typename Problem::KernelTrait::Matrix 		Matrix;
 
 	/** the corresponding lasso problem */
-	const Problem& 				__s;
-	Matrix 						__mtm;
-	Matrix 						__mt;
-	scalar 						__mu;
-	scalar 						__beta;
-	index 						__maxiteration;
+	const Problem& 								__s;
+	Matrix 										__mtm;
+	Matrix 										__mt;
+	scalar 										__mu;
+	scalar 										__beta;
+	index 										__maxiteration;
+	Vector 										__x;
 
 	Eigen::LDLT<Eigen::MatrixXd>				__linear_solver;
 
@@ -52,8 +53,75 @@ public:
 	/** solve the problem */
 	void solve();
 
+	/** setter and getter */
+	//%{
+	/** the final result of proximal solver */
+	Vector result() const;
+	//%}
+
 };
 
+/*		ADMM solver for solving lasso problem
+ *
+ *
+ */
+template<class Problem>
+class LassoADMMSolver
+{
+private:
+	typedef typename Problem::KernelTrait::index 		index;
+	typedef typename Problem::KernelTrait::scalar 		scalar;
+	typedef typename Problem::KernelTrait::Vector 		Vector;
+	typedef typename Problem::KernelTrait::Matrix 		Matrix;
+
+	const Problem& 					__p;
+	Matrix 							__mtm;
+	Matrix 							__mt;
+	scalar							__rho;
+	index							__maxiteration;
+
+	/** used variables */
+	//%{
+	Vector 							__x;
+	Vector 							__y;
+	Vector 							__z;
+	//%}
+
+	/** whether the problem is solved */
+	bool 							__is_solved;
+
+#ifdef EIGEN
+	Eigen::LDLT<Eigen::MatrixXd>	__linear_solver;
+#endif
+
+	void init();
+
+public:
+	/** constructor and deconstructor */
+	//%{
+	LassoADMMSolver(
+		const Problem& p,
+		const scalar rho,
+		const index maxiteration);
+	//%}
+
+	/** sub-problems */
+	//%{
+	void xSubProblem(const Vector& zk,const Vector& yk,Vector& xn);
+	void zSubProblem(const Vector& xn,const Vector& yk,Vector& zn);
+	void ySubProblem(const Vector& xn,const Vector& zn,Vector& yn);
+	//%}
+	void solve();
+
+	/** setter and getter */
+	//%{
+	const Vector& result() const;
+	//%}
+};
+	
+/*		The Lasso problem class
+ *
+ */
 template<class kernel>
 class LassoProblem
 {
@@ -151,7 +219,6 @@ typename LassoProximalSolver<Problem>::scalar LassoProximalSolver<Problem>::fMu(
 template<class Problem>
 bool LassoProximalSolver<Problem>::iteration( const Vector& xk , Vector& xn)
 {
-	// std::cout<<"gradient is "<<fGradient(xk)<<std::endl;
 	Eigen::VectorXd vec(xk.size());
 	Vector temp = fGradient(xk);
 	for ( int i = 0 ; i < temp.size() ;++ i )
@@ -160,8 +227,6 @@ bool LassoProximalSolver<Problem>::iteration( const Vector& xk , Vector& xn)
 	for ( int i = 0 ; i < temp.size() ; ++ i )
 		temp(i) = vec(i);
 	xn = xk-__mu*temp;
-	// xn = gProximal(xk-__mu*fGradient(xk));
-	// std::cout<<xn<<std::endl;
 	scalar f1 = f(xn) , f2 = fMu(xn,xk);
 	if ( f1 <= f2 )
 	{
@@ -197,6 +262,100 @@ void LassoProximalSolver<Problem>::solve()
 	std::cout<<"final norm is "<<__s.objective(xn)<<std::endl;
 }
 
+template<class Problem>
+typename LassoProximalSolver<Problem>::Vector LassoProximalSolver<Problem>::result() const
+{
+	return __x;
+}
+
+/***********************Implementation of ADMM solver*************************/
+template<class Problem>
+LassoADMMSolver<Problem>::LassoADMMSolver(
+	const Problem& p,
+	const scalar rho,
+	const index maxiteration)
+	:
+	__p(p),
+	__rho(rho),
+	__maxiteration(maxiteration)
+{
+	init();
+}
+
+template<class Problem>
+void LassoADMMSolver<Problem>::init()
+{
+	__p.matA().mtm(__mtm);
+	__mt = __p.matA().transpose();
+#ifdef EIGEN
+	Eigen::MatrixXd mat(__mtm.rows(),__mtm.cols());
+	Eigen::MatrixXd iden = Eigen::MatrixXd::Identity(__mtm.rows(),__mtm.cols());
+	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
+		iden(i,i) = 0.5/__rho;
+	mat = mat+iden;
+	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
+		for ( int j = 0 ; j < __mtm.cols() ; ++ j )
+			mat(i,j) = __mtm(i,j);
+	__linear_solver.compute(mat);
+#endif
+}
+
+template<class Problem>
+void LassoADMMSolver<Problem>::xSubProblem(const Vector& zk,const Vector& yk,Vector&xn)
+{
+	Vector rhd = __mt*__p.obB()+0.5/__rho*(zk-yk);
+#ifdef EIGEN
+	Eigen::VectorXd vec(rhd.size());
+	for ( int i = 0 ; i < rhd.size() ; ++ i )
+		vec(i) = rhd(i);
+	vec = __linear_solver.solve(vec);
+	for ( int i = 0 ; i < rhd.size() ; ++ i )
+		xn(i) = vec(i);
+#endif
+}
+
+template<class Problem>
+void LassoADMMSolver<Problem>::zSubProblem(const Vector& xn,const Vector& yk,Vector& zn)
+{
+	for ( int i = 0 ; i < zn.size() ; ++ i )
+		zn(i) = computeProximal(AbsFunction(),xn(i)+yk(i),__rho*__p.lambda());
+}
+
+template<class Problem>
+void LassoADMMSolver<Problem>::ySubProblem(const Vector& xn,const Vector& zn,Vector& yn)
+{
+	yn = yn+(xn-zn);
+}
+
+template<class Problem>
+void LassoADMMSolver<Problem>::solve()
+{
+	index m = __p.matA().rows();
+	index n = __p.matA().cols();
+	Vector x(n),y(n),z(n),xp(x);
+	scalar err;
+	int i = 0;
+	do{
+		xSubProblem(z,y,x);
+		zSubProblem(x,y,z);
+		ySubProblem(x,z,y);
+		err = (x-xp).squaredNorm();
+		xp = x;
+		if((i++)>=__maxiteration)
+			break;
+		// std::cout<<err<<std::endl;
+	}while(!IS_ZERO(err));
+	std::cout<<"result is "<<x<<std::endl;
+	std::cout<<i<<" iterations are used "<<std::endl;
+}
+
+template<class Problem>
+const typename LassoADMMSolver<Problem>::Vector& LassoADMMSolver<Problem>::result() const
+{
+	if(!__is_solved)
+		std::cerr<<"Warning: the problem is not successfully solved yet!"<<std::endl;
+	return __x;
+}
 
 /***********************Implementation of LassoProblem************************/
 
