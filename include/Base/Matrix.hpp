@@ -102,70 +102,24 @@ public:
 	bool isSymmetric() const;
 
 	/** Copy operation */
-	MatrixBase& operator= ( const MatrixBase& mat ) {
-		if( __rows != mat.rows() || __cols != mat.cols() ){
-			__rows = mat.rows();
-			__cols = mat.cols();
-			SAFE_DELETE_ARRAY(this->dataPtr());
-			this->reset(__rows*__cols);
-		}
-
-		for ( index i = 0 ; i < __rows*__cols ; ++ i )
-			this->operator[](i) = mat.data(i);
-		return *this;
-	}
+	MatrixBase& operator= ( const MatrixBase& mat );
 
 	/*
 		Mathematical operations
 	*/
 
-	// summation
-	// need to be tested
-		
-	MatrixBase operator+ (const MatrixBase& mat) {
-		if ( __rows != mat.rows() || __cols != mat.cols() ) 
-			throw COException("MatrixBase summation error: the size of two matrices are not consistent!");
-		MatrixBase result(__rows,__cols);
-		for ( index i = 0 ; i < __rows*__cols ; ++ i )
-			result.set(i,this->operator[](i)+mat.data(i));
-		return result;
-	}
+	/** summation */
+	MatrixBase operator+ (const MatrixBase& mat);
 
 	// subtraction
 	// need to be tested
-	MatrixBase operator- (const MatrixBase& mat) {
-		if ( __rows != mat.rows() || __cols != mat.cols() ) 
-			throw COException("MatrixBase subtraction error: the size of two matrices are not consistent!");
-		MatrixBase result(__rows,__cols);
-		for ( index i = 0 ; i < __rows*__cols ; ++ i )
-			result.set(i,this->operator[](i)-mat.data(i));
-		return result;
-	}
+	MatrixBase operator- (const MatrixBase& mat);
 
 	/** matrix multiplications */
 	VectorBase<scalar,index> operator* ( const VectorBase<scalar,index>& vec ) const;
-	// {
-	// 	if ( __cols != vec.size() )
-	// 		throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
-	// 	VectorBase<scalar,index> result(__rows);
-	// 	for ( index i = 0 ; i < __rows ; ++ i ){
-	// 		for ( index j = 0 ; j < __cols ; ++ j )
-	// 			result[i]+= operator()(i,j)*vec[j];
-	// 	}
-	// 	return result;
-	// }
-	// need to be tested
+
+	/** matrix and matrix multiplication */
 	MatrixBase operator* ( const MatrixBase& mat ) const;
-	// {
-	// 	if ( __cols != mat.rows() )
-	// 		throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
-	// 	MatrixBase result (__rows,mat.cols());
-	// 	for ( index i = 0 ; i < __rows ; ++ i )
-	// 		for ( index j = 0 ; j < mat.cols() ; ++ j )
-	// 			for ( index k = 0 ; k < __cols ; ++ k )
-	// 				result(i,j) += operator()(i,k)*mat(k,j);
-	// 	return result;
-	// }
 
 
 	// multiplication between a scalar and a matrix
@@ -473,7 +427,7 @@ public:
 	typedef 	T 						scalar;
 	typedef  	I 	 					index;
 	typedef 	TripletBase<T,I>		Triplet;
-	typedef 	matrix_tag 				Category;
+	typedef 	sp_matrix_tag 			Category;
 	typedef 	KernelTrait<T,I>		kernel;
 private:
 

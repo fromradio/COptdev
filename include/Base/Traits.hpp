@@ -184,6 +184,7 @@ struct referred_array{};
 struct data_tag{};
 struct matrix_tag:data_tag{};
 struct vector_tag:data_tag{};
+struct sp_matrix_tag:data_tag{};
 struct solver_tag{};
 struct constraint_tag{};
 /** traits of constraints and functions*/

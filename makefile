@@ -120,7 +120,7 @@ obj/mpitest.o: test/openmpi_test.cpp
 lasso: bin/lasso
 bin/lasso: obj/lasso.o
 	$(CC) obj/lasso.o $(DIR_LIB) -o $@ $(LIBS)
-obj/lasso.o: test/lasso.cpp
+obj/lasso.o: test/lasso.cpp include/Algorithms/Lasso.hpp
 	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas

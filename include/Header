@@ -12,6 +12,7 @@
 #include <set>
 #include <cmath>
 #include <random>
+#include <time.h>
 
 #include <complex>
 #include <ThirdParty/cblas.h>
@@ -57,7 +58,5 @@
 #include "Algorithms/ProximalOperator.hpp"
 #include "Algorithms/Lasso.hpp"
 
-
-#include <time.h>
 
 #endif

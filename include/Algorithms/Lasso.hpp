@@ -292,10 +292,11 @@ void LassoADMMSolver<Problem>::init()
 	Eigen::MatrixXd iden = Eigen::MatrixXd::Identity(__mtm.rows(),__mtm.cols());
 	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
 		iden(i,i) = 0.5/__rho;
-	mat = mat+iden;
+	
 	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
 		for ( int j = 0 ; j < __mtm.cols() ; ++ j )
 			mat(i,j) = __mtm(i,j);
+	mat = mat+iden;
 	__linear_solver.compute(mat);
 #endif
 }
@@ -343,7 +344,7 @@ void LassoADMMSolver<Problem>::solve()
 		xp = x;
 		if((i++)>=__maxiteration)
 			break;
-		// std::cout<<err<<std::endl;
+		std::cout<<err<<std::endl;
 	}while(!IS_ZERO(err));
 	std::cout<<"result is "<<x<<std::endl;
 	std::cout<<i<<" iterations are used "<<std::endl;

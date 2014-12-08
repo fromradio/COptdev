@@ -66,9 +66,26 @@ void copt_blas_swap (const int N,std::complex<double>* X,const int incX,std::com
 	cblas_zswap(N,X,incX,Y,incY);
 }
 
-/*
- *				dot operation
- */
+/** 			summation 			*/
+
+void copt_blas_axpy( const int N , const float alpha , const float* X , const int incX , float *Y , const int incY)
+{
+	cblas_saxpy(N,alpha,X,incX,Y,incY);
+}
+void copt_blas_axpy( const int N , const double alpha , const double* X , const int incX , double *Y , const int incY )
+{
+	cblas_daxpy(N,alpha,X,incX,Y,incY);
+}
+void copt_blas_axpy( const int N , const std::complex<float>& alpha , const std::complex<float> *X , const int incX , std::complex<float> *Y , const int incY)
+{
+	cblas_caxpy(N,&alpha,X,incX,Y,incY);
+}
+void copt_blas_axpy( const int N , const std::complex<double>& alpha , const std::complex<double> *X , const int incX , std::complex<double> *Y , const int incY )
+{
+	cblas_zaxpy(N,&alpha,X,incX,Y,incY);
+}
+
+/**				dot operation 			*/
 template<class eT>
 eT copt_blas_dot(const int N,const eT* X,const int incX,const eT* Y,const int incY)
 {

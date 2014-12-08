@@ -157,6 +157,43 @@ void MatrixBase<scalar,index>::resize(index m,index n)
 }
 
 template<class scalar,class index>
+MatrixBase<scalar,index>& MatrixBase<scalar,index>::operator=(const MatrixBase& mat)
+{
+	if(__rows != mat.rows() || __cols != mat.cols() )
+	{
+		__rows = mat.rows();
+		__cols = mat.cols();
+		this->reset(__rows*__cols);
+	}
+	blas::copt_blas_copy(__rows*__cols,mat.dataPtr(),1,this->dataPtr(),1);
+	return *this;
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::operator+(const MatrixBase& mat )
+{
+	if ( __rows != mat.rows() || __cols != mat.cols() )
+	{
+		throw COException("MatrixBase summation error: the size of two matrices are not consistent!");
+	}
+	MatrixBase result(*this);
+	blas::copt_blas_axpy(this->size(),1.0,mat.dataPtr(),1,result.dataPtr(),1);
+	return result;
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::operator-(const MatrixBase& mat )
+{
+	if ( __rows != mat.rows() || __cols != mat.cols() )
+	{
+		throw COException("MatrixBase summation error: the size of two matrices are not consistent!");
+	}
+	MatrixBase result(*this);
+	blas::copt_blas_axpy(this->size(),-1.0,mat.dataPtr(),1,result.dataPtr(),1);
+	return result;
+}
+
+template<class scalar,class index>
 VectorBase<scalar,index> MatrixBase<scalar,index>::operator*(const VectorBase<scalar,index>& vec )const
 {
 	if ( __cols != vec.size() )

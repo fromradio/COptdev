@@ -20,22 +20,33 @@ int main(int argc,char* argv[])
 	std::cout<<mat.transpose()*mat<<std::endl;
 	std::cout<<mtm<<std::endl;
 
+
 	clock_t t1,t2,at1,at2;
 	at1 = clock();
 	t1 = clock();
-	Matrix m = Matrix::random(5000,4000);
-	Vector v = Vector::random(4000);   	
-	t2 = clock();
-	std::cout<<"generation costs "<<(double)(t2-t1)/CLOCKS_PER_SEC<<std::endl;
-	t1 = clock();
-	Vector r = m*v;
-	t2 = clock();
-	std::cout<<" multiplicatioin costs "<<(double)(t2-t1)/CLOCKS_PER_SEC<<std::endl;
+	Matrix m = Matrix::random(5,2);
+	mat = m;
+	m = Matrix::random(5,2);
+	Vector v = Vector::random(4);
+	std::cout<<"m is "<<m<<std::endl;
+	std::cout<<"mat is "<<mat<<std::endl;
+	std::cout<<" m+mat is "<<m+mat<<std::endl;
+	std::cout<<" m-mat is "<<m-mat<<std::endl;
+	// t2 = clock();
+	// std::cout<<"generation costs "<<(double)(t2-t1)/CLOCKS_PER_SEC<<std::endl;
 	// t1 = clock();
-	m.mtm(mtm);
-	t2 = clock();
-	std::cout<<" level 3 operation costs "<<(double)(t2-t1)/CLOCKS_PER_SEC<<std::endl;
-	m.transpose()*m;
-	at2 = clock();
-	std::cout<<" all costs "<<(double)(at2-at1)/CLOCKS_PER_SEC<<std::endl;
+	// mat = m;
+	// t2 = clock();
+	// std::cout<<"assignment costs "<<(double)(t2-t1)/CLOCKS_PER_SEC<<std::endl;  
+	// t1 = clock();
+	// Vector r = m*v;
+	// t2 = clock();
+	// std::cout<<" multiplicatioin costs "<<(double)(t2-t1)/CLOCKS_PER_SEC<<std::endl;
+	// // t1 = clock();
+	// m.mtm(mtm);
+	// t2 = clock();
+	// std::cout<<" level 3 operation costs "<<(double)(t2-t1)/CLOCKS_PER_SEC<<std::endl;
+	// m.transpose()*m;
+	// at2 = clock();
+	// std::cout<<" all costs "<<(double)(at2-at1)/CLOCKS_PER_SEC<<std::endl;
 }
