@@ -208,7 +208,7 @@ public:
 	/*				solve linear system
 	 *
 	 */
-
+#ifdef USE_LAPACK
 	 Vector lapackSolve( const Vector& vec ){
 		if (__rows != __cols )
 			throw COException("Solving Error: the matrix is not square!");
@@ -225,6 +225,7 @@ public:
 		delete[] a; // delete the temporaray array
 		return v;
 	}
+#endif
 	
 #ifdef EIGEN
 	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec){
@@ -245,12 +246,15 @@ public:
 		Eigen::Matrix<scalar,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
 		return VectorBase<scalar,index>(result);
 	}
-#else
+#endif
+	
+#ifdef USE_LAPACK
 	Vector solve( const Vector& vec ){
 		return lapackSolve(vec);
 	}
 #endif
 
+#ifdef USE_LAPACK
 	Vector leastSquareSolve( const Vector& vec){
 		if( __cols != vec.size() )
 			throw COException("least square error: the size is not consistent!");
@@ -267,7 +271,7 @@ public:
 		delete[]b;
 		return result;
 	}
-
+#endif
 	
 
 
