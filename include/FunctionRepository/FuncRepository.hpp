@@ -114,7 +114,6 @@ public:
 	typename VectorFunction<VT>::ScalarType operator() (const VT& vec ) const{
 		return (100*(vec[1]-vec[0]*vec[0])*(vec[1]-vec[0]*vec[0])+(1-vec[0])*(1-vec[0]));
 	}
-	//add the gradient
 	VT gradient(const VT& vec) const{
 		VT result(2);
 		result[0] = 400*vec[0]*vec[0]*vec[0]-400*vec[0]*vec[1]+2*vec[0]-2;
