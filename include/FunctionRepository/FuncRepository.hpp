@@ -123,23 +123,19 @@ public:
 	}
 };
 
-template<class VT>
+template<class T>
 class VectorFunctionSystem
-//	: public VectorFunction<VT>
 {
 private:
-//	typedef VectorFunction<VT> Function;
-//	typedef 	typename Function::Vector 				Vector;
-//	typedef 	typename Function::Matrix 				Matrix;
-	typedef 			VT								Vector;
-	typedef 			MatrixBase<double>			Matrix;
+	typedef 			VectorBase<T>			Vector;
+	typedef 			MatrixBase<T>			Matrix;
 	int __m;
 	int __n;
 public:
 	VectorFunctionSystem()
 		:
-		__m(2),
-		__n(2)
+		__m(0),
+		__n(0)
 	{}
 	VectorFunctionSystem(int m,int n)
 		:
@@ -148,20 +144,15 @@ public:
 	{}
 	~VectorFunctionSystem(){}
 
-//	Vector operator() (const Vector& vec) const{
-//		Vector f(__m);
-//		f[0] = (vec[0]-50)*(vec[0]-50) + (vec[1]-10)*(vec[1]-20);
-//		f[1] = (100*(vec[1]-vec[0]*vec[0])*(vec[1]-vec[0]*vec[0])+(1-vec[0])*(1-vec[0]));
-//		return f;
-//	}
-	Vector FunctionValue(const Vector &vec) const
+	Vector FunctionValue( Vector& vec) 
 	{
 		Vector f(__m);
 		f[0] = (vec[0]-50)*(vec[0]-50) + (vec[1]-10)*(vec[1]-20);
 		f[1] = (100*(vec[1]-vec[0]*vec[0])*(vec[1]-vec[0]*vec[0])+(1-vec[0])*(1-vec[0]));
 		return f;
 	}
-	Matrix JacobiFun(const Vector &vec) const
+
+	Matrix JacobiFun( Vector& vec) 
 	{
 		Matrix J(__m, __n);
 		J(0, 0) = 2*vec[0]-100;

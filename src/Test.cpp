@@ -2,7 +2,7 @@
 
 
 typedef double		 					FT;
-typedef COPT::Array<FT> 				Array;
+//typedef COPT::Array<FT> 				Array;
 typedef COPT::VectorBase<FT>			Vector;
 typedef COPT::MatrixBase<FT>	 		Matrix;
 
@@ -230,31 +230,16 @@ int main(int argc,char* argv[])
 //LM method
 int main(int argc,char* argv[])
 { 
-//	Vector<COPT::VectorFunction<Vector>* >   	Function;
-//	Function.resize(2);
-//	typedef COPT::VectorFunction<Vector>		Function;
-//	typedef COPT::TestQuadFunction<Vector>		Function1;
-//	typedef COPT::RosenbrockFunction<Vector>	Function2;
 
-//	Function* f[2];
-//	f[0] = new Function1;
-//	f[1] = new Function2;
-//	Function1 f1;
-//	Function2 f2;
-//	f[0]=f1;
-//	f[1]=f2;
-
-	//typedef COPT::VectorFunctionSystem<Vector>	FS;
-	//FS f;
-	
-	COPT::VectorFunctionSystem<Vector> f(2,2);
+	typedef COPT::VectorFunctionSystem<FT>	Function;
+	Function func(2,2);
 	Vector initial_x(2);
 	initial_x[0]=0;
 	initial_x[1]=0;
-	Vector x = COPT::LevenbergMarquardt(&f, initial_x, 2, 2);
-	std::cout<<"LM method:"<<x<<std::endl;
-//	delete f[0];
-//	delete f[1];
+	COPT::NonLinearSquare<FT> lm(&func, 2, 2);
+	lm.solve(initial_x);
+	lm.printInfo();
+
 }
 
 
