@@ -114,6 +114,54 @@ public:
 	typename VectorFunction<VT>::ScalarType operator() (const VT& vec ) const{
 		return (100*(vec[1]-vec[0]*vec[0])*(vec[1]-vec[0]*vec[0])+(1-vec[0])*(1-vec[0]));
 	}
+	VT gradient(const VT& vec) const{
+		VT result(2);
+		result[0] = 400*vec[0]*vec[0]*vec[0]-400*vec[0]*vec[1]+2*vec[0]-2;
+		result[1] = 200*vec[1]-200*vec[0]*vec[0];
+		return result;
+	}
+};
+
+template<class T>
+class VectorFunctionSystem
+{
+private:
+	typedef 			VectorBase<T>			Vector;
+	typedef 			MatrixBase<T>			Matrix;
+	int __m;
+	int __n;
+public:
+	VectorFunctionSystem()
+		:
+		__m(0),
+		__n(0)
+	{}
+	VectorFunctionSystem(int m,int n)
+		:
+		__m(m),
+		__n(n)
+	{}
+	~VectorFunctionSystem(){}
+
+	Vector FunctionValue( Vector& vec) 
+	{
+		Vector f(__m);
+		f[0] = (vec[0]-50)*(vec[0]-50) + (vec[1]-10)*(vec[1]-20);
+		f[1] = (100*(vec[1]-vec[0]*vec[0])*(vec[1]-vec[0]*vec[0])+(1-vec[0])*(1-vec[0]));
+		return f;
+	}
+
+	Matrix JacobiFun( Vector& vec) 
+	{
+		Matrix J(__m, __n);
+		J(0, 0) = 2*vec[0]-100;
+		J(0, 1) = 2*vec[1]-30;
+		J(1, 0) = 400*vec[0]*vec[0]*vec[0]-400*vec[0]*vec[1]+2*vec[0]-2;
+		J(1, 1) = 200*vec[1]-200*vec[0]*vec[0];
+		return J;
+
+	}	
+
 };
 
 };
