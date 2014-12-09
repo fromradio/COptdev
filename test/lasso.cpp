@@ -5,7 +5,7 @@ typedef COPT::KernelTrait<FT>		kernel;
 typedef kernel::Matrix 				Matrix;
 typedef kernel::Vector 				Vector;
 typedef COPT::LassoProblem<kernel>	problem;
-typedef COPT::LassoADMMSolver<problem>	solver;
+typedef COPT::LassoADMMSolver<problem,COPT::SolverTimeStatistics>	solver;
 typedef COPT::LassoProximalSolver<problem>	psolver;
 
 const int m = 5;
@@ -33,7 +33,7 @@ int main(int argc,char*argv[])
 	
 	t2 = clock();
 	sol.solve();
-	std::cout<<"time costs "<<(double)(t2-t1)/CLOCKS_PER_SEC<<std::endl;
+	sol.printTimeInfo();
 	psolver psol(pro,0.5,1.0,1000000);
 	psol.solve();
 }

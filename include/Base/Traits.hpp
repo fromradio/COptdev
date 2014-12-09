@@ -187,6 +187,9 @@ struct vector_tag:data_tag{};
 struct sp_matrix_tag:data_tag{};
 struct solver_tag{};
 struct constraint_tag{};
+/** no time statistics tag */
+struct no_time_stat_tag{};
+struct solver_time_stat_tag{};
 /** traits of constraints and functions*/
 struct linear_constraint_tag:constraint_tag{};
 struct quadratic_constraint_tag:constraint_tag{};

@@ -7,8 +7,6 @@
 namespace COPT
 {
 
-
-
 template<class Problem>
 class LassoProximalSolver
 {
@@ -67,8 +65,10 @@ public:
  *
  *
  */
-template<class Problem>
+template<class Problem , class Time = NoTimeStatistics>
 class LassoADMMSolver
+	:
+	public Time
 {
 private:
 	typedef typename Problem::KernelTrait::index 		index;
@@ -96,7 +96,7 @@ private:
 	Eigen::LDLT<Eigen::MatrixXd>	__linear_solver;
 #endif
 
-	void init();
+	
 
 public:
 	/** constructor and deconstructor */
@@ -107,6 +107,7 @@ public:
 		const index maxiteration);
 	//%}
 
+	void compute();
 	/** sub-problems */
 	//%{
 	void xSubProblem(const Vector& zk,const Vector& yk,Vector& xn);
@@ -260,7 +261,6 @@ void LassoProximalSolver<Problem>::solve()
 		if (i>__maxiteration)
 			break;
 		xp = xn;
-		// std::cout<<i<<std::endl;
 	}
 	std::cout<<"result is "<<xn<<std::endl;
 	std::cout<<i<<" iterations are used!"<<std::endl;
@@ -274,8 +274,8 @@ typename LassoProximalSolver<Problem>::Vector LassoProximalSolver<Problem>::resu
 }
 
 /***********************Implementation of ADMM solver*************************/
-template<class Problem>
-LassoADMMSolver<Problem>::LassoADMMSolver(
+template<class Problem,class Time>
+LassoADMMSolver<Problem,Time>::LassoADMMSolver(
 	const Problem& p,
 	const scalar rho,
 	const index maxiteration)
@@ -284,12 +284,13 @@ LassoADMMSolver<Problem>::LassoADMMSolver(
 	__rho(rho),
 	__maxiteration(maxiteration)
 {
-	init();
+	compute();
 }
 
-template<class Problem>
-void LassoADMMSolver<Problem>::init()
+template<class Problem,class Time>
+void LassoADMMSolver<Problem,Time>::compute()
 {
+	this->computationBegin();
 	__p.matA().mtm(__mtm);
 	__mt = __p.matA().transpose();
 #ifdef EIGEN
@@ -304,10 +305,11 @@ void LassoADMMSolver<Problem>::init()
 	mat = mat+iden;
 	__linear_solver.compute(mat);
 #endif
+	this->computationEnd();
 }
 
-template<class Problem>
-void LassoADMMSolver<Problem>::xSubProblem(const Vector& zk,const Vector& yk,Vector&xn)
+template<class Problem,class Time>
+void LassoADMMSolver<Problem,Time>::xSubProblem(const Vector& zk,const Vector& yk,Vector&xn)
 {
 	Vector rhd = __mt*__p.obB()+1.0/(2.0*__rho)*(zk-yk);
 #ifdef EIGEN
@@ -320,22 +322,23 @@ void LassoADMMSolver<Problem>::xSubProblem(const Vector& zk,const Vector& yk,Vec
 #endif
 }
 
-template<class Problem>
-void LassoADMMSolver<Problem>::zSubProblem(const Vector& xn,const Vector& yk,Vector& zn)
+template<class Problem,class Time>
+void LassoADMMSolver<Problem,Time>::zSubProblem(const Vector& xn,const Vector& yk,Vector& zn)
 {
 	for ( int i = 0 ; i < zn.size() ; ++ i )
 		zn(i) = computeProximal(AbsFunction(),xn(i)+yk(i),__rho*__p.lambda());
 }
 
-template<class Problem>
-void LassoADMMSolver<Problem>::ySubProblem(const Vector& xn,const Vector& zn,Vector& yn)
+template<class Problem,class Time>
+void LassoADMMSolver<Problem,Time>::ySubProblem(const Vector& xn,const Vector& zn,Vector& yn)
 {
 	yn = yn+(xn-zn);
 }
 
-template<class Problem>
-void LassoADMMSolver<Problem>::solve()
+template<class Problem,class Time>
+void LassoADMMSolver<Problem,Time>::solve()
 {
+	this->solvingBegin();
 	index m = __p.matA().rows();
 	index n = __p.matA().cols();
 	Vector x(n),y(n),z(n),xp(x);
@@ -354,10 +357,11 @@ void LassoADMMSolver<Problem>::solve()
 	std::cout<<"result is "<<z<<std::endl;
 	std::cout<<i<<" iterations are used "<<std::endl;
 	std::cout<<"norm is "<<__p.objective(z)<<std::endl;
+	this->solvingEnd();
 }
 
-template<class Problem>
-const typename LassoADMMSolver<Problem>::Vector& LassoADMMSolver<Problem>::result() const
+template<class Problem,class Time>
+const typename LassoADMMSolver<Problem,Time>::Vector& LassoADMMSolver<Problem,Time>::result() const
 {
 	if(!__is_solved)
 		std::cerr<<"Warning: the problem is not successfully solved yet!"<<std::endl;

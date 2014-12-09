@@ -32,6 +32,7 @@
 #include "Base/BasicOperation.hpp"
 #include "Base/COException.hpp"
 #include "Base/Traits.hpp"
+#include "Base/TimeStatistics.hpp"
 
 
 #include "Base/CBlasWrapper.hpp"
