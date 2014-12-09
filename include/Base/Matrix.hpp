@@ -332,6 +332,12 @@ public:
 	/** compute A^TA of a given matrix */
 	void mtm(MatrixBase& mat) const;
 
+	/** norms */
+	//%{
+	/** compute the operation norm */
+	scalar operationNorm() const;
+	//%}
+
 };// End of class MatrixBase
 
 

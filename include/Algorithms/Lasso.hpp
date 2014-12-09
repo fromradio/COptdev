@@ -7,6 +7,8 @@
 namespace COPT
 {
 
+
+
 template<class Problem>
 class LassoProximalSolver
 {
@@ -157,6 +159,7 @@ public:
 template<class Problem>
 void LassoProximalSolver<Problem>::init()
 {
+	/** compute the beta */
 	__s.matA().mtm(__mtm);
 	__mt = __s.matA().transpose();
 	Eigen::MatrixXd mat(__mtm.rows(),__mtm.cols());
@@ -164,6 +167,10 @@ void LassoProximalSolver<Problem>::init()
 		for ( int j = 0 ; j < __mtm.cols() ; ++ j )
 			mat(i,j) = __mtm(i,j);
 	__linear_solver.compute(mat);
+	scalar e = __s.matA().operationNorm();
+	std::cout<<"L is "<<e*e<<std::endl;
+	__mu = 1.0/(2*e*e);
+	// __mu = 0.1*__mu;
 }
 
 template<class Problem>
@@ -184,7 +191,7 @@ LassoProximalSolver<Problem>::LassoProximalSolver(
 template<class Problem>
 typename LassoProximalSolver<Problem>::Vector LassoProximalSolver<Problem>::fGradient(const Vector& x)
 {
-	return __mtm*x-__mt*__s.obB();
+	return 2*(__mtm*x-__mt*__s.obB());
 }
 
 template<class Problem>
@@ -202,7 +209,7 @@ template<class Problem>
 typename LassoProximalSolver<Problem>::scalar LassoProximalSolver<Problem>::f(
 	const Vector& x)
 {
-	return 0.5*(__s.matA()*x-__s.obB()).squaredNorm();
+	return (__s.matA()*x-__s.obB()).squaredNorm();
 }
 
 template<class Problem>
@@ -210,7 +217,7 @@ typename LassoProximalSolver<Problem>::scalar LassoProximalSolver<Problem>::fMu(
 	const Vector& x,
 	const Vector& y)
 {
-	scalar result = 0.5*(__s.matA()*y-__s.obB()).squaredNorm();
+	scalar result = (__s.matA()*y-__s.obB()).squaredNorm();
 	result += fGradient(y).dot(x-y);
 	result += 1/(2*__mu)*(x-y).squaredNorm();
 	return result;
@@ -221,19 +228,17 @@ bool LassoProximalSolver<Problem>::iteration( const Vector& xk , Vector& xn)
 {
 	Eigen::VectorXd vec(xk.size());
 	Vector temp = fGradient(xk);
-	for ( int i = 0 ; i < temp.size() ;++ i )
-		vec(i) = temp(i);
-	vec = __linear_solver.solve(vec);
-	for ( int i = 0 ; i < temp.size() ; ++ i )
-		temp(i) = vec(i);
 	xn = xk-__mu*temp;
+	xn = gProximal(xn);
 	scalar f1 = f(xn) , f2 = fMu(xn,xk);
-	if ( f1 <= f2 )
-	{
-		std::cout<<"situation 1 is reached!"<<std::endl;
-		return true;
-	}
-	else if (IS_ZERO(f1-f2))
+	// std::cout<<"f1 "<<f(xn)<<" f2 "<<f2<<std::endl;
+	// if ( f1 <= f2 )
+	// {
+	// 	std::cout<<"situation 1 is reached!"<<std::endl;
+	// 	return true;
+	// }
+	// else  
+	if (IS_ZERO((xk-xn).squaredNorm()))
 	{
 		std::cout<<"situation 2 is reached"<<std::endl;
 		return true;
@@ -255,7 +260,7 @@ void LassoProximalSolver<Problem>::solve()
 		if (i>__maxiteration)
 			break;
 		xp = xn;
-		std::cout<<i<<std::endl;
+		// std::cout<<i<<std::endl;
 	}
 	std::cout<<"result is "<<xn<<std::endl;
 	std::cout<<i<<" iterations are used!"<<std::endl;
@@ -291,7 +296,7 @@ void LassoADMMSolver<Problem>::init()
 	Eigen::MatrixXd mat(__mtm.rows(),__mtm.cols());
 	Eigen::MatrixXd iden = Eigen::MatrixXd::Identity(__mtm.rows(),__mtm.cols());
 	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
-		iden(i,i) = 0.5/__rho;
+		iden(i,i) = 1.0/(2*__rho);
 	
 	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
 		for ( int j = 0 ; j < __mtm.cols() ; ++ j )
@@ -304,7 +309,7 @@ void LassoADMMSolver<Problem>::init()
 template<class Problem>
 void LassoADMMSolver<Problem>::xSubProblem(const Vector& zk,const Vector& yk,Vector&xn)
 {
-	Vector rhd = __mt*__p.obB()+0.5/__rho*(zk-yk);
+	Vector rhd = __mt*__p.obB()+1.0/(2.0*__rho)*(zk-yk);
 #ifdef EIGEN
 	Eigen::VectorXd vec(rhd.size());
 	for ( int i = 0 ; i < rhd.size() ; ++ i )
@@ -344,10 +349,11 @@ void LassoADMMSolver<Problem>::solve()
 		xp = x;
 		if((i++)>=__maxiteration)
 			break;
-		std::cout<<err<<std::endl;
+		// std::cout<<err<<std::endl;
 	}while(!IS_ZERO(err));
-	std::cout<<"result is "<<x<<std::endl;
+	std::cout<<"result is "<<z<<std::endl;
 	std::cout<<i<<" iterations are used "<<std::endl;
+	std::cout<<"norm is "<<__p.objective(z)<<std::endl;
 }
 
 template<class Problem>
@@ -369,7 +375,7 @@ LassoProblem<kernel>::LassoProblem(
 	__A(A),
 	__b(b),
 	__lambda(lambda)
-{
+{  
 }
 
 template<class kernel>
@@ -398,7 +404,7 @@ const typename kernel::scalar& LassoProblem<kernel>::lambda() const
 template<class kernel>
 typename kernel::scalar LassoProblem<kernel>::objective( const Vector& x ) const
 {
-	return 0.5*(__A*x-__b).squaredNorm()+__lambda*x.absNorm();
+	return (__A*x-__b).squaredNorm()+__lambda*x.absNorm();
 }
 }
 

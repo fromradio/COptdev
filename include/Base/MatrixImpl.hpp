@@ -199,7 +199,10 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::operator*(const VectorBase<sc
 	if ( __cols != vec.size() )
 		throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
 	VectorBase<scalar,index> result(__rows);
-	blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__rows,__cols,1.0,this->dataPtr(),__rows,vec.dataPtr(),1,0.0,result.dataPtr(),1);
+	if (!__sym)
+		blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__rows,__cols,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+	else
+		blas::copt_blas_symv(CblasColMajor,CblasUpper,__rows,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 	return result;
 }
 
@@ -469,12 +472,11 @@ void MatrixBase<scalar,index>::setRandom(const index rows,const index cols)
 {
 	if(rows<0||cols<0)
 		throw COException("Please make sure that the number of row and column is bigger than zero!");
-	std::mt19937 eng(time(NULL));
 	std::uniform_real_distribution<scalar> unif(0.0,1.0);
 	this->resize(rows,cols);
 	for ( int i = 0 ; i < rows ; ++ i )
 		for ( int j = 0 ; j < cols ; ++ j )
-			this->operator()(i,j)=unif(eng);
+			this->operator()(i,j)=unif(copt_rand_eng);
 }
 
 template<class scalar,class index>
@@ -493,6 +495,19 @@ void MatrixBase<scalar,index>::mtm( MatrixBase& mat ) const
 	mat.resize(n,n);
 	blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
 	mat.setSymmetricFlag(true);
+}
+
+template<class Matrix>
+class PartialEigenSolver;
+
+template<class scalar,class index>
+scalar MatrixBase<scalar,index>::operationNorm() const
+{
+	MatrixBase mtm;
+	this->mtm(mtm);
+	PartialEigenSolver<MatrixBase> solver(mtm);
+	scalar e = solver.computeLargestEigenvalue();
+	return std::sqrt(e);
 }
 
 /*******************Implementation of Triplet******************/

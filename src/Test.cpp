@@ -2,9 +2,9 @@
 
 
 typedef double		 					FT;
-typedef COPT::Array<FT> 				Array;
-typedef COPT::VectorBase<FT>			Vector;
-typedef COPT::MatrixBase<FT>	 		Matrix;
+typedef COPT::Array<FT,int> 				Array;
+typedef COPT::VectorBase<FT,int>			Vector;
+typedef COPT::MatrixBase<FT,int>	 		Matrix;
 
 // typedef double 			FT;
 // typedef COPT::Vector<FT>			Vector;

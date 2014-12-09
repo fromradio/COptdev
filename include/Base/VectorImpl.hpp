@@ -210,12 +210,11 @@ void VectorBase<scalar,index>::stCombine(const VectorBase& v1,const VectorBase& 
 template<class scalar,class index>
 VectorBase<scalar,index> VectorBase<scalar,index>::random( const index s )
 {
-	std::mt19937 eng(time(NULL));
 	std::uniform_real_distribution<scalar> unif(0.0,1.0);
 	VectorBase result(s);
 	for ( int i = 0 ; i < s; ++ i )
 	{
-		result(i) = unif(eng);
+		result(i) = unif(copt_rand_eng);
 	}
 	return result;
 }

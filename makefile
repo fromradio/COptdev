@@ -18,7 +18,7 @@ all:$(BIN_TARGET)
 
 
 $(BIN_TARGET):$(OBJ)
-	$(CC) $(OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
+	$(CC) $(OBJ) $(DIR_LIB) -o $@ $(LIBS)
 
 $(DIR_OBJ)/%.o:%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -121,6 +121,12 @@ lasso: bin/lasso
 bin/lasso: obj/lasso.o
 	$(CC) obj/lasso.o $(DIR_LIB) -o $@ $(LIBS)
 obj/lasso.o: test/lasso.cpp include/Algorithms/Lasso.hpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+eigensolver: bin/eigensolver
+bin/eigensolver: obj/eigensolver.o
+	$(CC) obj/eigensolver.o $(DIR_LIB) -o $@ $(LIBS)
+obj/eigensolver.o: test/eigensolver.cpp include/Algorithms/Eigenvalue.hpp
 	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas

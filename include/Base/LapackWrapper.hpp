@@ -10,10 +10,10 @@
 namespace COPT
 {
 
-int block_size( char* name, char* opts,int n1,int n2, int n3,int n4)
+int block_size( const char* name,const char* opts,int n1,int n2, int n3,int n4)
 {
 	int ispec = 1;
-	return ilaenv_(&ispec,name,opts,&n1,&n2,&n3,&n4);
+	return ilaenv_(&ispec,const_cast<char*>(name),const_cast<char*>(opts),&n1,&n2,&n3,&n4);
 }
 
 template<class index,class real>
@@ -115,6 +115,61 @@ int copt_lapack_gels(char trans, int m, int n,
 	int status = dgels_(&trans,&m,&n,&nrhs,a,&lda,b,&ldb,work,&lwork,info);
 	delete []work;
 	return status;
+}
+
+/** symmetric matrix to tridiagonal matrix */
+template<class index ,class scalar>
+int copt_lapack_sytrd(char uplo , index n , scalar* a , index lda , scalar *d , scalar *e , scalar *tau ,  index *info )
+{
+	throw COException("Unknown type for lapack wrapper!");
+}
+template<>
+int copt_lapack_sytrd(char uplo , int n , float* a , int lda , float *d ,float *e , float *tau ,  int *info )
+{
+	/** compute the lwork first */
+	float *work = new float[1];
+	int lwork = -1;
+	ssytrd_(&uplo,&n,a,&lda,d,e,tau,work,&lwork,info);
+	lwork = work[0];
+	delete[]work;
+	work = new float[lwork];
+	int status = ssytrd_(&uplo,&n,a,&lda,d,e,tau,work,&lwork,info);
+	delete[] work;
+	return status;
+}
+
+template<>
+int copt_lapack_sytrd(char uplo , int n , double *a , int lda , double *d , double *e , double *tau , int *info )
+{
+	/** compute the lwork first */
+	double *work = new double[1];
+	int lwork = -1;
+	dsytrd_(&uplo,&n,a,&lda,d,e,tau,work,&lwork,info);
+	lwork = work[0];
+	delete[]work;
+	work = new double[lwork];
+	int status = dsytrd_(&uplo,&n,a,&lda,d,e,tau,work,&lwork,info);
+	delete[]work;
+	return status;
+}
+
+/** stebz */
+template<class index,class scalar>
+int copt_lapack_stebz(char range,char order,index n,scalar vl,scalar vu,index il,index iu,scalar abstol, scalar* d, scalar *e , index *m , index *nsplit , scalar *w , index *iblock , index *isplit , scalar *work , index *iwork , index *info )
+{
+	throw COException("Unknown type for lapack wrapper!");
+}
+
+template<>
+int copt_lapack_stebz(char range,char order,int n , float vl , float vu , int il , int iu , float abstol , float *d , float * e , int *m , int* nsplit , float *w , int* iblock , int* isplit , float* work, int* iwork , int* info)
+{
+	return sstebz_(&range,&order,&n,&vl,&vu,&il,&iu,&abstol,d,e,m,nsplit,w,iblock,isplit,work,iwork,info);
+}
+
+template<>
+int copt_lapack_stebz(char range , char order , int n , double vl , double vu , int il , int iu , double abstol , double *d , double *e , int *m , int *nsplit , double *w , int *iblock , int *isplit , double *work , int *iwork , int *info )
+{
+	return dstebz_(&range,&order,&n,&vl,&vu,&il,&iu,&abstol,d,e,m,nsplit,w,iblock,isplit,work,iwork,info);
 }
 
 

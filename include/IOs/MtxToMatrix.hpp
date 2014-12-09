@@ -67,6 +67,10 @@ inline void readMtxFile( const std::string& filename , Matrix& mat , const matri
 		return;
 }
 
+template<class Vector>
+inline void writeMtxFile(const std::string& filename )
+{}
+
 
 }
 #endif

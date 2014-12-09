@@ -58,6 +58,7 @@
 #include "Algorithms/omp.hpp"
 #include "Algorithms/ProximalOperator.hpp"
 #include "Algorithms/Lasso.hpp"
+#include "Algorithms/Eigenvalue.hpp"
 
 
 #endif

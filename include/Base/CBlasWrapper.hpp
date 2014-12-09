@@ -165,6 +165,39 @@ void copt_blas_gemv(const enum CBLAS_ORDER order , const enum CBLAS_TRANSPOSE Tr
 	cblas_zgemv(order,TransA,M,N,&alpha,A,lda,X,incX,&beta,Y,incY);
 }
 
+/** symmetric multiplication */
+void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
+					const int N , const float alpha , const float *A ,
+					const int lda , const float *X , const int incX,
+					const float beta , float *Y , const int incY)
+{
+	cblas_ssymv(order,Uplo,N,alpha,A,lda,X,incX,beta,Y,incY);
+}
+
+void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
+					const int N , const double alpha , const double *A , 
+					const int lda , const double *X , const int incX,
+					const double beta , double *Y , const int incY)
+{
+	cblas_dsymv(order,Uplo,N,alpha,A,lda,X,incX,beta,Y,incY);
+}
+
+// void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
+// 					const int N , const std::complex<float>&alpha , const std::complex<float>*A,
+// 					const int lda , const std::complex<float> *X , const int incX,
+// 					const std::complex<float>& beta , std::complex<float> *Y , const int incY)
+// {
+// 	cblas_csymv(order,Uplo,N,&alpha,A,lda,X,incX,&beta,Y,incY);
+// }
+
+// void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
+// 					const int N , const std::complex<double>& alpha , const std::complex<double> *A,
+// 					const int lda , const std::complex<double>* X , const int incX , 
+// 					const std::complex<double>& beta , std::complex<double> *Y , const int incY)
+// {
+// 	cblas_zsymv(order,Uplo,N,&alpha,A,lda,X,incX,&beta,Y,incY);
+// }
+
 /** level three operations */
 
 void copt_blas_gemm(const enum CBLAS_ORDER order , const enum CBLAS_TRANSPOSE TransA,
