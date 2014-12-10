@@ -17,8 +17,13 @@ int main(int argc,char*argv[])
 	Vector b;
 	A = Matrix::random(m,n);
 	// A = Matrix(2,2);
+<<<<<<< Updated upstream
 	// A(0,0) = 1.0; A(1,1)=1.0; A(1,0) = 1.0;
 	b = Vector::random(m);
+=======
+	// A(0,0) = 1.0; A(1,1)=1.0;
+	b = Vector::random(m); 
+>>>>>>> Stashed changes
 	// b = Vector(2);
 	// b(0)=1.0;b(1)=1.0;
 	// std::cout<<"A is "<<A<<std::endl; 
