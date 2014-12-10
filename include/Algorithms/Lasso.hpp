@@ -15,6 +15,7 @@ namespace COPT
 template<class kernel , class Time=NoTimeStatistics>
 class GeneralSolver
 	:
+	public COPTObject,
 	public Time,
 	public noncopyable
 {
