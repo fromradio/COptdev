@@ -143,6 +143,32 @@ void copt_blas_scal(const int N,const double alpha,std::complex<double>* X,const
 	cblas_zdscal(N,alpha,X,incX);
 }
 
+template<class T>
+T copt_blas_nrm2(const int N , const T* X , const int incX )
+{
+	throw COException("Unsupported type for nrm2 computation!");
+}
+template<>
+float copt_blas_nrm2(const int N , const float *X , const int incX )
+{
+	return cblas_snrm2(N,X,incX);
+}
+template<>
+double copt_blas_nrm2(const int N , const double *X , const int incX )
+{
+	return cblas_dnrm2(N,X,incX);
+}
+template<>
+float copt_blas_nrm2(const int N , const std::complex<float> *X , const int incX )
+{
+	return cblas_scnrm2(N,X,incX);
+}
+template<>
+double copt_blas_nrm2(const int N , const std::complex<double> *X , const int incX )
+{
+	return cblas_dznrm2(N,X,incX);
+}
+
 /** level 2 operations */
 
 void copt_blas_gemv(const enum CBLAS_ORDER order,const enum CBLAS_TRANSPOSE TransA , const int M , const int N, const float alpha, const float *A , const int lda , const float*X , const int incX , const float beta , float *Y , const int incY)

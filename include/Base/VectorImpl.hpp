@@ -104,6 +104,13 @@ bool VectorBase<scalar,index>::operator!=(const VectorBase<scalar,index>& vec)co
 }
 
 template<class scalar,class index>
+typename VectorBase<scalar,index>::scalar VectorBase<scalar,index>::squaredNorm() const
+{
+	scalar norm = blas::copt_blas_nrm2(this->size(),this->dataPtr(),this->interval());
+	return norm*norm;
+}
+
+template<class scalar,class index>
 scalar VectorBase<scalar,index>::normalize()
 {
 	scalar norm = std::sqrt(squaredNorm());

@@ -159,13 +159,7 @@ public:
 	/*
 	 * 			Square norm of the VectorBase
 	 */
-	scalar squaredNorm() const{
-		scalar result = 0;
-		for ( index i = 0 ; i < this->size() ; ++ i ){
-			result += this->operator[](i)*this->operator[](i);
-		}
-		return result;
-	}
+	scalar squaredNorm() const;
 
 	scalar absNorm() const{
 		scalar result = 0;
