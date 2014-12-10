@@ -26,8 +26,11 @@ int main(int argc,char* argv[])
 	v(0) = 1.0;
 	Matrix m = mat.transpose();
 	std::cout<<"test is "<<std::endl<<m.transMulti(mat.transpose());
-	// Vector vv(2);
-	// vv(0) = 1.0; vv(1) = 1.0;
+
+
+	Vector vv(2);
+	vv(0) = 1.0; vv(1) = 1.0;
+	std::cout<<"squared norm is "<<vv.squaredNorm()<<std::endl;
 	// std::cout<<m*vv <<std::endl;
 	// std::cout<<mat*mtm<<std::endl;
 	// std::cout<<mat.transpose()*mat.col(0)<<std::endl; 

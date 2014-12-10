@@ -39,8 +39,8 @@ MatrixBase<scalar,index>::MatrixBase(
 	Arr(mat.rows()*mat.cols(),mat.dataPtr()),
 	__rows(mat.rows()),
 	__cols(mat.cols()),
-	__sym(false),
-	__trans(false)
+	__sym(mat.isSymmetric()),
+	__trans(mat.isTranspose())
 {
 }
 
@@ -195,6 +195,8 @@ MatrixBase<scalar,index>& MatrixBase<scalar,index>::operator=(const MatrixBase& 
 		this->reset(__rows*__cols);
 	}
 	blas::copt_blas_copy(__rows*__cols,mat.dataPtr(),1,this->dataPtr(),1);
+	__trans = mat.isTranspose();
+	__sym = mat.isSymmetric();
 	return *this;
 }
 
