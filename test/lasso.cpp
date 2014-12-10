@@ -8,8 +8,8 @@ typedef COPT::LassoProblem<kernel>	problem;
 typedef COPT::LassoADMMSolver<problem,COPT::SolverTimeStatistics>	solver;
 typedef COPT::LassoProximalSolver<problem>	psolver;
 
-const int m = 5;
-const int n = 10;
+const int m = 50;
+const int n = 100;
 int main(int argc,char*argv[])
 {
 	Matrix A;

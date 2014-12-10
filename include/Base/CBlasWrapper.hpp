@@ -216,6 +216,16 @@ void copt_blas_gemm(const enum CBLAS_ORDER order , const enum CBLAS_TRANSPOSE Tr
 	cblas_dgemm(order,TransA,TransB,M,N,K,alpha,A,lda,B,ldb,beta,C,ldc);
 }
 
+/** symm suit for s,d,c,z */
+void copt_blas_symm(const CBLAS_ORDER Order , const enum CBLAS_SIDE Side,
+					const CBLAS_UPLO Uplo , const int M , const int N,
+					const float alpha , const float* A ,const int lda , 
+					const float *B , const int ldb , const float beta,
+					float *C , const int ldc )
+{
+	cblas_ssymm(Order,Side,Uplo,M,N,alpha,A,lda,B,ldb,beta,C,ldc);
+}
+
 void copt_blas_syrk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
                  const enum CBLAS_TRANSPOSE Trans, const int n, const int k, const float alpha,const float*A , const int lda , const float beta , float* C, const int ldc)
 {

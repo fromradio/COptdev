@@ -13,7 +13,8 @@ MatrixBase<scalar,index>::MatrixBase()
 	Arr(),
 	__rows(0),
 	__cols(0),
-	__sym(false)
+	__sym(false),
+	__trans(false)
 {
 }
 
@@ -21,12 +22,13 @@ template<class scalar,class index>
 MatrixBase<scalar,index>::MatrixBase(
 	index m,
 	index n,
-	scalar* data)
+	const scalar* data)
 	:
 	Arr(m*n,data),
 	__rows(m),
 	__cols(n),
-	__sym(false)
+	__sym(false),
+	__trans(false)
 {
 }
 
@@ -37,7 +39,8 @@ MatrixBase<scalar,index>::MatrixBase(
 	Arr(mat.rows()*mat.cols(),mat.dataPtr()),
 	__rows(mat.rows()),
 	__cols(mat.cols()),
-	__sym(false)
+	__sym(false),
+	__trans(false)
 {
 }
 
@@ -71,6 +74,10 @@ typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::operator() 
 			return this->operator[](j*__rows+i);
 		else
 			return this->operator[](i*__rows+j);
+	}
+	else if(__trans)
+	{
+		return this->operator[](i*__cols+j);
 	}
 	else{
 		return this->operator[](j*__rows+i);
@@ -107,7 +114,9 @@ const typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::data 
 template<class scalar,class index>
 VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num){
 	if ( num >= __rows || num < 0 )
-		throw COException("MatrixBase error: row index out of range!");
+		throw COException("MatrixBase error: row index out of range when getting a row of the matrix!");
+	else if(__trans)
+		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 	else
 		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
 }
@@ -115,7 +124,9 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num){
 template<class scalar,class index>
 const VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num )const {
 	if ( num >= __rows || num < 0 )
-		throw COException("MatrixBase error: row index out of range!");
+		throw COException("MatrixBase error: row index out of range when getting a row of the matrix!");
+	else if(__trans)
+		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 	else
 		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
 }
@@ -123,7 +134,9 @@ const VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num )co
 template<class scalar,class index>
 VectorBase<scalar,index> MatrixBase<scalar,index>::col(const index num){
 	if ( num >= __cols || num < 0 )
-		throw COException("MatrixBase error: col index out of range!");
+		throw COException("MatrixBase error: col index out of range when getting a column of the matrix!");
+	else if(__trans)
+		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
 	else
 		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 }
@@ -131,7 +144,9 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::col(const index num){
 template<class scalar,class index>
 const VectorBase<scalar,index> MatrixBase<scalar,index>::col(const index num) const{
 	if ( num >= __cols || num < 0 )
-		throw COException("MatrixBase error: col index out of range!");
+		throw COException("MatrixBase error: col index out of range when getting a column of the matrix!");
+	else if(__trans)
+		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
 	else
 		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 }
@@ -147,6 +162,20 @@ bool MatrixBase<scalar,index>::isSymmetric() const
 {
 	return __sym;
 }
+
+template<class scalar,class index>
+void MatrixBase<scalar,index>::setTransposeFlag( bool trans )
+{
+	__trans = trans;
+}
+
+template<class scalar,class index>
+bool MatrixBase<scalar,index>::isTranspose() const
+{
+	return __trans;
+}
+
+
 
 template<class scalar,class index>
 void MatrixBase<scalar,index>::resize(index m,index n)
@@ -199,10 +228,16 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::operator*(const VectorBase<sc
 	if ( __cols != vec.size() )
 		throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
 	VectorBase<scalar,index> result(__rows);
-	if (!__sym)
-		blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__rows,__cols,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
-	else
+	if (__sym)
 		blas::copt_blas_symv(CblasColMajor,CblasUpper,__rows,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+	else if (__trans)
+	{
+		blas::copt_blas_gemv(CblasColMajor,CblasTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+	}
+	else
+	{
+		blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__rows,__cols,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+	}
 	return result;
 }
 
@@ -212,7 +247,53 @@ MatrixBase<scalar,index> MatrixBase<scalar,index>::operator*(const MatrixBase& m
 	if ( __cols != mat.rows() )
 		throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
 	MatrixBase result(__rows,mat.cols());
-	blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+	if(__trans&&mat.isTranspose())
+		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+	else if(__trans)
+		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+	else if (mat.isTranspose())
+		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+	else
+		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.rows(),0.0,result.dataPtr(),__rows);
+	return result;
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::transpose() const
+{
+	MatrixBase result(__cols,__rows,this->dataPtr());
+	result.setTransposeFlag(true);
+	return result;
+}
+
+template<class scalar,class index>
+VectorBase<scalar,index> MatrixBase<scalar,index>::transMulti( const Vector& vec ) const
+{
+	if(__rows != vec.size() )
+		throw COException("transpose multiplication error: the size of vector and matrix is not consistent!");
+	Vector result(__cols);
+	if(__trans)
+		blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+	else
+		blas::copt_blas_gemv(CblasColMajor,CblasTrans,__rows,__cols,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+	return result;
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::transMulti(const MatrixBase& mat ) const
+{
+	if(__rows != mat.rows() )
+		throw COException("transpose multiplication error: the size of two matrices are not consistent!");
+	MatrixBase result(__cols,mat.cols());
+	if (__trans&&mat.isTranspose())
+		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),result.rows());
+	else if(__trans)
+		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.rows(),0.0,result.dataPtr(),result.rows());
+	else if(mat.isTranspose())
+		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),result.rows());
+	else
+		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__cols,mat.cols(),__rows,1.0,
+			this->dataPtr(),__rows,mat.dataPtr(),mat.rows(),0.0,result.dataPtr(),result.rows());
 	return result;
 }
 
@@ -494,6 +575,10 @@ void MatrixBase<scalar,index>::mtm( MatrixBase& mat ) const
 	int n = this->cols();
 	mat.resize(n,n);
 	blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
+	/** remember to assign the other half */
+	for ( int i = 0 ; i < mat.rows() ; ++ i )
+		for ( int j = 0 ; j < i ; ++ j )
+			mat.operator[](i+j*mat.cols()) = mat.operator[](j+i*mat.cols());
 	mat.setSymmetricFlag(true);
 }
 

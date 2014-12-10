@@ -11,9 +11,11 @@
 namespace COPT
 {
 /*
-	Class of 'MatrixBase'
-		the data is stored column by column
-*/
+ *	Class of 'MatrixBase'
+ *		the data is stored column by column
+ *		the matrix is assumed not to be transpose or symmetric
+ *		but symmetric and transpose flag is designed
+ */
 template<class FT,class I = int>
 class MatrixBase
 	:
@@ -47,6 +49,9 @@ private:
 	/** whether the matrix is symmetric */
 	bool					__sym;
 
+	/** whether the matrix is transpose */
+	bool 					__trans;
+
 	//%}
 public:
 	/** constructor and deconstructor */
@@ -54,7 +59,7 @@ public:
 	/** default constructor */
 	MatrixBase();
 
-	MatrixBase(const index m, const index n,scalar* data=NULL);
+	MatrixBase(const index m, const index n, const scalar* data=NULL);
 
 	/** Copy assignment */
 	MatrixBase(const MatrixBase& mat);
@@ -101,6 +106,10 @@ public:
 	void setSymmetricFlag( bool sym );
 	bool isSymmetric() const;
 
+	/** set the matrix to be transpose mode */
+	void setTransposeFlag( bool sym );
+	bool isTranspose() const;
+
 	/** Copy operation */
 	MatrixBase& operator= ( const MatrixBase& mat );
 
@@ -139,13 +148,12 @@ public:
 	}
 
 	// transpose
-	MatrixBase transpose() const{
-		MatrixBase result(__cols,__rows);
-		for ( index i = 0 ; i < __cols ; ++ i )
-			for ( index j = 0 ; j < __rows ; ++ j )
-				result(i,j) = this->operator()(j,i);
-		return result;
-	}
+	MatrixBase transpose() const;
+
+	/** transpose muliplication */
+	Vector transMulti( const Vector& vec ) const;
+
+	MatrixBase transMulti(const MatrixBase& mat) const;
 
 	/*				overload of ostream
 	 */

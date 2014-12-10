@@ -7,8 +7,53 @@
 namespace COPT
 {
 
-template<class Problem>
+/*		A general design for solver. The solver derives from a Time
+ *		Stastistics class to help it compute time cost of the solver.
+ *
+ */	
+template<class Time=NoTimeStatistics>
+class GeneralSolver
+	:
+	public Time
+{
+protected:
+	virtual void doSolve() = 0;
+	virtual void doCompute() = 0;
+public:
+
+	/** virtual deconstructor */
+	virtual ~GeneralSolver(){}
+	/** kernel function: solve the problem */
+	void solve();
+	/** kernel function: compute or initialize the problem */
+	void compute();
+};
+
+template<class Time>
+void GeneralSolver<Time>::compute()
+{
+	this->computationBegin();
+	this->doCompute();
+	this->computationEnd();
+}
+
+template<class Time>
+void GeneralSolver<Time>::solve()
+{
+	this->solvingBegin();
+	this->doSolve();
+	this->solvingEnd();
+}
+
+/*		Proximal solver for lasso problem
+ *
+ *
+ */
+template<class Problem,class Time = NoTimeStatistics>
 class LassoProximalSolver
+	:
+	public GeneralSolver<Time>,
+	noncopyable
 {
 private:
 	typedef typename Problem::KernelTrait::index		index;
@@ -16,19 +61,34 @@ private:
 	typedef typename Problem::KernelTrait::Vector 		Vector;
 	typedef typename Problem::KernelTrait::Matrix 		Matrix;
 
-	/** the corresponding lasso problem */
+	/** private variables */
+	//%{
+	/** the reference to the problem */
 	const Problem& 								__s;
+	/** A^TA matrix */
 	Matrix 										__mtm;
+	/** A^T */
 	Matrix 										__mt;
+	/** the proximal parameter */
 	scalar 										__mu;
+	/** scaling factor of proximal parameter */
 	scalar 										__beta;
+	/** maximal iteration number */
 	index 										__maxiteration;
+	/** the result */
 	Vector 										__x;
 
 	Eigen::LDLT<Eigen::MatrixXd>				__linear_solver;
+	//%}
 
-	void init();
+	// void init();
+
+	LassoProximalSolver();
+
+	void doCompute();
+	void doSolve();
 public:
+
 	LassoProximalSolver(
 		const Problem& s , 
 		const scalar mu = 0.5 , 
@@ -50,9 +110,6 @@ public:
 	/** a single iteraton of the solver */
 	bool iteration(const Vector& xk,Vector& xn);
 
-	/** solve the problem */
-	void solve();
-
 	/** setter and getter */
 	//%{
 	/** the final result of proximal solver */
@@ -65,10 +122,10 @@ public:
  *
  *
  */
-template<class Problem , class Time = NoTimeStatistics>
+template<class Problem,class Time = NoTimeStatistics>
 class LassoADMMSolver
 	:
-	public Time
+	public GeneralSolver<Time>
 {
 private:
 	typedef typename Problem::KernelTrait::index 		index;
@@ -97,7 +154,8 @@ private:
 #endif
 
 	
-
+	void doSolve();
+	void doCompute();
 public:
 	/** constructor and deconstructor */
 	//%{
@@ -107,20 +165,116 @@ public:
 		const index maxiteration);
 	//%}
 
-	void compute();
+	// void compute();
 	/** sub-problems */
 	//%{
 	void xSubProblem(const Vector& zk,const Vector& yk,Vector& xn);
 	void zSubProblem(const Vector& xn,const Vector& yk,Vector& zn);
 	void ySubProblem(const Vector& xn,const Vector& zn,Vector& yn);
 	//%}
-	void solve();
+	// void solve();
 
 	/** setter and getter */
 	//%{
 	const Vector& result() const;
 	//%}
 };
+
+/*		FISTA method for lasso problem
+ *
+ */
+template<class Problem,class Time = NoTimeStatistics>
+class FISTALassoSolver
+	:
+	public GeneralSolver<Time>,
+	noncopyable
+{
+private:
+	typedef typename Problem::KernelTrait 			kernel;
+	typedef typename kernel::scalar 				scalar;
+	typedef typename kernel::index 					index;
+	typedef typename kernel::Vector 				Vector;
+	typedef typename kernel::Matrix 				Matrix;
+	/** private variables */
+	//%{
+	/** reference to the problem */
+	const Problem 			&__p;
+	/** Lipschitz constant */
+	scalar 					__L;
+	/** scaling factor of the constant */
+	scalar 					__beta;
+	/** whether the operation norm is computed */
+	bool 					__optimal_constant;
+	/** the result */
+	Vector 					__x;
+	/** max iteration number */
+	index 					__max_iteration;
+	/** final iteration number */
+	index 					__iter_num;
+	/** threshold error */
+	scalar 					__thresh;
+	/** final error */
+	scalar 					__error;
+	//%}
+
+	FISTALassoSolver();
+
+public:
+
+	/** constructor and deconstructor */
+	//%{
+	FISTALassoSolver(
+		const Problem& p ,
+		const index maxiteration = 10000,
+		const scalar thresh = 1e-6,
+		const scalar beta = 2.0,
+		bool optimalused = false
+		);
+	//%}
+
+	/** getter */
+	//%{
+	index finalIterationNumber() const;
+	index maxIterationNumber() const;
+	scalar threshold() const;
+	//%}
+};
+
+template<class Problem,class Time>
+FISTALassoSolver<Problem,Time>::FISTALassoSolver(
+	const Problem& p,
+	const index maxiteration,
+	const scalar thresh,
+	const scalar beta,
+	bool optimalused)
+	:
+	__p(p),
+	__beta(beta),
+	__optimal_constant(optimalused),
+	__max_iteration(maxiteration),
+	__iter_num(0),
+	__thresh(thresh)
+{
+
+}
+
+template<class Problem,class Time>
+typename FISTALassoSolver<Problem,Time>::index FISTALassoSolver<Problem,Time>::finalIterationNumber() const
+{
+	return __iter_num;
+}
+
+template<class Problem,class Time>
+typename FISTALassoSolver<Problem,Time>::index FISTALassoSolver<Problem,Time>::maxIterationNumber() const
+{
+	return __max_iteration;
+}
+
+template<class Problem,class Time>
+typename FISTALassoSolver<Problem,Time>::scalar FISTALassoSolver<Problem,Time>::threshold() const
+{
+	return __thresh;
+}
 	
 /*		The Lasso problem class
  *
@@ -157,8 +311,8 @@ public:
 
 /*********************Implementation of LassoProximalSolver ******************/
 
-template<class Problem>
-void LassoProximalSolver<Problem>::init()
+template<class Problem,class Time>
+void LassoProximalSolver<Problem,Time>::doCompute()
 {
 	/** compute the beta */
 	__s.matA().mtm(__mtm);
@@ -171,11 +325,10 @@ void LassoProximalSolver<Problem>::init()
 	scalar e = __s.matA().operationNorm();
 	std::cout<<"L is "<<e*e<<std::endl;
 	__mu = 1.0/(2*e*e);
-	// __mu = 0.1*__mu;
 }
 
-template<class Problem>
-LassoProximalSolver<Problem>::LassoProximalSolver( 
+template<class Problem,class Time>
+LassoProximalSolver<Problem,Time>::LassoProximalSolver( 
 	const Problem& s , 
 	const scalar mu , 
 	const scalar beta,
@@ -186,17 +339,17 @@ LassoProximalSolver<Problem>::LassoProximalSolver(
 	__beta(beta),
 	__maxiteration(maxiteration)
 {
-	init();
+	doCompute();
 }
 
-template<class Problem>
-typename LassoProximalSolver<Problem>::Vector LassoProximalSolver<Problem>::fGradient(const Vector& x)
+template<class Problem,class Time>
+typename LassoProximalSolver<Problem,Time>::Vector LassoProximalSolver<Problem,Time>::fGradient(const Vector& x)
 {
 	return 2*(__mtm*x-__mt*__s.obB());
 }
 
-template<class Problem>
-typename LassoProximalSolver<Problem>::Vector LassoProximalSolver<Problem>::gProximal( const Vector& x )
+template<class Problem,class Time>
+typename LassoProximalSolver<Problem,Time>::Vector LassoProximalSolver<Problem,Time>::gProximal( const Vector& x )
 {
 	Vector result(x.size());
 	for ( int i = 0 ; i < x.size() ; ++ i )
@@ -206,15 +359,15 @@ typename LassoProximalSolver<Problem>::Vector LassoProximalSolver<Problem>::gPro
 	return result;
 }
 
-template<class Problem>
-typename LassoProximalSolver<Problem>::scalar LassoProximalSolver<Problem>::f(
+template<class Problem,class Time>
+typename LassoProximalSolver<Problem,Time>::scalar LassoProximalSolver<Problem,Time>::f(
 	const Vector& x)
 {
 	return (__s.matA()*x-__s.obB()).squaredNorm();
 }
 
-template<class Problem>
-typename LassoProximalSolver<Problem>::scalar LassoProximalSolver<Problem>::fMu(
+template<class Problem,class Time>
+typename LassoProximalSolver<Problem,Time>::scalar LassoProximalSolver<Problem,Time>::fMu(
 	const Vector& x,
 	const Vector& y)
 {
@@ -224,21 +377,13 @@ typename LassoProximalSolver<Problem>::scalar LassoProximalSolver<Problem>::fMu(
 	return result;
 }
 
-template<class Problem>
-bool LassoProximalSolver<Problem>::iteration( const Vector& xk , Vector& xn)
+template<class Problem,class Time>
+bool LassoProximalSolver<Problem,Time>::iteration( const Vector& xk , Vector& xn)
 {
 	Eigen::VectorXd vec(xk.size());
 	Vector temp = fGradient(xk);
 	xn = xk-__mu*temp;
 	xn = gProximal(xn);
-	scalar f1 = f(xn) , f2 = fMu(xn,xk);
-	// std::cout<<"f1 "<<f(xn)<<" f2 "<<f2<<std::endl;
-	// if ( f1 <= f2 )
-	// {
-	// 	std::cout<<"situation 1 is reached!"<<std::endl;
-	// 	return true;
-	// }
-	// else  
 	if (IS_ZERO((xk-xn).squaredNorm()))
 	{
 		std::cout<<"situation 2 is reached"<<std::endl;
@@ -250,8 +395,8 @@ bool LassoProximalSolver<Problem>::iteration( const Vector& xk , Vector& xn)
 	}
 }
 
-template<class Problem>
-void LassoProximalSolver<Problem>::solve()
+template<class Problem,class Time>
+void LassoProximalSolver<Problem,Time>::doSolve()
 {
 	Vector xp,xn;
 	xp = Vector(__s.matA().cols());
@@ -267,8 +412,8 @@ void LassoProximalSolver<Problem>::solve()
 	std::cout<<"final norm is "<<__s.objective(xn)<<std::endl;
 }
 
-template<class Problem>
-typename LassoProximalSolver<Problem>::Vector LassoProximalSolver<Problem>::result() const
+template<class Problem,class Time>
+typename LassoProximalSolver<Problem,Time>::Vector LassoProximalSolver<Problem,Time>::result() const
 {
 	return __x;
 }
@@ -284,13 +429,12 @@ LassoADMMSolver<Problem,Time>::LassoADMMSolver(
 	__rho(rho),
 	__maxiteration(maxiteration)
 {
-	compute();
+	this->compute();
 }
 
 template<class Problem,class Time>
-void LassoADMMSolver<Problem,Time>::compute()
+void LassoADMMSolver<Problem,Time>::doCompute()
 {
-	this->computationBegin();
 	__p.matA().mtm(__mtm);
 	__mt = __p.matA().transpose();
 #ifdef EIGEN
@@ -305,7 +449,6 @@ void LassoADMMSolver<Problem,Time>::compute()
 	mat = mat+iden;
 	__linear_solver.compute(mat);
 #endif
-	this->computationEnd();
 }
 
 template<class Problem,class Time>
@@ -336,9 +479,8 @@ void LassoADMMSolver<Problem,Time>::ySubProblem(const Vector& xn,const Vector& z
 }
 
 template<class Problem,class Time>
-void LassoADMMSolver<Problem,Time>::solve()
+void LassoADMMSolver<Problem,Time>::doSolve()
 {
-	this->solvingBegin();
 	index m = __p.matA().rows();
 	index n = __p.matA().cols();
 	Vector x(n),y(n),z(n),xp(x);
@@ -357,7 +499,6 @@ void LassoADMMSolver<Problem,Time>::solve()
 	std::cout<<"result is "<<z<<std::endl;
 	std::cout<<i<<" iterations are used "<<std::endl;
 	std::cout<<"norm is "<<__p.objective(z)<<std::endl;
-	this->solvingEnd();
 }
 
 template<class Problem,class Time>

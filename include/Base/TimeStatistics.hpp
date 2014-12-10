@@ -80,7 +80,7 @@ void TimeComputation::timeEnd(const SolverTimeStatistics& , const solver_time_st
 
 double TimeComputation::currentTime()
 {
-	return (double)(__begin-__end)/CLOCKS_PER_SEC;
+	return (double)(__end-__begin)/CLOCKS_PER_SEC;
 }
 
 

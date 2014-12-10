@@ -17,21 +17,36 @@ int main(int argc,char* argv[])
 	Matrix mtm;
 	mat.mtm(mtm);
 	std::cout<<"m is "<<mat<<std::endl;
+	std::cout<<mat.transpose()<<std::endl;   
 	std::cout<<mat.transpose()*mat<<std::endl;
 	std::cout<<mtm<<std::endl;
+	std::cout<<mat.transMulti(mat)<<std::endl;
+
+	Vector v(1);
+	v(0) = 1.0;
+	Matrix m = mat.transpose();
+	std::cout<<"test is "<<std::endl<<m.transMulti(mat.transpose());
+	// Vector vv(2);
+	// vv(0) = 1.0; vv(1) = 1.0;
+	// std::cout<<m*vv <<std::endl;
+	// std::cout<<mat*mtm<<std::endl;
+	// std::cout<<mat.transpose()*mat.col(0)<<std::endl; 
+
+	for ( int i = 0 ; i < 4 ; ++ i )
+		std::cout<<mtm.dataPtr()[i]<<std::endl; 
 
 
-	clock_t t1,t2,at1,at2;
-	at1 = clock();
-	t1 = clock();
-	Matrix m = Matrix::random(5,2);
-	mat = m;
-	m = Matrix::random(5,2);
-	Vector v = Vector::random(4);
-	std::cout<<"m is "<<m<<std::endl;
-	std::cout<<"mat is "<<mat<<std::endl;
-	std::cout<<" m+mat is "<<m+mat<<std::endl;
-	std::cout<<" m-mat is "<<m-mat<<std::endl;
+	// clock_t t1,t2,at1,at2;
+	// at1 = clock();
+	// t1 = clock();
+	// Matrix m = Matrix::random(5,2);
+	// mat = m;
+	// m = Matrix::random(5,2);
+	// Vector v = Vector::random(4);
+	// std::cout<<"m is "<<m<<std::endl;
+	// std::cout<<"mat is "<<mat<<std::endl;
+	// std::cout<<" m+mat is "<<m+mat<<std::endl;
+	// std::cout<<" m-mat is "<<m-mat<<std::endl;
 	// t2 = clock();
 	// std::cout<<"generation costs "<<(double)(t2-t1)/CLOCKS_PER_SEC<<std::endl;
 	// t1 = clock();
