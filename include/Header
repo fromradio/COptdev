@@ -28,12 +28,13 @@
 #include <Eigen/Dense>
 #endif
 
+
+#include "Base/Traits.hpp"
 #include "Base/COException.hpp"
 #include "Base/Object.hpp"
 #include "Base/BasicOperation.hpp"
-#include "Base/Traits.hpp"
 #include "Base/TimeStatistics.hpp"
-
+#include "Base/JournalList.hpp"
 
 #include "Base/CBlasWrapper.hpp"
 #include "Base/LapackWrapper.hpp"
@@ -60,6 +61,9 @@
 #include "Algorithms/ProximalOperator.hpp"
 #include "Algorithms/Lasso.hpp"
 #include "Algorithms/Eigenvalue.hpp"
+
+
+
 
 
 #endif

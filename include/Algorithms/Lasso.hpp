@@ -7,6 +7,7 @@
 namespace COPT
 {
 
+
 /*		A general design for solver. The solver derives from a Time
  *		Stastistics class to help it compute time cost of the solver.
  *		The solver contains general information like max iteration 
@@ -16,32 +17,67 @@ template<class kernel , class Time=NoTimeStatistics>
 class GeneralSolver
 	:
 	public COPTObject,
-	public Time,
 	public noncopyable
 {
+public:
+	enum TerminalType{
+		NotBeginYet,
+		Optimal,
+		MaxIteration,
+		Unbound,
+		NotFeasible
+	};
+protected:
 	typedef typename kernel::index 				index;
 	typedef typename kernel::scalar 			scalar;
+	typedef typename kernel::Vector 			Vector;
 
+	/** the journal list of solver */
+	SolverJournal<GeneralSolver> 		__journal;
+	/** Time computation */
+	Time 								__time;
 	/** max iteration number */
-	index 		__max_iteration;
+	index 				__max_iteration;
 	/** final iteration number */
-	index 		__iter_num;
+	index 				__iter_num;
 	/** error threshold */
-	scalar 		__thresh;
+	scalar 				__thresh;
 	/** final estimated error */
-	scalar 		__estimated_error;
+	scalar 				__estimated_error;
+	/** the terminal type of solver */
+	TerminalType 		__terminal_type;
 
 protected:
-	virtual void doSolve() = 0;
+	/** vritual function that has to be implemented by derived classes */
+	/** something happens in the beginning of solving */
+	virtual void solvingBegin() = 0;
+	/** the real solving part */
+	virtual void doSolve();
+	/** the real computation part */
 	virtual void doCompute() = 0;
-public:
+	/** whether the terminal satisfied */
+	virtual bool terminalSatisfied() const;
+	
+	/** an iteration 
+	 *  the estimated error is returned for iteration
+	 */
+	virtual scalar doOneIteration() = 0;
 
+public:
+	typedef solver_object 				ObjectCategory;
+	/** default constructor */
+	GeneralSolver(
+		const index maxiteration = 1000,
+		const scalar thresh = 1e-8);
 	/** virtual deconstructor */
 	virtual ~GeneralSolver(){}
+	/** one single iteration */
+	scalar oneIteration();
 	/** kernel function: solve the problem */
 	void solve();
 	/** kernel function: compute or initialize the problem */
 	void compute();
+	/** */
 
 	/** getter and setter */
 	//%{
@@ -53,24 +89,77 @@ public:
 	scalar 	threshold() const;
 	void 	setEstimatedError(const scalar erro);
 	scalar 	estimatedError() const;
+	/** compute the objective function */
+	virtual scalar objective() const = 0;
+	virtual const Vector& result() const = 0;
 	//%}
 };
 
 template<class kernel,class Time>
+GeneralSolver<kernel,Time>::GeneralSolver(
+	const index maxiteration,
+	const scalar thresh)
+	:
+	__journal(*this),
+	__max_iteration(maxiteration),
+	__iter_num(0),
+	__thresh(thresh),
+	__estimated_error(0.0),
+	__terminal_type(NotBeginYet)
+{
+}
+
+template<class kernel,class Time>
+void GeneralSolver<kernel,Time>::doSolve()
+{
+	__iter_num = 0;
+	do
+	{
+		__estimated_error = this->oneIteration();
+		if(++__iter_num>=__max_iteration)
+		{
+			__terminal_type = MaxIteration;
+			break;
+		}
+	}while(__estimated_error>__thresh);
+	if(__estimated_error<=__thresh)
+		__terminal_type = Optimal;
+}
+
+template<class kernel,class Time>
+bool GeneralSolver<kernel,Time>::terminalSatisfied() const
+{
+	return __estimated_error<__thresh;
+}
+
+template<class kernel,class Time>
 void GeneralSolver<kernel,Time>::compute()
 {
-	this->computationBegin();
+	__time.computationBegin();
 	this->doCompute();
-	this->computationEnd();
+	__time.computationEnd();
+	// after computation, the problem has not begun
+	__terminal_type = NotBeginYet;
 }
 
 template<class kernel,class Time>
 void GeneralSolver<kernel,Time>::solve()
 {
 	this->solvingBegin();
+	__time.solvingBegin();
 	this->doSolve();
-	this->solvingEnd();
-	this->printTimeInfo();
+	__time.solvingEnd();
+	__journal.solveEnd();
+	__time.printTimeInfo();
+}
+
+template<class kernel,class Time>
+typename GeneralSolver<kernel,Time>::scalar GeneralSolver<kernel,Time>::oneIteration()
+{
+	__journal.iterationBegin();
+	scalar e = this->doOneIteration();
+	__journal.iterationEnd();
+	return e;
 }
 
 template<class kernel,class Time>
@@ -163,8 +252,12 @@ private:
 
 	void doCompute();
 	void doSolve();
+
+	bool terminalSatisfied() const;
 public:
 
+
+	typedef proximal_solver 				ObjectCategory;
 	LassoProximalSolver(
 		const Problem& s , 
 		const scalar mu = 0.5 , 
@@ -213,7 +306,7 @@ private:
 	Matrix 							__mtm;
 	Matrix 							__mt;
 	scalar							__rho;
-	index							__maxiteration;
+	// index							__maxiteration;
 
 	/** used variables */
 	//%{
@@ -230,15 +323,26 @@ private:
 #endif
 
 	
-	void doSolve();
+	// void doSolve();
+
+	// void doCompute();
+
+	void solvingBegin();
 	void doCompute();
+	scalar doOneIteration();
+	scalar objective() const;
+
+	// bool terminalSatisfied() const;
 public:
+
+	typedef admm_solver 				ObjectCategory;
 	/** constructor and deconstructor */
 	//%{
 	LassoADMMSolver(
 		const Problem& p,
-		const scalar rho,
-		const index maxiteration);
+		const scalar rho = 0.5,
+		const index maxiteration = 1000,
+		const scalar thresh = 1e-8);
 	//%}
 
 	// void compute();
@@ -286,30 +390,27 @@ private:
 	Vector 					__y;
 	/** A^Tb vector */
 	Vector 					__atb;
-	/** max iteration number */
-	index 					__max_iteration;
-	/** final iteration number */
-	index 					__iter_num;
-	/** threshold error */
-	scalar 					__thresh;
-	/** final error */
-	scalar 					__error;
-	//%}
+	/** parameter t */
+	scalar 					__t;
 
 	FISTALassoSolver();
 
-	void doSolve();
+
+	void solvingBegin();
 	void doCompute();
+	scalar doOneIteration();
+	scalar objective() const;
 
 public:
 
+	typedef fista_solver 					ObjectCategory;
 	/** constructor and deconstructor */
 	//%{
 	FISTALassoSolver(
 		const Problem& p ,
 		const scalar L = 1.0,
 		const index maxiteration = 100000,
-		const scalar thresh = 1e-12,
+		const scalar thresh = 1e-6,
 		const scalar beta = 2.0,
 		bool optimalused = false
 		);
@@ -326,6 +427,7 @@ public:
 
 	/** getter */
 	//%{
+	const Vector& result() const;
 	//%}
 };
 
@@ -342,29 +444,29 @@ void FISTALassoSolver<Problem,Time>::doCompute()
 }
 
 template<class Problem,class Time>
-void FISTALassoSolver<Problem,Time>::doSolve()
+void FISTALassoSolver<Problem,Time>::solvingBegin()
 {
-	scalar t = 1.0;
-	
-	Vector ply;
-	do
-	{
-		Vector xp=__x;
-		pArgmin(__y,__L,ply);
-		if(!__optimal_constant)
-			__L = findConstant(ply,__y,__L,__beta);
-		pArgmin(__y,__L,__x);
-		scalar tn = (1.0+std::sqrt(1+4*t*t))/2.0;
-		__y = __x+((t-1)/tn)*(__x-xp);
-		t = tn;
-		__error = (__x-xp).squaredNorm();
-		if (__iter_num ++ >= __max_iteration )
-			break;
-	} while(__error>__thresh);
-	std::cout<<"iteration number is "<<__iter_num<<std::endl;
-	std::cout<<"result is "<<__x<<std::endl;
-	std::cout<<"norm is "<<__p.objective(__x)<<std::endl;
-	std::cout<<"final L is "<<__L<<std::endl;
+	__t = 1.0;
+}
+
+template<class Problem,class Time>
+typename FISTALassoSolver<Problem,Time>::scalar FISTALassoSolver<Problem,Time>::doOneIteration()
+{
+	Vector ply,xp = __x;
+	pArgmin(__y,__L,ply);
+	if(!__optimal_constant)
+		__L = findConstant(ply,__y,__L,__beta);
+	pArgmin(__y,__L,__x);
+	scalar tn =  (1.0+std::sqrt(1+4*__t*__t))/2.0;
+	__y = __x +((__t-1)/tn)*(__x-xp);
+	__t = tn;
+	return std::abs(__p.objective(__x)-__p.objective(xp));
+}
+
+template<class Problem,class Time>
+typename FISTALassoSolver<Problem,Time>::scalar FISTALassoSolver<Problem,Time>::objective() const
+{
+	return __p.objective(__x);
 }
 
 template<class Problem,class Time>
@@ -376,13 +478,11 @@ FISTALassoSolver<Problem,Time>::FISTALassoSolver(
 	const scalar beta,
 	bool optimalused)
 	:
+	GeneralSolver<kernel,Time>(maxiteration,thresh),
 	__p(p),
 	__L(L),
 	__beta(beta),
-	__optimal_constant(optimalused),
-	__max_iteration(maxiteration),
-	__iter_num(0),
-	__thresh(thresh)
+	__optimal_constant(optimalused)
 {
 	this->compute();
 }
@@ -431,6 +531,12 @@ typename FISTALassoSolver<Problem,Time>::scalar FISTALassoSolver<Problem,Time>::
 	}
 	return nL;
 }
+
+template<class Problem,class Time>
+const typename FISTALassoSolver<Problem,Time>::Vector& FISTALassoSolver<Problem,Time>::result() const
+{
+	return __x;
+}
 	
 /*		The Lasso problem class
  *
@@ -448,6 +554,7 @@ private:
 	scalar 						__lambda;
 public:
 	typedef kernel							KernelTrait;
+	typedef lasso_problem					ObjectCategory;
 
 	LassoProblem( const Matrix& A,
 		const Vector& b,
@@ -579,11 +686,12 @@ template<class Problem,class Time>
 LassoADMMSolver<Problem,Time>::LassoADMMSolver(
 	const Problem& p,
 	const scalar rho,
-	const index maxiteration)
+	const index maxiteration,
+	const scalar thresh)
 	:
+	GeneralSolver<typename Problem::KernelTrait,Time>(maxiteration,thresh),
 	__p(p),
-	__rho(rho),
-	__maxiteration(maxiteration)
+	__rho(rho)
 {
 	this->compute();
 }
@@ -635,25 +743,27 @@ void LassoADMMSolver<Problem,Time>::ySubProblem(const Vector& xn,const Vector& z
 }
 
 template<class Problem,class Time>
-void LassoADMMSolver<Problem,Time>::doSolve()
+void LassoADMMSolver<Problem,Time>::solvingBegin()
 {
-	index m = __p.matA().rows();
-	index n = __p.matA().cols();
-	Vector x(n),y(n),z(n),xp(x);
-	scalar err;
-	int i = 0;
-	do{
-		xSubProblem(z,y,x);
-		zSubProblem(x,y,z);
-		ySubProblem(x,z,y);
-		err = (x-xp).squaredNorm();
-		xp = x;
-		if((i++)>=__maxiteration)
-			break;
-	}while(!IS_ZERO(err));
-	std::cout<<"result is "<<z<<std::endl;
-	std::cout<<i<<" iterations are used "<<std::endl;
-	std::cout<<"norm is "<<__p.objective(z)<<std::endl;
+	__x.resize(__p.matA().cols());
+	__y.resize(__p.matA().cols());
+	__z.resize(__p.matA().cols());
+}
+
+template<class Problem,class Time>
+typename LassoADMMSolver<Problem,Time>::scalar LassoADMMSolver<Problem,Time>::doOneIteration()
+{
+	Vector xp=__x;
+	xSubProblem(__z,__y,__x);
+	zSubProblem(__x,__y,__z);
+	ySubProblem(__x,__z,__y);
+	return std::abs(__p.objective(__x)-__p.objective(xp));
+}
+
+template<class Problem,class Time>
+typename LassoADMMSolver<Problem,Time>::scalar LassoADMMSolver<Problem,Time>::objective() const
+{
+	return __p.objective(__x);
 }
 
 template<class Problem,class Time>

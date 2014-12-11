@@ -7,7 +7,7 @@
 namespace COPT
 {
 template<class Matrix>
-inline void readMtxFile( const std::string& filename , Matrix& mat , const matrix_tag& )
+inline void readMtxFile( const std::string& filename , Matrix& mat , const matrix_object& )
 {
 	if(filename.substr(filename.find_last_of(".")+1)=="mtx")
 	{

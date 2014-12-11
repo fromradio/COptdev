@@ -28,7 +28,7 @@ public:
 	/** 	size type 		*/
 	typedef 				I 						index;
 	/**		define the category 	*/
-	typedef 				vector_tag 				Category;
+	typedef 				vector_object 			ObjectCategory;
 	/**		define the kernel 		*/
 	typedef 				KernelTrait<FT,index>	Kernel;
 

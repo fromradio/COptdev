@@ -24,7 +24,7 @@ int main(int argc,char* argv[])
 
 	Vector v(1);
 	v(0) = 1.0;
-	Matrix m = mat.transpose();
+	Matrix  m = mat.transpose();
 	std::cout<<"test is "<<std::endl<<m.transMulti(mat.transpose());
 
 

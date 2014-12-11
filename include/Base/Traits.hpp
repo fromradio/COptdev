@@ -180,20 +180,39 @@ public:
 };
 
 /** tags */
-struct referred_array{};
-struct data_tag{};
-struct matrix_tag:data_tag{};
-struct vector_tag:data_tag{};
-struct sp_matrix_tag:data_tag{};
-struct solver_tag{};
-struct constraint_tag{};
+/** base tag for copt object */
+struct copt_object{};
+/** objects storing data */
+struct data_object:copt_object{}; 				// the data object
+struct referred_array:data_object{};			// refered array
+struct array_object:data_object{}; 				// array
+struct matrix_object:data_object{};				// normal matrix	
+struct vector_object:data_object{};				// normal vector
+struct sp_matrix_object:data_object{};			// sparse matrix
+
+/** problem object */
+struct problem_object:copt_object{};			// problem
+struct linear_programming:problem_object{};
+struct lasso_problem:problem_object{};			// lasso problem
+
+/** solver for problems */
+struct solver_object:copt_object{};				// solver
+struct linear_solver:solver_object{};			// linear solver
+struct admm_solver:solver_object{};				// admm solver
+struct proximal_solver:solver_object{}; 		// proximal solver
+struct fista_solver:solver_object{};			// FISTA solver
+
+/** constraint objects */
+struct constraint_object:copt_object{};			// constraint
+
 /** no time statistics tag */
-struct no_time_stat_tag{};
-struct solver_time_stat_tag{};
+struct time_stat_object:copt_object{};			// time statistics object
+struct no_time_stat_tag:time_stat_object{};
+struct solver_time_stat_tag:time_stat_object{};
 /** traits of constraints and functions*/
-struct linear_constraint_tag:constraint_tag{};
-struct quadratic_constraint_tag:constraint_tag{};
-struct non_linear_constraint_tag:constraint_tag{};
+struct linear_constraint_tag:constraint_object{};
+struct quadratic_constraint_tag:constraint_object{};
+struct non_linear_constraint_tag:constraint_object{};
 
 template<class Constraint>
 struct constraint_trait{

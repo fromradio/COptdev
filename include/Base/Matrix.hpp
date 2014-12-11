@@ -28,7 +28,7 @@ public:
 	/** the size type used */
 	typedef 			I 							index;						
 	/** define fthe category */
-	typedef 			matrix_tag 					Category;
+	typedef 			matrix_object				ObjectCategory;
 	/** define the trait */
 	typedef 			KernelTrait<FT,index>		Kernel;
 
@@ -441,7 +441,7 @@ public:
 	typedef 	T 						scalar;
 	typedef  	I 	 					index;
 	typedef 	TripletBase<T,I>		Triplet;
-	typedef 	sp_matrix_tag 			Category;
+	typedef 	sp_matrix_object 		ObjectCategory;
 	typedef 	KernelTrait<T,I>		kernel;
 private:
 

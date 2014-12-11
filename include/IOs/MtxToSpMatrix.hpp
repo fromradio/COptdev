@@ -7,7 +7,7 @@
 namespace COPT
 {
 template<class SpMatrix>
-inline void readMtxFile( const std::string& filename , SpMatrix& mat , const sp_matrix_tag& )
+inline void readMtxFile( const std::string& filename , SpMatrix& mat , const sp_matrix_object& )
 {
 	if(filename.substr(filename.find_last_of(".")+1)=="mtx")
 	{
@@ -86,7 +86,7 @@ inline void readMtxFile( const std::string& filename , SpMatrix& mat , const sp_
 }
 
 template<class Vector>
-inline void readMtxFile( const std::string& filename , Vector& vec , const vector_tag& )
+inline void readMtxFile( const std::string& filename , Vector& vec , const vector_object& )
 {
 	if(filename.substr(filename.find_last_of(".")+1)=="mtx")
 	{
@@ -153,7 +153,7 @@ inline void readMtxFile( const std::string& filename , Vector& vec , const vecto
 template<class T>
 inline void readMtxFile(const std::string&filename , T& t)
 {
-	readMtxFile(filename,t,typename T::Category());
+	readMtxFile(filename,t,typename T::ObjectCategory());
 }
 
 } // End of namespace COPT

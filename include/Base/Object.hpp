@@ -12,8 +12,13 @@ private:
 
 	std::string 		__str;
 
+	enum ObjectType{
+
+	};
+
 public:
 
+	typedef copt_object 					ObjectCategory;
 	COPTObject()
 		:
 		__str("This is an object of light-weight open source library COPT.")
