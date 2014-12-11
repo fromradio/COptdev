@@ -97,6 +97,49 @@ struct is_size
 // struct integer_type<longsize>
 // { typedef COPTlong longsize;};
 
+template<class T>
+struct is_index
+{ 
+	typedef T size;
+	static const bool value = false;
+};
+
+template<>
+struct is_index<int>
+{ 
+	typedef unsigned int size;
+	static const bool value = true;
+};
+
+template<>
+struct is_index<long>
+{ 
+	typedef unsigned long size;
+	static const bool value = true;
+};
+
+template<class T>
+struct is_unsigned_size
+{ 
+	typedef T index;
+	static const bool value = false;
+};
+
+template<>
+struct is_unsigned_size<unsigned int>
+{ 
+	typedef 	int 			index;
+	static const bool value = true;
+};
+
+template<>
+struct is_unsigned_size<unsigned long>
+{ 
+	typedef 	long 			index;
+	static const bool value = true;
+};
+
+
 
 
 template<class T>
@@ -107,31 +150,47 @@ struct is_scalar
 };
 
 
-
-template<class T,class Size>
+template<class T,class I>
+class Array;
+template<class T,class I>
 class VectorBase;
-template<class T,class Size>
+template<class T,class I>
 class MatrixBase;
+template<class T,class I>
+class SpMatrixBase;
 
 /*		A trait class describing basic types that might be
  *		used in a numerical solver. A solver should take trait
  *		as template for flexibility.
  */
-template<class T,class S = size_t>
+template<class T,class I = int >
 class KernelTrait
 {
 public:
-	typedef T 							ScalarType;
-	typedef S 							Size;
-	typedef VectorBase<T,Size>			Vector;
-	typedef MatrixBase<T,Size>			Matrix;
+	typedef T 							scalar;
+	typedef I 							index;
+	typedef typename is_index<I>::size	size;
+	// whether the kernel is valid:
+	static const bool valid  = is_scalar<T>::value&&is_index<I>::value;
+
+	typedef COPT::Array<T,I> 					Array;
+	typedef VectorBase<T,I>				Vector;
+	typedef MatrixBase<T,I>				Matrix;
+	typedef SpMatrixBase<T,I>			SpMatrix;
 };
 
-
+/** tags */
+struct referred_array{};
+struct data_tag{};
+struct matrix_tag:data_tag{};
+struct vector_tag:data_tag{};
+struct sp_matrix_tag:data_tag{};
+struct solver_tag{};
+struct constraint_tag{};
 /** traits of constraints and functions*/
-struct linear_constraint_tag{};
-struct quadratic_constraint_tag{};
-struct non_linear_constraint_tag{};
+struct linear_constraint_tag:constraint_tag{};
+struct quadratic_constraint_tag:constraint_tag{};
+struct non_linear_constraint_tag:constraint_tag{};
 
 template<class Constraint>
 struct constraint_trait{
@@ -139,13 +198,11 @@ struct constraint_trait{
 };
 
 
-struct referred_array{};
 
-
-/** tags */
-struct matrix_tag{};
-struct vector_tag{};
-struct solver_tag{};
+/** trais of functions */
+struct scalar_function_tag{};
+struct log_scalar_function_tag:public scalar_function_tag{};
+struct abs_scalar_function_tag:public scalar_function_tag{};
 
 }// End of namespace COPT
 

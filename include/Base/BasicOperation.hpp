@@ -4,6 +4,19 @@
 namespace COPT
 {
 
+// #if defined(__LP__64)
+	typedef int 		copt_int;
+	typedef int 		copt_logical;
+	typedef float 		copt_real;
+	typedef double 		copt_doublereal;
+// #else
+	// typedef long int 	copt_int;
+	// typedef long int 	copt_logical;
+	// typedef float 		copt_real;
+	// typedef double 		copt_doublereal;
+// #endif
+
+	
 #ifdef _WIN64
 typedef __int64 		COPTlong;
 #else
@@ -40,21 +53,14 @@ inline bool IS_ZERO( T data )
 template<class T>
 inline void SAFE_DELETE(T* value)
 {
-	if ( value ) { delete value;}
+	if ( value ) { delete value; value = NULL;}
 }
 
 template<class T>
 inline void SAFE_DELETE_ARRAY(T* array)
 {
-	if ( array ) { delete[] array;}
+	if ( array ) { delete[] array; array = NULL;}
 }
-
-/*		Basic class for iterator
- */
-class Iterator
-{
-
-};
 
 /**		base class who is not copyable */
 class noncopyable

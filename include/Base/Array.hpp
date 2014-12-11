@@ -7,20 +7,36 @@
 namespace COPT
 {
 
-template<class T,class Size = size_t>
+/*		class Array describes a base class for basic dense data types used in COPT
+ *		like vector and matrix. The array can be referred to another array or independent 
+ *		array. 
+ */
+
+template<class T,class I>
 class Array
+	:
+	public COPTObject
 {
 public:
-	typedef 				T 		ScalarType;
+	/**		define the scalar type 			*/
+	typedef 				T 					scalar;
+	/** 	define the size type 			*/
+	typedef 				I 					index;
+	/**		define the category 			*/
+	typedef 				data_tag 			Category;
+	/** 	define the kernel trait 		*/
+	typedef 				KernelTrait<T,I>	Kernel;
+
+
 private:
 	/** private variables */
 	//%{
 	/** the total size of the array */
-	Size 							__size;
+	index 							__size;
 	/** the interval of the pointer, 1 as default */
-	Size 							__inter;
+	index 							__inter;
 	/** the pointer to the data */
-	ScalarType*						__data_ptr;
+	scalar*							__data_ptr;
 	/** whether the array is referred */
 	bool							__referred;
 	//%}
@@ -29,11 +45,11 @@ private:
 	/* 				 protected functions
 	 */
 	
-	
 public:
 
 	Array()
 		:
+		COPTObject(),
 		__size(0),
 		__inter(1),
 		__data_ptr(NULL),
@@ -41,24 +57,26 @@ public:
 	{
 	}
 
-	Array ( const Size size, const ScalarType* data = NULL, const Size inter = 1 )
+	Array ( const index size, const scalar* data = NULL, const index inter = 1 )
 		:
+		COPTObject(),
 		__size(size),
 		__inter(1),
-		__data_ptr(new ScalarType[size]),
+		__data_ptr(new scalar[size]),
 		__referred(false)
 	{
 		if ( data ){
 			blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
 		}
 		else{
-			for ( int i = 0 ; i < __size ; ++ i )
-				__data_ptr[i] = static_cast<ScalarType>(0.0);
+			for ( index i = 0 ; i < __size ; ++ i )
+				__data_ptr[i] = static_cast<scalar>(0.0);
 		}
 	}
 
-	Array( const Size size , const referred_array& , ScalarType* data ,const Size inter = 1)
+	Array( const index size , const referred_array& , scalar* data ,const index inter = 1)
 		:
+		COPTObject(),
 		__size(size),
 		__inter(inter),
 		__data_ptr(data),
@@ -67,6 +85,8 @@ public:
 	}
 
 	Array( const Array& arr )
+		:
+		COPTObject()
 	{
 		if(arr.isReferred())
 			setReferredArray(arr.size(),arr.dataPtr(),arr.interval());
@@ -87,10 +107,10 @@ public:
 	 *		Access to data pointer for modification or other operations
 	 *
 	 */
-	ScalarType* dataPtr(){
+	scalar* dataPtr(){
 	 	return __data_ptr;
 	}
-	const ScalarType* dataPtr() const{
+	const scalar* dataPtr() const{
 		return __data_ptr;
 	}
 	/*
@@ -110,20 +130,20 @@ public:
 		if(arr.size()!=size())
 			throw COException("the size of two arrays must be the same if anyone wants to swap them!");
 		else
-			blas::copt_blas_swap(__size,const_cast<ScalarType*>(arr.dataPtr()),1,__data_ptr,1);
+			blas::copt_blas_swap(__size,const_cast<scalar*>(arr.dataPtr()),1,__data_ptr,1);
 	}
 
 	/** getter and setter */
 	//%{
 
 	/** the size of the array */ 
-	const Size& size() const{return __size;}
+	const index& size() const{return __size;}
 
 	/** whether the array is referred */
 	bool isReferred() const{return __referred;}
 
 	/** the interval of the array */
-	Size interval() const{return __inter;}
+	index interval() const{return __inter;}
 
 	//%}
 	
@@ -131,7 +151,7 @@ public:
 	 *			resize the array to specific size
 	 *
 	 */
-	void resize( const Size size , const Size inter = 1){
+	void resize( const index size , const index inter = 1){
 		if(__referred)
 			throw COException("referred array is not allowed to be resized!");
 		else{
@@ -139,20 +159,20 @@ public:
 				__size = size;
 				__inter = inter;
 				SAFE_DELETE_ARRAY(__data_ptr);
-				__data_ptr = new ScalarType[__size*__inter];
-				for ( int i = 0 ; i < __size ; ++ i )
-					__data_ptr[i*__inter] = static_cast<ScalarType>(0.0);
+				__data_ptr = new scalar[__size*__inter];
+				for ( index i = 0 ; i < __size ; ++ i )
+					__data_ptr[i*__inter] = static_cast<scalar>(0.0);
 			}
 			else{
-				for ( int i = 0 ; i < __size ; ++ i )
-					__data_ptr[i*__inter] = static_cast<ScalarType>(0.0);
+				for ( index i = 0 ; i < __size ; ++ i )
+					__data_ptr[i*__inter] = static_cast<scalar>(0.0);
 			}
 		}
 	}
 
-	void reset(Size size){resize(size,__inter);}
+	void reset(index size){resize(size,__inter);}
 
-	void setArray(const Size size,const ScalarType* data,const Size inter = 1)
+	void setArray(const index size,const scalar* data,const index inter = 1)
 	{
 		if ( __referred )
 			throw COException("referred array is not allowed to be reset ");
@@ -174,9 +194,9 @@ public:
 
 	/** set a referred array */
 	void setReferredArray(
-		const Size size,
-		ScalarType* data,
-		const Size inter = 1)
+		const index size,
+		scalar* data,
+		const index inter = 1)
 	{
 		__referred = true;
 		__size = size;
@@ -190,14 +210,14 @@ public:
 	 *			'float', 'double', 'std::complex<float>' or 'std::complex<double>'
 	 */
 	bool 			isValid() const{
-		return is_scalar<ScalarType>::value;
+		return is_scalar<scalar>::value;
 	}
 
 	/*
 	 *
 	 *
 	 */
-	ScalarType& operator[] ( int i ){
+	scalar& operator[] ( index i ){
 		if ( i < 0 ){
 			// index less than zero
 			throw COException("Vector error, index less than zero.");
@@ -209,7 +229,7 @@ public:
 		else
 			return __data_ptr[i*__inter];
 	}
-	const ScalarType& operator[] ( int i ) const {
+	const scalar& operator[] ( index i ) const {
 		return const_cast<Array&>(*this).operator[](i);
 	}
 
@@ -235,7 +255,7 @@ public:
 	/**			overloaded stream */
 	friend std::ostream& operator<<(std::ostream& os,const Array& arr){
 		os<<"[ ";
-		for ( int i = 0 ; i< arr.size()-1 ; ++ i ){
+		for ( index i = 0 ; i< arr.size()-1 ; ++ i ){
 			os<<arr[i]<<" , ";
 		}
 		os<<arr[arr.size()-1]<<" ]";

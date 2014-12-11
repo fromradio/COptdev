@@ -1,10 +1,10 @@
 #include <Header>
- 
+
 
 typedef double		 					FT;
-typedef COPT::Array<FT> 				Array;
-typedef COPT::VectorBase<FT>			Vector;
-typedef COPT::MatrixBase<FT>	 		Matrix;
+typedef COPT::Array<FT,int> 				Array;
+typedef COPT::VectorBase<FT,int>			Vector;
+typedef COPT::MatrixBase<FT,int>	 		Matrix;
 
 // typedef double 			FT;
 // typedef COPT::Vector<FT>			Vector;
@@ -107,7 +107,8 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 /*LeastSquare test
 
 */
-<<<<<<< HEAD
+
+/*
  int main(int argc,char* argv[])
  {
  	Matrix A(4,2); 
@@ -140,30 +141,7 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
  	x = ls.result();
  	std::cout<<x<<"+++++++asdfasdf"<<std::endl;
  } 
-=======
- // int main(int argc,char* argv[])
- // {
- // 	Matrix A(4,2); 
- // 	A(0,0) = 1; A(0,1) = -1;
- // 	A(1,0) = -1;A(1,1) = 1; 
- // 	A(2,0) = 2; A(2,1) = -2;
- // 	A(3,0) = -3;A(3,1) = 1;
- // 	Vector b(4);
- // 	b[0] = 1;
- // 	b[1] = 2;
- // 	b[2] = 3;
- // 	b[3] = 4;
- // 	std::cout<<A<<std::endl;
- // 	std::cout<<b<<std::endl;
- // 	Vector x(2);
- // 	COPT::LeastMeanSquareMethod(A,b,0.01,x);
- // 	std::cout<<x<<std::endl;
- // 	COPT::LeastSquareMethod(A,b,x);
- // 	std::cout<<x<<std::endl;
- // 	COPT::RLS_Method(A,b,x);
- // 	std::cout<<x<<std::endl;
- // } 
->>>>>>> upstream/master
+*/
 /*
  *			Matrix test
  */
@@ -221,36 +199,8 @@ typedef COPT::MatrixBase<FT>	 		Matrix;
 // 	std::cout<<x.mulTrans(x)<<std::endl;  
 // 	std::cout<<x<<" error "<<tol<<" iters "<<iter_max<<std::endl;
 // }
-<<<<<<< HEAD
- 
-=======
->>>>>>> upstream/master
 
-<<<<<<< HEAD
-// int main(int argc,char* argv[])
-// { 
-// 	typedef COPT::RosenbrockFunction<Vector>	Function;
-// 	typedef COPT::NonLinearSolver<Function> 	Solver;
-// 	Function func;
-// 	Solver nls(func,1e-5,10,0.001,0.5,0.7)   ;
-// 	Vector x(2);
-// 	std::cout<<"first trial of SDM method "<<std::endl;
-// 	nls.solve(x);
-// 	nls.printInfo();
-// 	// std::cout<<std::endl<<"second trial of SDM method "<<std::endl;
-// 	// nls.setIterationNum(100000);
-// 	// nls.solve(x);
-// 	// nls.printInfo();
-// 	// std::cout<<std::endl<<"Newton's method"<<std::endl;
-// 	// nls.setType(Solver::NM);
-// 	// nls.solve(x);
-// 	// nls.printInfo();
-// 	// std::cout<<std::endl<<"BFGS method"<<std::endl;
-// 	// nls.setType(Solver::BFGS);
-// 	// nls.solve(x);
-// 	// nls.printInfo();
-// }
-=======
+/*
 int main(int argc,char* argv[])
 { 
 	typedef COPT::RosenbrockFunction<Vector>	Function;
@@ -274,7 +224,22 @@ int main(int argc,char* argv[])
 	// nls.solve(x);
 	// nls.printInfo();
 }
->>>>>>> upstream/master
+*/
+
+//LM method
+int main(int argc,char* argv[])
+{ 
+
+	typedef COPT::VectorFunctionSystem<FT,int>	Function;
+	Function func(2,2);
+	Vector initial_x(2);
+	initial_x[0]=0;
+	initial_x[1]=0;
+	COPT::NonLinearSquare<FT> lm(&func, 2, 2);
+	lm.solve(initial_x);
+	lm.printInfo();
+
+}
 
 
 // int main(int argc,char* argv[])

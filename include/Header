@@ -11,10 +11,12 @@
 #include <list>
 #include <set>
 #include <cmath>
-
+#include <random>
+#include <time.h>
 
 #include <complex>
 #include <ThirdParty/cblas.h>
+
 #include <umfpack.h>
 #include <algorithm>
 #include <limits>
@@ -26,12 +28,16 @@
 #include <Eigen/Dense>
 #endif
 
+#include "Base/Object.hpp"
 #include "Base/BasicOperation.hpp"
 #include "Base/COException.hpp"
 #include "Base/Traits.hpp"
 
 
 #include "Base/CBlasWrapper.hpp"
+#ifdef USE_LAPACK
+#include "Base/LapackWrapper.hpp"
+#endif
 #include "Base/UmfPackWrapper.hpp"
 #include "Base/Array.hpp"
 #include "Base/Vector.hpp"
@@ -49,10 +55,11 @@
 #include "Algorithms/AlternatingDirectionMethodOfMultipliers.hpp"
 #include "Algorithms/NonLinearSolver.hpp"
 #include "Algorithms/NonLinearSolverImpl.hpp"
+#include "Algorithms/NonLinearSquare.hpp"
 #include "Algorithms/Simplex.hpp"
 #include "Algorithms/omp.hpp"
+#include "Algorithms/ProximalOperator.hpp"
+#include "Algorithms/Lasso.hpp"
 
-
-#include <time.h>
 
 #endif

@@ -188,61 +188,55 @@ public:
  *		Output: the type of output containing output information
  */
 
-template<class VT,class Para,class Output>
-class Solver{
-protected:
-	//	variable
-	VT 			__variable;
-	// parameter
-	Para		__para;
-	// output
-	Output 		__output;
+// template<class kernel>
+// class Solver
+// 	:
+// 	public COPTObject
+// {
+// public:
+// 	typedef 	solver_tag 						Category;
+// 	typedef 	typename kernel::scalar 		scalar;
+// 	typedef		typename kernel::index 			index;
+// 	typedef 	typename kernel::Vector 		Vector;
+// 	typedef 	typename kernel::Matrix 		Matrix;
 
-	/*
-	 *			implementation of solve
-	 */
-	virtual 	const VT& doSolve (const Para& p ) = 0;
-public:
-	// the type of variable
-	typedef			VT 			VaType;
+// protected:
+// 	/*
+// 	 *			implementation of solve
+// 	 */
+// 	virtual 	const Vector& doSolve (const Para& p ) = 0;
+// public:
+// 	// the type of variable
 
-	Solver(){}
+// 	Solver(){}
 
-	virtual ~Solver(){}
+// 	virtual ~Solver(){}
 
-	/*
-	 *			set the paramter
-	 */
-	void	setParameter( const Para& para ){
-		__para = para;
-	}
-
-
-	/*
-	 *
-	 */
-	const VT& solve( const Para& p = Para()){
-		return doSolve(p);
-	}
-};
+// 	/*			interface of solver
+// 	 *
+// 	 */
+// 	const Vector& solve( const Para& = Para() ){
+// 		return doSolve(p);
+// 	}
+// };
 
 /*
  *		an example of least square method
  *			least mean square is used
  */
-template<class VT>
-class LeastMeanSquare
-	: public Solver<VT,Parameter<VT,typename VT::FT>, Output<VT,typename VT::FT> >
-{
-private:
-	typedef Parameter<VT,typename VT::FT> Para;
-	/*
-	 *				Least square method is equal to a 
-	 *
-	 */
-	virtual VT& doSolve(const Para& para){return VT();}
-public:
-};
+// template<class VT>
+// class LeastMeanSquare
+// 	: public Solver<VT,Parameter<VT,typename VT::FT>, Output<VT,typename VT::FT> >
+// {
+// private:
+// 	typedef Parameter<VT,typename VT::FT> Para;
+// 	/*
+// 	 *				Least square method is equal to a 
+// 	 *
+// 	 */
+// 	virtual VT& doSolve(const Para& para){return VT();}
+// public:
+// };
 
 
 
@@ -251,54 +245,54 @@ public:
  *	find x that satisfies that f(x)=0
  */
 
-template<class SFunc>
-class RootSolver:public Solver<typename SFunc::FT,Parameter<typename SFunc::FT,typename SFunc::FT>,Output<typename SFunc::FT,typename SFunc::FT> >
-{
-private:
-	typedef				typename SFunc::FT 				FT;
-	typedef				Parameter<FT,FT>				Para;
-	//		reference to the target function
-	const SFunc& 		__func;
+// template<class SFunc>
+// class RootSolver:public Solver<typename SFunc::FT,Parameter<typename SFunc::FT,typename SFunc::FT>,Output<typename SFunc::FT,typename SFunc::FT> >
+// {
+// private:
+// 	typedef				typename SFunc::FT 				FT;
+// 	typedef				Parameter<FT,FT>				Para;
+// 	//		reference to the target function
+// 	const SFunc& 		__func;
 
-	virtual const FT& doSolve(const Para& para){
-		/*
-			simple Netwon method
-		*/
-		FT xf = this->__para.initGuess();
-		while ( fabs(__func.diff(xf))<ZERO_THRESH ){
-			xf = xf + 0.5;
-		}
-		FT xn = xf-__func(xf)/__func.diff(xf);
-		FT error = fabs(xf-xn);
-		int iternum = 0;
+// 	virtual const FT& doSolve(const Para& para){
+// 		/*
+// 			simple Netwon method
+// 		*/
+// 		FT xf = this->__para.initGuess();
+// 		while ( fabs(__func.diff(xf))<ZERO_THRESH ){
+// 			xf = xf + 0.5;
+// 		}
+// 		FT xn = xf-__func(xf)/__func.diff(xf);
+// 		FT error = fabs(xf-xn);
+// 		int iternum = 0;
 
-		/*
-		 *	the iteration terminals if the error is less than a threshold
-		 *		or the iteration number is larger than a threshold
-		 */
-		while ( error > this->__para.errorThreshold() && iternum < this->__para.maximumIteration() ){
-			xf = xn;
-			xn = xf-__func(xf)/__func.diff(xf);
-			error = fabs(xf-xn);
-			++ iternum;
-			this->__output.append(error);
-		}
-		this->__output.setResult(xn,true);
-		this->__output.algoEnd();
-		this->__output.printInfo();
-		this->__variable = xn;
+// 		/*
+// 		 *	the iteration terminals if the error is less than a threshold
+// 		 *		or the iteration number is larger than a threshold
+// 		 */
+// 		while ( error > this->__para.errorThreshold() && iternum < this->__para.maximumIteration() ){
+// 			xf = xn;
+// 			xn = xf-__func(xf)/__func.diff(xf);
+// 			error = fabs(xf-xn);
+// 			++ iternum;
+// 			this->__output.append(error);
+// 		}
+// 		this->__output.setResult(xn,true);
+// 		this->__output.algoEnd();
+// 		this->__output.printInfo();
+// 		this->__variable = xn;
 
-		return this->__variable;
-	}
-public:
-	//
-	RootSolver(const SFunc& func)
-		:
-		__func(func)
-	{
+// 		return this->__variable;
+// 	}
+// public:
+// 	//
+// 	RootSolver(const SFunc& func)
+// 		:
+// 		__func(func)
+// 	{
 
-	}
-};
+// 	}
+// };
 };
 
 #endif
