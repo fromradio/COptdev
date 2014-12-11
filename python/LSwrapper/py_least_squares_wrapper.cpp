@@ -2,14 +2,15 @@
 //		Copyright (C) MathU
 //			Reviewed by Ruimin Wang, ruimin.wang13@gmail.com, wangrm@mathu.cn
 
-
-#include <Python.h>
 #include <Header>
+#include <Python.h>
+#include <E:/mywork/COptdev/python/PyGenerate.hpp>
+
 
 typedef double                          FT;
-typedef COPT::Array<FT>                 Array;
-typedef COPT::VectorBase<FT>            Vector;
-typedef COPT::MatrixBase<FT>            Matrix;
+typedef COPT::Array<FT,int>                 Array;
+typedef COPT::VectorBase<FT,int>            Vector;
+typedef COPT::MatrixBase<FT,int>            Matrix;
 typedef COPT::LeastSquaresSolver<FT>    LeastSquares;
 
 /*
@@ -30,17 +31,20 @@ static PyObject* pyLeastMeanSquare(PyObject *self,PyObject *args)
     float mu;
 	if (!PyArg_ParseTuple(args,"OOf",&A,&b,&mu))
 	 	return NULL;
-	int m = PyObject_Size(A);
+	Matrix A0;
+	Vector b0;
+	PyGenerateMatrix(A,A0);
+	PyGenerateVector(b,b0);
+	//int m = PyObject_Size(A);
 	int n = PyObject_Size(PyList_GetItem(A,0));
-	Matrix A0(m,n);
-	for(int i = 0;i < m;i++)
-		for(int j = 0;j < n;j++)
-			A0(i,j) = PyFloat_AsDouble(PyList_GetItem(PyList_GetItem(A,i),j));
-	Vector b0(m);
-	for(int i = 0;i < m;i++)
-		b0[i] = PyFloat_AsDouble(PyList_GetItem(b,i));
+	// Matrix A0(m,n);
+	// for(int i = 0;i < m;i++)
+	// 	for(int j = 0;j < n;j++)
+	// 		A0(i,j) = PyFloat_AsDouble(PyList_GetItem(PyList_GetItem(A,i),j));
+	// Vector b0(m);
+	// for(int i = 0;i < m;i++)
+	// 	b0[i] = PyFloat_AsDouble(PyList_GetItem(b,i));
 	Vector x(n);
-
 	// call COPT interface
 	LeastSquares ls(A0,b0,mu);
 	ls.setType(LeastSquares::LMS);
@@ -67,15 +71,12 @@ static PyObject* pyLeastSquares(PyObject *self,PyObject *args)
     PyObject *A,*b;
 	if (!PyArg_ParseTuple(args,"OO",&A,&b))
 	 	return NULL;
-	int m = PyObject_Size(A);
+	Matrix A0;
+	Vector b0;
+	PyGenerateMatrix(A,A0);
+	PyGenerateVector(b,b0);
+	//int m = PyObject_Size(A);
 	int n = PyObject_Size(PyList_GetItem(A,0));
-    Matrix A0(m,n);
-	for(int i = 0;i < m;i++)
-		for(int j = 0;j < n;j++)
-			A0(i,j) = PyFloat_AsDouble(PyList_GetItem(PyList_GetItem(A,i),j));
-	Vector b0(m);
-	for(int i = 0;i < m;i++)
-		b0[i] = PyFloat_AsDouble(PyList_GetItem(b,i));
 	Vector x(n);
 
 	// call COPT interface!
@@ -106,15 +107,12 @@ static PyObject* pyRecursiveLeastSquare(PyObject *self,PyObject *args)
     float lam,delta;
 	if (!PyArg_ParseTuple(args,"OOff",&A,&b,&lam,&delta))
 	 	return NULL;
-	int m = PyObject_Size(A);
+	Matrix A0;
+	Vector b0;
+	PyGenerateMatrix(A,A0);
+	PyGenerateVector(b,b0);
+	//int m = PyObject_Size(A);
 	int n = PyObject_Size(PyList_GetItem(A,0));
-	Matrix A0(m,n);
-	for(int i = 0;i < m;i++)
-		for(int j = 0;j < n;j++)
-			A0(i,j) = PyFloat_AsDouble(PyList_GetItem(PyList_GetItem(A,i),j));
-	Vector b0(m);
-	for(int i = 0;i < m;i++)
-		b0[i] = PyFloat_AsDouble(PyList_GetItem(b,i));
 	Vector x(n);
 
 	// call COPT interface
