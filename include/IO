@@ -10,8 +10,6 @@
 #include <string>
 #include <stdlib.h>
 
-#include "IOs/MtxToSpMatrix.hpp"
-#include "IOs/MtxToMatrix.hpp"
-
+#include "IOs/MtxFile.hpp"
 
 #endif

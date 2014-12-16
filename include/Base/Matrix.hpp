@@ -569,10 +569,6 @@ public:
 
 	//%}
 
-
-
-
-
 	/** element access */
 	//%{
 

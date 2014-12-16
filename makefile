@@ -128,6 +128,12 @@ bin/eigensolver: obj/eigensolver.o
 	$(CC) obj/eigensolver.o $(DIR_LIB) -o $@ $(LIBS)
 obj/eigensolver.o: test/eigensolver.cpp include/Algorithms/Eigenvalue.hpp
 	$(CC) $(CFLAGS) -c $< -o $@
+
+iotest: bin/iotest
+bin/iotest: obj/iotest.o
+	$(CC) obj/iotest.o $(DIR_LIB) -o $@ $(LIBS)
+obj/iotest.o: test/io_test.cpp include/IOs/MtxFile.hpp
+	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 
