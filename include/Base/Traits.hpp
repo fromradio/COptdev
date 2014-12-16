@@ -190,6 +190,10 @@ struct matrix_object:data_object{};				// normal matrix
 struct vector_object:data_object{};				// normal vector
 struct sp_matrix_object:data_object{};			// sparse matrix
 
+/** function objects */
+struct scalar_func_object:copt_object{};		// scalar function
+struct vector_func_object:copt_object{};		// vector function
+
 /** problem object */
 struct problem_object:copt_object{};			// problem
 struct linear_programming:problem_object{};

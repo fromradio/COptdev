@@ -9,8 +9,8 @@ typedef COPT::LassoADMMSolver<problem,COPT::SolverTimeStatistics>	solver;
 typedef COPT::LassoProximalSolver<problem,COPT::SolverTimeStatistics>	psolver;
 typedef COPT::FISTALassoSolver<problem,COPT::SolverTimeStatistics> 	fsolver;
 
-const int m = 1800;
-const int n = 3600;
+const int m = 180;
+const int n = 360;
 int main(int argc,char*argv[])
 {
 	Matrix A;
@@ -30,7 +30,7 @@ int main(int argc,char*argv[])
 	// clock_t t1,t2;
 	// t1 = clock();
 	problem pro(A,b,0.4);
-	solver sol(pro,0.5,1000,1e-6);
+	psolver sol(pro);
 	
 
 	COPT::Printer::printType(A,std::cout);

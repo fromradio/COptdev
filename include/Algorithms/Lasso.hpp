@@ -6,211 +6,6 @@
 
 namespace COPT
 {
-
-
-/*		A general design for solver. The solver derives from a Time
- *		Stastistics class to help it compute time cost of the solver.
- *		The solver contains general information like max iteration 
- *		number, final iteration number, threshold, estimated error
- */	
-template<class kernel , class Time=NoTimeStatistics>
-class GeneralSolver
-	:
-	public COPTObject,
-	public noncopyable
-{
-public:
-	enum TerminalType{
-		NotBeginYet,
-		Optimal,
-		MaxIteration,
-		Unbound,
-		NotFeasible
-	};
-protected:
-	typedef typename kernel::index 				index;
-	typedef typename kernel::scalar 			scalar;
-	typedef typename kernel::Vector 			Vector;
-
-	/** the journal list of solver */
-	SolverJournal<GeneralSolver> 		__journal;
-	/** Time computation */
-	Time 								__time;
-	/** max iteration number */
-	index 				__max_iteration;
-	/** final iteration number */
-	index 				__iter_num;
-	/** error threshold */
-	scalar 				__thresh;
-	/** final estimated error */
-	scalar 				__estimated_error;
-	/** the terminal type of solver */
-	TerminalType 		__terminal_type;
-
-protected:
-	/** vritual function that has to be implemented by derived classes */
-	/** something happens in the beginning of solving */
-	virtual void solvingBegin() = 0;
-	/** the real solving part */
-	virtual void doSolve();
-	/** the real computation part */
-	virtual void doCompute() = 0;
-	/** whether the terminal satisfied */
-	virtual bool terminalSatisfied() const;
-	
-	/** an iteration 
-	 *  the estimated error is returned for iteration
-	 */
-	virtual scalar doOneIteration() = 0;
-
-public:
-	typedef solver_object 				ObjectCategory;
-	/** default constructor */
-	GeneralSolver(
-		const index maxiteration = 1000,
-		const scalar thresh = 1e-8);
-	/** virtual deconstructor */
-	virtual ~GeneralSolver(){}
-	/** one single iteration */
-	scalar oneIteration();
-	/** kernel function: solve the problem */
-	void solve();
-	/** kernel function: compute or initialize the problem */
-	void compute();
-	/** */
-
-	/** getter and setter */
-	//%{
-	void 	setMaxIteration(const index maxiteration);
-	index 	maxIterationNumber() const;
-	void 	setIterationNumber(const index iter);
-	index 	iterationNumber() const;
-	void 	setThreshold( const scalar thresh);
-	scalar 	threshold() const;
-	void 	setEstimatedError(const scalar erro);
-	scalar 	estimatedError() const;
-	/** compute the objective function */
-	virtual scalar objective() const = 0;
-	virtual const Vector& result() const = 0;
-	//%}
-};
-
-template<class kernel,class Time>
-GeneralSolver<kernel,Time>::GeneralSolver(
-	const index maxiteration,
-	const scalar thresh)
-	:
-	__journal(*this),
-	__max_iteration(maxiteration),
-	__iter_num(0),
-	__thresh(thresh),
-	__estimated_error(0.0),
-	__terminal_type(NotBeginYet)
-{
-}
-
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::doSolve()
-{
-	__iter_num = 0;
-	do
-	{
-		__estimated_error = this->oneIteration();
-		if(++__iter_num>=__max_iteration)
-		{
-			__terminal_type = MaxIteration;
-			break;
-		}
-	}while(__estimated_error>__thresh);
-	if(__estimated_error<=__thresh)
-		__terminal_type = Optimal;
-}
-
-template<class kernel,class Time>
-bool GeneralSolver<kernel,Time>::terminalSatisfied() const
-{
-	return __estimated_error<__thresh;
-}
-
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::compute()
-{
-	__time.computationBegin();
-	this->doCompute();
-	__time.computationEnd();
-	// after computation, the problem has not begun
-	__terminal_type = NotBeginYet;
-}
-
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::solve()
-{
-	this->solvingBegin();
-	__time.solvingBegin();
-	this->doSolve();
-	__time.solvingEnd();
-	__journal.solveEnd();
-	__time.printTimeInfo();
-}
-
-template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::scalar GeneralSolver<kernel,Time>::oneIteration()
-{
-	__journal.iterationBegin();
-	scalar e = this->doOneIteration();
-	__journal.iterationEnd();
-	return e;
-}
-
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::setMaxIteration( const index maxiteration)
-{
-	__max_iteration = maxiteration;
-}
-
-template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::index GeneralSolver<kernel,Time>::maxIterationNumber() const
-{
-	return __max_iteration;
-}
-
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::setIterationNumber( const index iter )
-{
-	__iter_num = iter;
-}
-
-template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::index GeneralSolver<kernel,Time>::iterationNumber() const
-{
-	return __iter_num;
-}
-
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::setThreshold( const scalar thresh )
-{
-	__thresh = thresh;
-}
-
-template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::scalar GeneralSolver<kernel,Time>::threshold() const
-{
-	return __thresh;
-}
-
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::setEstimatedError(const scalar error )
-{
-	__estimated_error = error;
-}
-
-template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::scalar GeneralSolver<kernel,Time>::estimatedError() const
-{
-	return __estimated_error;
-}
-
-
 /*		Proximal solver for lasso problem
  *
  *
@@ -229,7 +24,7 @@ private:
 	/** private variables */
 	//%{
 	/** the reference to the problem */
-	const Problem& 								__s;
+	const Problem& 								__p;
 	/** A^TA matrix */
 	Matrix 										__mtm;
 	/** A^T */
@@ -250,10 +45,11 @@ private:
 
 	LassoProximalSolver();
 
+	void solvingBegin();
 	void doCompute();
-	void doSolve();
+	scalar doOneIteration();
+	scalar objective() const;
 
-	bool terminalSatisfied() const;
 public:
 
 
@@ -275,14 +71,11 @@ public:
 
 	/** the f_mu function */
 	scalar fMu(const Vector&,const Vector&);
-
-	/** a single iteraton of the solver */
-	bool iteration(const Vector& xk,Vector& xn);
-
+	
 	/** setter and getter */
 	//%{
 	/** the final result of proximal solver */
-	Vector result() const;
+	const Vector& result() const;
 	//%}
 
 };
@@ -322,17 +115,14 @@ private:
 	Eigen::LDLT<Eigen::MatrixXd>	__linear_solver;
 #endif
 
-	
-	// void doSolve();
-
-	// void doCompute();
-
+	/** implementation of virtual functions */
+	//%{
 	void solvingBegin();
 	void doCompute();
 	scalar doOneIteration();
 	scalar objective() const;
+	//%}
 
-	// bool terminalSatisfied() const;
 public:
 
 	typedef admm_solver 				ObjectCategory;
@@ -352,7 +142,6 @@ public:
 	void zSubProblem(const Vector& xn,const Vector& yk,Vector& zn);
 	void ySubProblem(const Vector& xn,const Vector& zn,Vector& yn);
 	//%}
-	// void solve();
 
 	/** setter and getter */
 	//%{
@@ -430,6 +219,252 @@ public:
 	const Vector& result() const;
 	//%}
 };
+
+
+template <class kernel>
+class VectorProblem
+{
+
+	typedef typename kernel::scalar 		scalar;
+	typedef typename kernel::Matrix 		Matrix;
+	typedef typename kernel::Vector 		Vector;
+
+public:
+
+	virtual ~VectorProblem(){}
+
+	virtual scalar objective( const Vector& x ) const = 0;
+
+};
+	
+/*		The Lasso problem class
+ *
+ */
+template<class kernel>
+class LassoProblem
+	:
+	public VectorProblem<kernel>
+{
+private:
+	typedef typename kernel::scalar 		scalar;
+	typedef typename kernel::Matrix 		Matrix;
+	typedef typename kernel::Vector 		Vector;
+
+	const Matrix& 				__A;
+	const Vector& 				__b;
+	scalar 						__lambda;
+
+public:
+
+	typedef kernel							KernelTrait;
+	typedef lasso_problem					ObjectCategory;
+
+	LassoProblem(
+		const Matrix& A,
+		const Vector& b,
+		const scalar lambda = 0.5);
+
+	void proximalSolve();
+
+	/** getter and setter */
+	//%{
+	const Matrix& matA() const;
+	const Vector& obB() const;
+	const scalar& lambda() const;
+	scalar objective( const Vector& x) const;
+	//%}
+};
+
+
+/*********************Implementation of LassoProximalSolver ******************/
+
+template<class Problem,class Time>
+void LassoProximalSolver<Problem,Time>::doCompute()
+{
+	/** compute the beta */
+	__p.matA().mtm(__mtm);
+	__mt = __p.matA().transpose();
+	Eigen::MatrixXd mat(__mtm.rows(),__mtm.cols());
+	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
+		for ( int j = 0 ; j < __mtm.cols() ; ++ j )
+			mat(i,j) = __mtm(i,j);
+	__linear_solver.compute(mat);
+	scalar e = __p.matA().operationNorm();
+	__mu = 1.0/(2*e*e);
+}
+
+template<class Problem,class Time>
+LassoProximalSolver<Problem,Time>::LassoProximalSolver( 
+	const Problem& s , 
+	const scalar mu , 
+	const scalar beta,
+	const index maxiteration)
+	:
+	__p(s),
+	__mu(mu),
+	__beta(beta),
+	__maxiteration(maxiteration)
+{
+	this->doCompute();
+}
+
+template<class Problem,class Time>
+typename LassoProximalSolver<Problem,Time>::Vector LassoProximalSolver<Problem,Time>::fGradient(const Vector& x)
+{
+	return 2*(__mtm*x-__mt*__p.obB());
+}
+
+template<class Problem,class Time>
+typename LassoProximalSolver<Problem,Time>::Vector LassoProximalSolver<Problem,Time>::gProximal( const Vector& x )
+{
+	Vector result(x.size());
+	for ( int i = 0 ; i < x.size() ; ++ i )
+	{
+		result(i) = computeProximal(AbsFunction(),x(i),__mu*__p.lambda());
+	}
+	return result;
+}
+
+template<class Problem,class Time>
+typename LassoProximalSolver<Problem,Time>::scalar LassoProximalSolver<Problem,Time>::f(
+	const Vector& x)
+{
+	return (__p.matA()*x-__p.obB()).squaredNorm();
+}
+
+template<class Problem,class Time>
+typename LassoProximalSolver<Problem,Time>::scalar LassoProximalSolver<Problem,Time>::fMu(
+	const Vector& x,
+	const Vector& y)
+{
+	scalar result = (__p.matA()*y-__p.obB()).squaredNorm();
+	result += fGradient(y).dot(x-y);
+	result += 1/(2*__mu)*(x-y).squaredNorm();
+	return result;
+}
+
+template<class Problem,class Time>
+void LassoProximalSolver<Problem,Time>::solvingBegin()
+{
+	__x.resize(__p.matA().cols());
+}
+template<class Problem,class Time>
+typename LassoProximalSolver<Problem,Time>::scalar LassoProximalSolver<Problem,Time>::objective() const
+{
+	return __p.objective(__x);
+}
+
+template<class Problem,class Time>
+typename LassoProximalSolver<Problem,Time>::scalar LassoProximalSolver<Problem,Time>::doOneIteration()
+{
+	// Eigen::VectorXd vec(xk.size());
+	Vector xp = __x;
+	Vector temp = fGradient(__x);
+	__x = __x-__mu*temp;
+	__x = gProximal(__x);
+	return std::sqrt((xp-__x).squaredNorm());
+}
+
+template<class Problem,class Time>
+const typename LassoProximalSolver<Problem,Time>::Vector& LassoProximalSolver<Problem,Time>::result() const
+{
+	return __x;
+}
+
+/***********************Implementation of ADMM solver*************************/
+template<class Problem,class Time>
+LassoADMMSolver<Problem,Time>::LassoADMMSolver(
+	const Problem& p,
+	const scalar rho,
+	const index maxiteration,
+	const scalar thresh)
+	:
+	GeneralSolver<typename Problem::KernelTrait,Time>(maxiteration,thresh),
+	__p(p),
+	__rho(rho)
+{
+	this->compute();
+}
+
+template<class Problem,class Time>
+void LassoADMMSolver<Problem,Time>::doCompute()
+{
+	__p.matA().mtm(__mtm);
+	__mt = __p.matA().transpose();
+#ifdef EIGEN
+	Eigen::MatrixXd mat(__mtm.rows(),__mtm.cols());
+	Eigen::MatrixXd iden = Eigen::MatrixXd::Identity(__mtm.rows(),__mtm.cols());
+	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
+		iden(i,i) = 1.0/(2*__rho);
+	
+	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
+		for ( int j = 0 ; j < __mtm.cols() ; ++ j )
+			mat(i,j) = __mtm(i,j);
+	mat = mat+iden;
+	__linear_solver.compute(mat);
+#endif
+}
+
+template<class Problem,class Time>
+void LassoADMMSolver<Problem,Time>::xSubProblem(const Vector& zk,const Vector& yk,Vector&xn)
+{
+	Vector rhd = __mt*__p.obB()+1.0/(2.0*__rho)*(zk-yk);
+#ifdef EIGEN
+	Eigen::VectorXd vec(rhd.size());
+	for ( int i = 0 ; i < rhd.size() ; ++ i )
+		vec(i) = rhd(i);
+	vec = __linear_solver.solve(vec);
+	for ( int i = 0 ; i < rhd.size() ; ++ i )
+		xn(i) = vec(i);
+#endif
+}
+
+template<class Problem,class Time>
+void LassoADMMSolver<Problem,Time>::zSubProblem(const Vector& xn,const Vector& yk,Vector& zn)
+{
+	for ( int i = 0 ; i < zn.size() ; ++ i )
+		zn(i) = computeProximal(AbsFunction(),xn(i)+yk(i),__rho*__p.lambda());
+}
+
+template<class Problem,class Time>
+void LassoADMMSolver<Problem,Time>::ySubProblem(const Vector& xn,const Vector& zn,Vector& yn)
+{
+	yn = yn+(xn-zn);
+}
+
+template<class Problem,class Time>
+void LassoADMMSolver<Problem,Time>::solvingBegin()
+{
+	__x.resize(__p.matA().cols());
+	__y.resize(__p.matA().cols());
+	__z.resize(__p.matA().cols());
+}
+
+template<class Problem,class Time>
+typename LassoADMMSolver<Problem,Time>::scalar LassoADMMSolver<Problem,Time>::doOneIteration()
+{
+	Vector xp=__x;
+	xSubProblem(__z,__y,__x);
+	zSubProblem(__x,__y,__z);
+	ySubProblem(__x,__z,__y);
+	return std::abs(__p.objective(__x)-__p.objective(xp));
+}
+
+template<class Problem,class Time>
+typename LassoADMMSolver<Problem,Time>::scalar LassoADMMSolver<Problem,Time>::objective() const
+{
+	return __p.objective(__x);
+}
+
+template<class Problem,class Time>
+const typename LassoADMMSolver<Problem,Time>::Vector& LassoADMMSolver<Problem,Time>::result() const
+{
+	if(!__is_solved)
+		std::cerr<<"Warning: the problem is not successfully solved yet!"<<std::endl;
+	return __x;
+}
+
+/**********************Implementation of FISTALASSOSolver*********************/
 
 template<class Problem,class Time>
 void FISTALassoSolver<Problem,Time>::doCompute()
@@ -535,242 +570,6 @@ typename FISTALassoSolver<Problem,Time>::scalar FISTALassoSolver<Problem,Time>::
 template<class Problem,class Time>
 const typename FISTALassoSolver<Problem,Time>::Vector& FISTALassoSolver<Problem,Time>::result() const
 {
-	return __x;
-}
-	
-/*		The Lasso problem class
- *
- */
-template<class kernel>
-class LassoProblem
-{
-private:
-	typedef typename kernel::scalar 		scalar;
-	typedef typename kernel::Matrix 		Matrix;
-	typedef typename kernel::Vector 		Vector;
-
-	const Matrix& 				__A;
-	const Vector& 				__b;
-	scalar 						__lambda;
-public:
-	typedef kernel							KernelTrait;
-	typedef lasso_problem					ObjectCategory;
-
-	LassoProblem( const Matrix& A,
-		const Vector& b,
-		const scalar lambda = 0.5);
-
-	void proximalSolve();
-
-	/** getter and setter */
-	//%{
-	const Matrix& matA() const;
-	const Vector& obB() const;
-	const scalar& lambda() const;
-	scalar objective( const Vector& x) const;
-	//%}
-};
-
-
-/*********************Implementation of LassoProximalSolver ******************/
-
-template<class Problem,class Time>
-void LassoProximalSolver<Problem,Time>::doCompute()
-{
-	/** compute the beta */
-	__s.matA().mtm(__mtm);
-	__mt = __s.matA().transpose();
-	Eigen::MatrixXd mat(__mtm.rows(),__mtm.cols());
-	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
-		for ( int j = 0 ; j < __mtm.cols() ; ++ j )
-			mat(i,j) = __mtm(i,j);
-	__linear_solver.compute(mat);
-	scalar e = __s.matA().operationNorm();
-	std::cout<<"L is "<<e*e<<std::endl;
-	__mu = 1.0/(2*e*e);
-}
-
-template<class Problem,class Time>
-LassoProximalSolver<Problem,Time>::LassoProximalSolver( 
-	const Problem& s , 
-	const scalar mu , 
-	const scalar beta,
-	const index maxiteration)
-	:
-	__s(s),
-	__mu(mu),
-	__beta(beta),
-	__maxiteration(maxiteration)
-{
-	this->compute();
-}
-
-template<class Problem,class Time>
-typename LassoProximalSolver<Problem,Time>::Vector LassoProximalSolver<Problem,Time>::fGradient(const Vector& x)
-{
-	return 2*(__mtm*x-__mt*__s.obB());
-}
-
-template<class Problem,class Time>
-typename LassoProximalSolver<Problem,Time>::Vector LassoProximalSolver<Problem,Time>::gProximal( const Vector& x )
-{
-	Vector result(x.size());
-	for ( int i = 0 ; i < x.size() ; ++ i )
-	{
-		result(i) = computeProximal(AbsFunction(),x(i),__mu*__s.lambda());
-	}
-	return result;
-}
-
-template<class Problem,class Time>
-typename LassoProximalSolver<Problem,Time>::scalar LassoProximalSolver<Problem,Time>::f(
-	const Vector& x)
-{
-	return (__s.matA()*x-__s.obB()).squaredNorm();
-}
-
-template<class Problem,class Time>
-typename LassoProximalSolver<Problem,Time>::scalar LassoProximalSolver<Problem,Time>::fMu(
-	const Vector& x,
-	const Vector& y)
-{
-	scalar result = (__s.matA()*y-__s.obB()).squaredNorm();
-	result += fGradient(y).dot(x-y);
-	result += 1/(2*__mu)*(x-y).squaredNorm();
-	return result;
-}
-
-template<class Problem,class Time>
-bool LassoProximalSolver<Problem,Time>::iteration( const Vector& xk , Vector& xn)
-{
-	Eigen::VectorXd vec(xk.size());
-	Vector temp = fGradient(xk);
-	xn = xk-__mu*temp;
-	xn = gProximal(xn);
-	if (IS_ZERO((xk-xn).squaredNorm()))
-	{
-		std::cout<<"situation 2 is reached"<<std::endl;
-		return true;
-	}
-	else{
-		__mu = __beta*__mu;
-		return false;
-	}
-}
-
-template<class Problem,class Time>
-void LassoProximalSolver<Problem,Time>::doSolve()
-{
-	Vector xp,xn;
-	xp = Vector(__s.matA().cols());
-	int i = 0;
-	while(!iteration(xp,xn)){
-		++i;
-		if (i>__maxiteration)
-			break;
-		xp = xn;
-	}
-	std::cout<<"result is "<<xn<<std::endl;
-	std::cout<<i<<" iterations are used!"<<std::endl;
-	std::cout<<"final norm is "<<__s.objective(xn)<<std::endl;
-}
-
-template<class Problem,class Time>
-typename LassoProximalSolver<Problem,Time>::Vector LassoProximalSolver<Problem,Time>::result() const
-{
-	return __x;
-}
-
-/***********************Implementation of ADMM solver*************************/
-template<class Problem,class Time>
-LassoADMMSolver<Problem,Time>::LassoADMMSolver(
-	const Problem& p,
-	const scalar rho,
-	const index maxiteration,
-	const scalar thresh)
-	:
-	GeneralSolver<typename Problem::KernelTrait,Time>(maxiteration,thresh),
-	__p(p),
-	__rho(rho)
-{
-	this->compute();
-}
-
-template<class Problem,class Time>
-void LassoADMMSolver<Problem,Time>::doCompute()
-{
-	__p.matA().mtm(__mtm);
-	__mt = __p.matA().transpose();
-#ifdef EIGEN
-	Eigen::MatrixXd mat(__mtm.rows(),__mtm.cols());
-	Eigen::MatrixXd iden = Eigen::MatrixXd::Identity(__mtm.rows(),__mtm.cols());
-	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
-		iden(i,i) = 1.0/(2*__rho);
-	
-	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
-		for ( int j = 0 ; j < __mtm.cols() ; ++ j )
-			mat(i,j) = __mtm(i,j);
-	mat = mat+iden;
-	__linear_solver.compute(mat);
-#endif
-}
-
-template<class Problem,class Time>
-void LassoADMMSolver<Problem,Time>::xSubProblem(const Vector& zk,const Vector& yk,Vector&xn)
-{
-	Vector rhd = __mt*__p.obB()+1.0/(2.0*__rho)*(zk-yk);
-#ifdef EIGEN
-	Eigen::VectorXd vec(rhd.size());
-	for ( int i = 0 ; i < rhd.size() ; ++ i )
-		vec(i) = rhd(i);
-	vec = __linear_solver.solve(vec);
-	for ( int i = 0 ; i < rhd.size() ; ++ i )
-		xn(i) = vec(i);
-#endif
-}
-
-template<class Problem,class Time>
-void LassoADMMSolver<Problem,Time>::zSubProblem(const Vector& xn,const Vector& yk,Vector& zn)
-{
-	for ( int i = 0 ; i < zn.size() ; ++ i )
-		zn(i) = computeProximal(AbsFunction(),xn(i)+yk(i),__rho*__p.lambda());
-}
-
-template<class Problem,class Time>
-void LassoADMMSolver<Problem,Time>::ySubProblem(const Vector& xn,const Vector& zn,Vector& yn)
-{
-	yn = yn+(xn-zn);
-}
-
-template<class Problem,class Time>
-void LassoADMMSolver<Problem,Time>::solvingBegin()
-{
-	__x.resize(__p.matA().cols());
-	__y.resize(__p.matA().cols());
-	__z.resize(__p.matA().cols());
-}
-
-template<class Problem,class Time>
-typename LassoADMMSolver<Problem,Time>::scalar LassoADMMSolver<Problem,Time>::doOneIteration()
-{
-	Vector xp=__x;
-	xSubProblem(__z,__y,__x);
-	zSubProblem(__x,__y,__z);
-	ySubProblem(__x,__z,__y);
-	return std::abs(__p.objective(__x)-__p.objective(xp));
-}
-
-template<class Problem,class Time>
-typename LassoADMMSolver<Problem,Time>::scalar LassoADMMSolver<Problem,Time>::objective() const
-{
-	return __p.objective(__x);
-}
-
-template<class Problem,class Time>
-const typename LassoADMMSolver<Problem,Time>::Vector& LassoADMMSolver<Problem,Time>::result() const
-{
-	if(!__is_solved)
-		std::cerr<<"Warning: the problem is not successfully solved yet!"<<std::endl;
 	return __x;
 }
 
