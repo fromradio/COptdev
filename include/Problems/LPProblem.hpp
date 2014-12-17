@@ -8,16 +8,9 @@
 namespace COPT
 {
 
-/*		The description for linear programming problems. 
- *		An LP problem contains a linear objective and several linear constraints.
- *		A linear objective function of variable 'x' is written as w^Tx where
- *		w is a coefficient vector. Linear constraints contain several part as
- *		Ax<=b, Bx=0, boundary, x>=0 and so on.
- *		A standard form of LP problem is:
- *						minimize w^Tx
- *							subject to Ax<=b, x>=0
- *		Note that any other LP problem can be transformed into a standard form.
- *		Typical solvers also assume that LP problem is written in a standrard form.
+
+/*		A base design for general constraint. An optimization constraint 
+ *		constains several parts like leq constraint, equal constraint etc.
  */
 
 template<class kernel>
@@ -43,8 +36,6 @@ public:
 private:
 	/** the type of the constraint */
 	ConType 			__type;
-
-	GeneralConstraint();
 
 public:
 	typedef constraint_object 				ObjectCategory;
@@ -137,11 +128,15 @@ private:
 	scalar 			__l;
 	/** the upper bound */
 	scalar 			__u;
+
 public:
 
 	/** constructor and deconstructor */
 	//%{
-	/** default constructor */
+	/*		Default constructor assumes that the boundary constraint
+	 *		is both side with 0<=x<=0
+	 */
+	BoundConstraint();
 	BoundConstraint(
 		const scalar sc,
 		const char s = 'l');
@@ -150,13 +145,30 @@ public:
 		const scalar u);
 	//%}
 
+	/** check the feasibility of the constraint */
 	bool feasible ( const Vector& x ) const;
+
+	/** getter and setter */
+	//%{
+	void setLowerBound( const scalar l );
+	scalar lowerBound() const;
+	void setUpperBound( const scalar u );
+	scalar upperBound() const;
+	//%}
 };
 
 /***************Implementation of class 'BoundConstraint'************/
+template<class kernel>
+BoundConstraint<kernel>::BoundConstraint()
+	:
+	Base('b','b'),
+	__l(0.0),
+	__u(0.0)
+{
+}
 
 template<class kernel>
-BoundConstraint<kernel>::BoundConstraint<kernel>(
+BoundConstraint<kernel>::BoundConstraint(
 	const scalar sc,
 	const char s)
 	:
@@ -171,7 +183,7 @@ BoundConstraint<kernel>::BoundConstraint<kernel>(
 }
 
 template<class kernel>
-BoundConstraint<kernel>::BoundConstraint<kernel>(
+BoundConstraint<kernel>::BoundConstraint(
 	const scalar l,
 	const scalar u)
 	:
@@ -205,9 +217,35 @@ bool BoundConstraint<kernel>::feasible( const Vector& x ) const
 		{
 			throw COException("Error: Unknown boundary constraint type!");
 		}
-		break;
+		break;   
 	}
 }
+
+template<class kernel>
+void BoundConstraint<kernel>::setLowerBound( const scalar l )
+{
+	__l = l;
+}
+
+template<class kernel>
+typename BoundConstraint<kernel>::scalar BoundConstraint<kernel>::lowerBound() const
+{
+	return __l;
+}
+
+template<class kernel>
+void BoundConstraint<kernel>::setUpperBound( const scalar u )
+{
+	__u = u;
+}
+
+template<class kernel>
+typename BoundConstraint<kernel>::scalar BoundConstraint<kernel>::upperBound() const
+{
+	return __u;
+}
+
+//////////////End of implementation of 'BoundConstraint'
 
 
 /*		A description of a linear constraint. 
@@ -268,14 +306,17 @@ public:
 	virtual ~LinearConstraint(){}
 	//%}
 
-	const Matrix& matA() const;
-	const Vector& rhB() const;
+	
 
 	/** whether the input is a feasible point */
 	bool feasible(const Vector& x) const;
 
 	/** getter and setter */
 	//%{
+	void setMatA( const Matrix& A );
+	const Matrix& matA() const;
+	void setRhB( const Vector& b );
+	const Vector& rhB() const;
 	//%}
 };
 
@@ -292,6 +333,7 @@ LinearConstraint<kernel>::LinearConstraint(
 	__dim(dim)
 {
 }
+
 template<class kernel>
 LinearConstraint<kernel>::LinearConstraint(
 	const Vector& b,
@@ -321,9 +363,21 @@ LinearConstraint<kernel>::LinearConstraint(
 }
 
 template<class kernel>
+void LinearConstraint<kernel>::setMatA(const Matrix& A)
+{
+	__A = A;
+}
+
+template<class kernel>
 const typename LinearConstraint<kernel>::Matrix& LinearConstraint<kernel>::matA() const
 {
 	return __A;
+}
+
+template<class kernel>
+void LinearConstraint<kernel>::setRhB(const Vector& b)
+{
+	__b = b;
 }
 
 template<class kernel>
@@ -384,6 +438,72 @@ bool LinearConstraint<kernel>::feasible( const Vector& x ) const
 	break;
 	}
 }
+
+///////////////////End of implementation of 'LinearConstraint'
+
+
+/*		The description for linear programming problems. 
+ *		An LP problem contains a linear objective and several linear constraints.
+ *		A linear objective function of variable 'x' is written as w^Tx where
+ *		w is a coefficient vector. Linear constraints contain several part as
+ *		Ax<=b, Bx=0, boundary, x>=0 and so on.
+ *		A standard form of LP problem is:
+ *						minimize w^Tx
+ *							subject to Ax<=b, x>=0
+ *		Note that any other LP problem can be transformed into a standard form.
+ *		Typical solvers also assume that LP problem is written in a standrard form.
+ * 		In standard linear programming problem, the formulation is very simple.
+ *		One is the weight vector w and one is the Ax<=b constraint. The constraint
+ * 		that x>=0 is not recorded but taken as default.
+ */
+template<class kernel>
+class LPProblem
+	:
+	public VectorProblem<kernel>
+{
+
+	typedef typename kernel::scalar 		scalar;
+	typedef typename kernel::index 			index;
+	typedef typename kernel::Vector 		Vector;
+	typedef typename kernel::Matrix 		Matrix;
+
+	/** the weight vector */
+	Vector 						__w;
+	/** the Ax<=b constraint*/
+	LinearConstraint<kernel> 	__axb;
+public:
+
+	/** constructor and deconstructor */
+	//%{
+	LPProblem();
+	~LPProblem(){}
+	//%}
+
+	/** compute objective function of LP problem */
+	scalar objective(const Vector& x ) const;
+	
+	/** whether one input is feasible */
+	bool feasible ( const Vector& x ) const;
+
+};
+
+/**************Implementation of class 'LPProblem'**************/
+template<class kernel>
+typename LPProblem<kernel>::scalar LPProblem<kernel>::objective(const Vector& x )const
+{
+	if ( x.size() != __w.size() )
+		throw COException("Linear programming objective function computation error: the size of weight function and x are not consistent!");
+	return __w.dot(x);
+}
+
+template<class kernel>
+bool LPProblem<kernel>::feasible(const Vector& x ) const
+{
+	/** Ax<=b && x>=0 */
+	return (__axb.feasible(x)&&(x>=0));
+}
+
+//////////////////////End of implementation of class 'LPProblem'
 
 
 }
