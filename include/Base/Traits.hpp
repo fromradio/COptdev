@@ -214,7 +214,10 @@ struct time_stat_object:copt_object{};			// time statistics object
 struct no_time_stat_tag:time_stat_object{};
 struct solver_time_stat_tag:time_stat_object{};
 /** traits of constraints and functions*/
-struct linear_constraint_tag:constraint_object{};
+struct linear_constraint:constraint_object{};
+struct linear_leq_constraint:linear_constraint{};
+struct linear_neq_constraint:linear_constraint{};
+struct linear_eq_constraint:linear_constraint{};
 struct quadratic_constraint_tag:constraint_object{};
 struct non_linear_constraint_tag:constraint_object{};
 

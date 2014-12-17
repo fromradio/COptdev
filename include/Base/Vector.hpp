@@ -136,21 +136,27 @@ public:
 	//%{
 	/** operator< */
 	bool operator< (const VectorBase& vec)const;
+	bool operator< (const scalar s)const;
 
 	/** operator<= */
 	bool operator<=(const VectorBase& vec)const;
+	bool operator<=(const scalar s)const;
 
 	/** operator> */
 	bool operator> (const VectorBase& vec)const;
+	bool operator> (const scalar s)const;
 
 	/** operator>= */
 	bool operator>=(const VectorBase& vec)const;
+	bool operator>=(const scalar s)const;
 
 	/** operator== */
 	bool operator==(const VectorBase& vec)const;
+	bool operator==(const scalar s)const;
 
 	/** operator!= */
 	bool operator!=(const VectorBase& vec)const;
+	bool operator!=(cosnt scalar s)const;
 	//%}
 
 	/*

@@ -63,6 +63,7 @@
 #include "Algorithms/Lasso.hpp"
 #include "Algorithms/Eigenvalue.hpp"
 
+#include "Problems/LPProblem.hpp"
 
 
 

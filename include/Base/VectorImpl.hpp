@@ -44,12 +44,34 @@ bool VectorBase<scalar,index>::operator<(const VectorBase<scalar,index>& vec)con
 }
 
 template<class scalar,class index>
+bool VectorBase<scalar,index>::operator<(const scalar s)const
+{
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(this->operator[](i)>=s)
+			return false;
+	}
+	return true;
+}
+
+template<class scalar,class index>
 bool VectorBase<scalar,index>::operator<=(const VectorBase<scalar,index>& vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)>vec[i])
+			return false;
+	}
+	return true;
+}
+
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator<=(const scalar s)const
+{
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(this->operator[](i)>s)
 			return false;
 	}
 	return true;
@@ -68,12 +90,34 @@ bool VectorBase<scalar,index>::operator>(const VectorBase<scalar,index>& vec)con
 }
 
 template<class scalar,class index>
+bool VectorBase<scalar,index>::operator>(const scalar s)const
+{
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(this->operator[](i)<=s)
+			return false;
+	}
+	return true;
+}
+
+template<class scalar,class index>
 bool VectorBase<scalar,index>::operator>=(const VectorBase<scalar,index>& vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)<vec[i])
+			return false;
+	}
+	return true;
+}
+
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator>=(const scalar s)const
+{
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(this->operator[](i)<s)
 			return false;
 	}
 	return true;
@@ -92,12 +136,34 @@ bool VectorBase<scalar,index>::operator==(const VectorBase<scalar,index>& vec)co
 }
 
 template<class scalar,class index>
+bool VectorBase<scalar,index>::operator==(const scalar s)const
+{
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(this->operator[](i)!=s)
+			return false;
+	}
+	return true;
+}
+
+template<class scalar,class index>
 bool VectorBase<scalar,index>::operator!=(const VectorBase<scalar,index>& vec)const
 {
 	if ( this->size() != vec.size() )
 		return true;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
 		if(this->operator[](i)!=vec[i])
+			return true;
+	}
+	return false;
+}
+
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator!=(const scalar s)const
+{
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(this->operator[](i)!=s)
 			return true;
 	}
 	return false;
