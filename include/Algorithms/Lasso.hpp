@@ -226,16 +226,56 @@ class VectorProblem
 {
 
 	typedef typename kernel::scalar 		scalar;
+	typedef typename kernel::index 			index;
 	typedef typename kernel::Matrix 		Matrix;
 	typedef typename kernel::Vector 		Vector;
 
+	/** the dimension of the problem */
+	index 					__dim;
+
 public:
 
+	/** constructor and deconstructor */
+	//%{
+	/** default constructor */
+	VectorProblem( const index dim = 0 );
 	virtual ~VectorProblem(){}
+	//%}
 
+	/** compute the objective function */
 	virtual scalar objective( const Vector& x ) const = 0;
 
+	/** check whether the input is valid */
+	virtual bool isValidInput( const Vector& x ) const = 0;
+
+	/** check whether the problem is a valid problem */
+	virtual bool isValid( ) const = 0;
+
+	/** getter and setter */
+	//%{
+	void setDimension( const index dim );
+	index dimension() const;
+	//%}
 };
+
+template<class kernel>
+VectorProblem<kernel>::VectorProblem( const index dim )
+	:
+	__dim(dim)
+{
+}
+
+template<class kernel>
+void VectorProblem<kernel>::setDimension( const index dim )
+{
+	__dim = dim;
+}
+
+template<class kernel>
+typename VectorProblem<kernel>::index VectorProblem<kernel>::dimension() const
+{
+	return __dim;
+}
 	
 /*		The Lasso problem class
  *

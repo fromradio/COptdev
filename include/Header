@@ -64,6 +64,7 @@
 #include "Algorithms/Eigenvalue.hpp"
 
 #include "Problems/LPProblem.hpp"
+#include "Problems/BPProblem.hpp"
 
 
 

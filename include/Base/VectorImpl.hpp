@@ -129,7 +129,7 @@ bool VectorBase<scalar,index>::operator==(const VectorBase<scalar,index>& vec)co
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
-		if(this->operator[](i)!=vec[i])
+		if(!IS_ZERO(std::abs(this->operator[](i)-vec[i])))
 			return false;
 	}
 	return true;
@@ -140,7 +140,7 @@ bool VectorBase<scalar,index>::operator==(const scalar s)const
 {
 	for ( index i = 0 ; i < this->size() ; ++ i )
 	{
-		if(this->operator[](i)!=s)
+		if(!IS_ZERO(std::abs(this->operator[](i)-s)))
 			return false;
 	}
 	return true;

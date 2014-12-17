@@ -456,6 +456,7 @@ bool LinearConstraint<kernel>::feasible( const Vector& x ) const
  *		One is the weight vector w and one is the Ax<=b constraint. The constraint
  * 		that x>=0 is not recorded but taken as default.
  */
+
 template<class kernel>
 class LPProblem
 	:
@@ -471,29 +472,66 @@ class LPProblem
 	Vector 						__w;
 	/** the Ax<=b constraint*/
 	LinearConstraint<kernel> 	__axb;
+
 public:
 
 	/** constructor and deconstructor */
 	//%{
-	LPProblem();
+	LPProblem( const Vector& w , const Matrix& A , const Matrix &b );
 	~LPProblem(){}
 	//%}
 
 	/** compute objective function of LP problem */
-	scalar objective(const Vector& x ) const;
+	scalar objective( const Vector& x ) const;
+
+	/** valid */
+	bool isValidInput( const Vector& x ) const;
+
+	/** validation of the problem */
+	bool isValid( ) const;
 	
 	/** whether one input is feasible */
 	bool feasible ( const Vector& x ) const;
 
+	
+
 };
 
 /**************Implementation of class 'LPProblem'**************/
+template<class kernel>
+LPProblem<kernel>::LPProblem( const Vector& w , const Matrix& A , const Matrix &b )
+	:
+	VectorProblem<kernel>(A.cols()),
+	__w(w),
+	__axb(A,b)
+{
+	if (!isValid())
+	{
+		std::cerr<<"Linear programming problem error: the problem is not valid! You should better check it more carefully!"<<std::endl;
+	}
+}
+
 template<class kernel>
 typename LPProblem<kernel>::scalar LPProblem<kernel>::objective(const Vector& x )const
 {
 	if ( x.size() != __w.size() )
 		throw COException("Linear programming objective function computation error: the size of weight function and x are not consistent!");
 	return __w.dot(x);
+}
+
+template<class kernel>
+bool LPProblem<kernel>::isValidInput( const Vector& x ) const
+{
+	return x.size()==this->dimension();
+}
+
+template<class kernel>
+bool LPProblem<kernel>::isValid( ) const
+{
+	if (__w.size() != __axb.matA().cols() )
+		return false;
+	else
+		return __axb.matA().rows()==__axb.rhB().size();
 }
 
 template<class kernel>

@@ -138,7 +138,7 @@ obj/iotest.o: test/io_test.cpp include/IOs/MtxFile.hpp
 lpproblem: bin/lpproblem
 bin/lpproblem: obj/lpproblem.o
 	$(CC) obj/lpproblem.o $(DIR_LIB) -o $@ $(LIBS)
-obj/lpproblem.o: test/lp_problem.cpp include/Problems/LPProblem.hpp
+obj/lpproblem.o: test/lp_problem.cpp include/Problems/LPProblem.hpp include/Problems/BPProblem.hpp
 	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
