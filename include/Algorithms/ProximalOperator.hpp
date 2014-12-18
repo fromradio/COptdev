@@ -45,14 +45,14 @@ public:
 	}
 };
 
-template<class T,class scalar>
-T computeProximal( const LogFunction& func , const T& v , const scalar lambda , const log_scalar_function_tag& )
+template<class scalar>
+scalar computeProximal( const LogFunction& func , const scalar v , const scalar lambda , const log_scalar_function_tag& )
 {
 	return (v+std::sqrt(v*v+4*lambda))/2;
 }
 
-template<class T,class scalar>
-T computeProximal( const AbsFunction& func , const T& v , const scalar lambda , const abs_scalar_function_tag& )
+template<class scalar>
+scalar computeProximal( const AbsFunction& func , const scalar v , const scalar lambda , const abs_scalar_function_tag& )
 {
 	if ( v >= lambda )
 		return (v-lambda);
@@ -62,10 +62,27 @@ T computeProximal( const AbsFunction& func , const T& v , const scalar lambda , 
 		return 0;
 }
 
-template<class Function,class T,class scalar>
-T computeProximal( const Function& func , const T& v , const scalar lambda )
+template<class Vector,class scalar>
+void computeProximal( const AbsFunction& func, const Vector& v , const scalar lambda , const abs_scalar_function_tag& , Vector& x )
+{
+	if (x.size() != v.size() )
+		x.resize(v.size());
+	for ( int i = 0 ; i < v.size() ; ++ i )
+	{
+		x(i) = computeProximal(func,v(i),lambda);
+	}
+}
+
+template<class Function,class scalar>
+scalar computeProximal( const Function& func , const scalar v , const scalar lambda )
 {
 	return computeProximal(func,v,lambda,typename Function::function_category());
+}
+
+template<class Function,class Vector,class scalar>
+void computeProximal( const Function& func , const Vector& v , const scalar lambda , Vector& x )
+{
+	computeProximal(func,v,lambda,typename Function::function_category(),x);
 }
 }
 

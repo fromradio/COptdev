@@ -180,7 +180,11 @@ public:
 	
 	// dot operation
 	scalar dot(const VectorBase& vec) const{
-		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
+		if(this->size()!=vec.size()) 
+		{
+			std::cerr<<"one size is "<<this->size()<<" and another size is "<<vec.size()<<std::endl;
+			throw COException("VectorBase dot operation error: the length of two VectorBases do not equal to each other");
+		}
 		else{
 			scalar sum = blas::copt_blas_dot(this->size(),this->dataPtr(),this->interval(),vec.dataPtr(),vec.interval());
 			return sum;
@@ -208,7 +212,11 @@ public:
 
 	// summation operation
 	VectorBase operator+ (const VectorBase& vec) const{
-		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
+		if(this->size()!=vec.size())
+		{
+			std::cerr<<"one size is "<<this->size()<<" another size is "<<vec.size()<<std::endl;
+			throw COException("VectorBase summation error: the length of two VectorBases do not equal to each other");
+		}
 		VectorBase result(this->size());
 		for ( index i = 0 ; i < this->size() ; ++ i ){
 			result[i] = this->operator[](i)+vec[i];
@@ -218,7 +226,11 @@ public:
 
 	//subtraction operation
 	VectorBase operator- (const VectorBase& vec) const{
-		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
+		if(this->size()!=vec.size()) 
+		{
+			std::cerr<<"one size is "<<this->size()<<" another size is "<<vec.size()<<std::endl;
+			throw COException("VectorBase summation error: the length of two VectorBases do not equal to each other");
+		}
 		VectorBase result(this->size());
 		for ( index i = 0 ; i < this->size() ; ++ i ){
 			result[i] = this->operator[](i)-vec[i];

@@ -48,7 +48,7 @@ private:
 	void solvingBegin();
 	void doCompute();
 	scalar doOneIteration();
-	scalar objective() const;
+	
 
 public:
 
@@ -77,6 +77,8 @@ public:
 	/** the final result of proximal solver */
 	const Vector& result() const;
 	//%}
+
+	scalar objective() const;
 
 };
 
@@ -235,6 +237,8 @@ class VectorProblem
 
 public:
 
+	typedef kernel 							KernelTrait;
+
 	/** constructor and deconstructor */
 	//%{
 	/** default constructor */
@@ -251,6 +255,9 @@ public:
 	/** check whether the problem is a valid problem */
 	virtual bool isValid( ) const = 0;
 
+	/** validation of the problem */
+	virtual void validation() const;
+
 	/** getter and setter */
 	//%{
 	void setDimension( const index dim );
@@ -263,6 +270,15 @@ VectorProblem<kernel>::VectorProblem( const index dim )
 	:
 	__dim(dim)
 {
+}
+
+template<class kernel>
+void VectorProblem<kernel>::validation() const
+{
+	if(!this->isValid())
+	{
+		throw COException("Vector problem error: Validation of this problem does not pass!");
+	}
 }
 
 template<class kernel>

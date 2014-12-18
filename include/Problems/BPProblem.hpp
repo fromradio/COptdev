@@ -14,6 +14,8 @@ namespace COPT
  */
 template<class kernel>
 class BPProblem
+	:
+	public VectorProblem<kernel>
 {
 private:
 	typedef typename kernel::scalar 				scalar;
@@ -27,7 +29,18 @@ private:
 
 public:
 
-	BPProblem( const Matrix& A , const Vector& b );
+	/** constructor and deconstructor */
+	//%{
+	BPProblem(
+		const index dim
+		);
+	BPProblem( 
+		const index dim, 		// the dimension of the problem
+		const Matrix& A, 		// the A matrix in Ax=b
+		const Vector& b 		// the right hand vector b
+		);
+	//%}
+
 	scalar objective ( const Vector& x ) const;
 
 	/** judge whether the input x is feasible or not */
@@ -39,13 +52,34 @@ public:
 	/** judge whether the problem is valid */
 	bool isValid() const;
 
+	/** getter and setter */
+	//%{
+	void setMatA( const Matrix& A );
+	const Matrix& matA( ) const;
+	void setRhB( const Vector& b);
+	const Vector& rhB( ) const;
+	//%}
+
 };
 
 /**************Implementation of class 'BPProblem'*****************/
+
 template<class kernel>
-BPProblem<kernel>::BPProblem( const Matrix& A , const Vector& b )
+BPProblem<kernel>::BPProblem(
+	const index dim
+	)
 	:
-	VectorProblem<kernel>(A.cols()),
+	VectorProblem<kernel>(dim)
+{
+}
+
+template<class kernel>
+BPProblem<kernel>::BPProblem( 
+	const index dim,
+	const Matrix& A , 
+	const Vector& b )
+	:
+	VectorProblem<kernel>(dim),
 	__axb(A,b)
 {
 }
@@ -74,10 +108,207 @@ bool BPProblem<kernel>::feasible( const Vector& x ) const
 template<class kernel>
 bool BPProblem<kernel>::isValid( ) const
 {
+	if ( this->dimension() != __axb.matA().cols() )
+		return false;
 	return __axb.matA().rows()==__axb.rhB().size();
 }
 
+template<class kernel>
+void BPProblem<kernel>::setMatA( const Matrix& A )
+{
+	__axb.setMatA(A);
+}
+
+template<class kernel>
+const typename BPProblem<kernel>::Matrix& BPProblem<kernel>::matA() const
+{
+	return __axb.matA();
+}
+
+template<class kernel>
+void BPProblem<kernel>::setRhB(const Vector& b)
+{
+	__axb.setRhB(b);
+}
+
+template<class kernel>
+const typename BPProblem<kernel>::Vector& BPProblem<kernel>::rhB() const
+{
+	return __axb.rhB();
+}
+
 ///////////////End of implementation of 'BPProblem'
+
+template<class Problem,class Time = NoTimeStatistics>
+class BPSolver
+	:
+	public GeneralSolver<typename Problem::KernelTrait,Time>,
+	noncopyable
+{
+private:
+
+	typedef typename Problem::KernelTrait				kernel;
+	typedef typename kernel::scalar 					scalar;
+	typedef typename kernel::index 						index;
+	typedef typename kernel::Vector 					Vector;
+	typedef typename kernel::Matrix 					Matrix;
+
+	/** the problem */
+	const Problem& 					__p;
+	/** storing the result */
+	Vector 							__x;
+	/** y vector */
+	Vector 							__y;
+	/** storing the matrix for y sub problem */
+	Matrix 							__mat;
+	/** mu */
+	scalar 							__mu;
+	/** lambda for x */
+	Vector 							__lambda_x;
+	/** lambda for y */
+	Vector 							__lambda_y;
+	/** the linear solver */
+#ifdef EIGEN
+	Eigen::LDLT<Eigen::MatrixXd>			__ldlt;
+#endif
+
+	/** before solving */
+	void solvingBegin();
+
+	/*		compute the problem, the decomposition of A^TA+I is computed at first
+	 *
+	 */
+	void doCompute();
+
+	scalar doOneIteration();
+
+	/** solve x sub problem */
+	void xSubproblem();
+
+	/** solve y sub problem */
+	void ySubproblem();
+
+	/** update of lambda x */
+	void lambdaXUpdate();
+
+	/** update of lambda y */
+	void lambdaYUpdate();
+
+public:
+
+	/** constructor and deconstructor */
+	//%{
+	BPSolver( 
+		const Problem& p,
+		const index maxiteration = 10000,
+		const scalar thresh = 1e-10 );
+	//%}
+
+	/** compute the objective value */
+	scalar objective() const;
+
+	/** obtain the result */
+	const Vector& result() const;
+
+};
+
+/*************Implementation of class 'BPSolver'******************/
+
+template<class Problem,class Time>
+void BPSolver<Problem,Time>::solvingBegin()
+{
+	__x.resize(__p.dimension());
+	__y.resize(__p.dimension());
+	__lambda_x.resize(__p.dimension());
+	__lambda_y.resize(__p.rhB().size());
+}
+
+template<class Problem,class Time>
+void BPSolver<Problem,Time>::doCompute()
+{
+	// get the matrix A^TA+I
+	__p.matA().mtm(__mat);
+	index dim = __p.dimension();
+	for ( int i = 0 ; i < dim ; ++ i )
+		__mat(i,i) += 1.0;
+#ifdef EIGEN
+	Eigen::MatrixXd m(dim,dim);
+	for ( int i = 0 ; i < dim ; ++ i )
+		for ( int j = 0 ; j < dim ; ++ j )
+			m(i,j) = __mat(i,j);
+	__ldlt.compute(m);
+#endif
+}
+
+template<class Problem,class Time>
+typename BPSolver<Problem,Time>::scalar BPSolver<Problem,Time>::doOneIteration()
+{
+	xSubproblem();
+	ySubproblem();
+	lambdaXUpdate();
+	lambdaYUpdate();
+
+	return (__x-__y).squaredNorm();
+}
+
+template<class Problem,class Time>
+void BPSolver<Problem,Time>::xSubproblem()
+{
+	computeProximal(AbsFunction(),__y+__mu*__lambda_x,__mu,__x);
+}
+
+template<class Problem,class Time>
+void BPSolver<Problem,Time>::ySubproblem()
+{
+#ifdef EIGEN
+	Vector rhb = __x-__mu*__lambda_x+__p.matA().transpose()*(__p.rhB()-__mu*__lambda_y);
+	Eigen::VectorXd r(rhb.size());
+	int dim = __p.dimension();
+	for ( int i = 0 ; i < dim ; ++ i )
+		r(i) = rhb(i);
+	Eigen::VectorXd y = __ldlt.solve(r);
+	for ( int i = 0 ; i< dim ; ++ i )
+		__y(i) = y(i);
+#endif
+}
+
+template<class Problem,class Time>
+void BPSolver<Problem,Time>::lambdaXUpdate()
+{
+	__lambda_x = __lambda_x + (1.0/__mu)*(__y-__x);
+}
+
+template<class Problem,class Time>
+void BPSolver<Problem,Time>::lambdaYUpdate()
+{
+	__lambda_y = __lambda_y + (1.0/__mu)*(__p.matA()*__y-__p.rhB());
+}
+
+template<class Problem,class Time>
+BPSolver<Problem,Time>::BPSolver( 
+	const Problem& p,
+	const index maxiteration,
+	const scalar thresh
+	 )
+	:
+	GeneralSolver<kernel,Time>(maxiteration,thresh),
+	__p(p),
+	__mu(1.0)
+{
+	this->compute();
+}
+
+template<class Problem,class Time>
+typename BPSolver<Problem,Time>::scalar BPSolver<Problem,Time>::objective() const
+{
+	return __p.objective(__x);
+}
+
+template<class Problem,class Time>
+const typename BPSolver<Problem,Time>::Vector& BPSolver<Problem,Time>::result() const
+{
+	return __x;
+}
 
 
 }// End of namespace COPT

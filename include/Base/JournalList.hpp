@@ -122,8 +122,10 @@ std::ostream& SolverJournal<Solver>::solveBegin()
 template<class Solver>
 std::ostream& SolverJournal<Solver>::solveEnd( const Solver& sol, std::ostream& os,const int level)
 {
-	if(level==3)
+	if(level==3){
 		os<<"final estimated error is "<<sol.estimatedError()<<std::endl;
+		os<<"final result is "<<sol.result()<<std::endl;
+	}
 	return os;
 }
 
