@@ -97,6 +97,8 @@ public:
 	//%}
 };
 
+/*************Implementation of 'GeneralSolver'***************/
+
 template<class kernel,class Time>
 GeneralSolver<kernel,Time>::GeneralSolver(
 	const index maxiteration,
@@ -211,6 +213,8 @@ typename GeneralSolver<kernel,Time>::scalar GeneralSolver<kernel,Time>::estimate
 {
 	return __estimated_error;
 }
+
+//////////////////End of impelementation of 'GeneralSolver'
 
 };
 
