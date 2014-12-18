@@ -264,6 +264,58 @@ int copt_lapack_getri( int n , double *a , int lda ,
 	return status;
 }
 
+/** Cholesky factorization */
+template<class index,class scalar>
+int copt_lapack_potrf( char uplo , index n , scalar * a,
+				index lda ,
+				index *info )
+{
+	throw COException("Unknown type for lapack wrapper!");
+}
+
+template<>
+int copt_lapack_potrf( char uplo , int n , float *a ,
+				int lda,
+				int *info )
+{
+	return spotrf_(&uplo,&n,a,&lda,info);
+}
+
+template<>
+int copt_lapack_potrf( char uplo , int n , double *a ,
+				int lda,
+				int *info )
+{
+	return dpotrf_(&uplo,&n,a,&lda,info);
+}
+
+/** Cholesky solving */
+template<class index,class scalar>
+int copt_lapack_potrs(char uplo , index n , index nrhs,
+				scalar *a , index lda , scalar *b,
+				index ldb,
+				index *info )
+{
+	throw COException("Unknown type for lapack wrapper!");
+}
+
+template<>
+int copt_lapack_potrs(char uplo , int n , int nrhs,
+				float *a , int lda , float *b,
+				int ldb,
+				int *info )
+{
+	return spotrs_(&uplo,&n,&nrhs,a,&lda,b,&ldb,info);
+}
+
+template<>
+int copt_lapack_potrs(char uplo , int n , int nrhs,
+				double *a , int lda , double *b,
+				int ldb,
+				int *info)
+{
+	return dpotrs_(&uplo,&n,&nrhs,a,&lda,b,&ldb,info);
+}
 }
 
 #endif

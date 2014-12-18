@@ -67,6 +67,7 @@
 #include "Problems/BPProblem.hpp"
 
 #include "LinearAlgo/LUSolver.hpp"
+#include "LinearAlgo/CholeskySolver.hpp"
 
 
 

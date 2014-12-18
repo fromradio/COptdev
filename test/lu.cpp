@@ -8,6 +8,7 @@ typedef COPT::KernelTrait<double,int> 			kernel;
 typedef kernel::Vector 							Vector;
 typedef kernel::Matrix 							Matrix;
 typedef COPT::LU<Matrix> 						LU;
+typedef COPT::CholeskySolver<Matrix>			Cholesky;
 
 const int m = 5;
 const int n = 2;
@@ -25,8 +26,13 @@ int main( int argc , char *argv[] )
 	Matrix rhb = Matrix::random(m,n);
 	// std::cout<<"matrix is "<<std::endl<<mat<<std::endl;
 	LU lu(mat);
+	Matrix mtm;
+	mat.mtm(mtm);
+	Cholesky cho(mtm);
 	std::cout<<lu.solve(rhb)<<std::endl;
 	std::cout<<lu.inverse()<<std::endl;
+	std::cout<<"solving result"<<std::endl;
+	std::cout<<cho.solve(mat.transpose()*rhb)<<std::endl;
 	std::cout<<"result of eigen"<<std::endl<<mm.inverse()<<std::endl;
 	// std::cout<<Eigen::PartialPivLU<Eigen::MatrixXd>(mm).solve(vec)<<std::endl;
 }
