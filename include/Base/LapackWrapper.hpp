@@ -172,6 +172,59 @@ int copt_lapack_stebz(char range , char order , int n , double vl , double vu , 
 	return dstebz_(&range,&order,&n,&vl,&vu,&il,&iu,&abstol,d,e,m,nsplit,w,iblock,isplit,work,iwork,info);
 }
 
+/** LU factorization */
+template<class index,class scalar>
+int copt_lapack_getrf( index m , index n , scalar *a,
+				index lda , index *ipiv,
+				index *info )
+{
+	throw COException("Unkonwn type for lapack wrapper!");
+}
+
+template<>
+int copt_lapack_getrf( int m , int n , float *a,
+				int lda , int *ipiv ,
+				int *info )
+{
+	return sgetrf_(&m,&n,a,&lda,ipiv,info);
+}
+
+template<>
+int copt_lapack_getrf( int m , int n , double *a,
+				int lda , int *ipiv ,
+				int *info )
+{
+	return dgetrf_(&m,&n,a,&lda,ipiv,info);
+}
+
+/** LU solving */
+template<class index,class scalar>
+int copt_lapack_getrs( char trans , index n , index nrhs,
+				scalar *a, index lda , index * ipiv,
+				scalar *b, index ldb,
+				index *info)
+{
+	throw COException("Unkonw type for lapack wrapper!");
+}
+
+template<>
+int copt_lapack_getrs( char trans , int n , int nrhs,
+				float *a , int lda , int *ipiv,
+				float *b , int ldb ,
+				int *info)
+{
+	return sgetrs_(&trans,&n,&nrhs,a,&lda,ipiv,b,&ldb,info);
+}
+
+template<>
+int copt_lapack_getrs( char trans , int n , int nrhs,
+				double *a , int lda , int *ipiv,
+				double *b , int ldb ,
+				int *info)
+{
+	return dgetrs_(&trans,&n,&nrhs,a,&lda,ipiv,b,&ldb,info);
+}
+
 
 }
 

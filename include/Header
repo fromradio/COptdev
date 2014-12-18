@@ -66,6 +66,8 @@
 #include "Problems/LPProblem.hpp"
 #include "Problems/BPProblem.hpp"
 
+#include "LinearAlgo/LUSolver.hpp"
+
 
 
 

@@ -140,6 +140,12 @@ bin/lpproblem: obj/lpproblem.o
 	$(CC) obj/lpproblem.o $(DIR_LIB) -o $@ $(LIBS)
 obj/lpproblem.o: test/lp_problem.cpp include/Problems/LPProblem.hpp include/Problems/BPProblem.hpp
 	$(CC) $(CFLAGS) -c $< -o $@
+
+lu: bin/lu
+bin/lu: obj/lu.o
+	$(CC) obj/lu.o $(DIR_LIB) -o $@ $(LIBS)
+obj/lu.o: test/lu.cpp include/LinearAlgo/LUSolver.hpp
+	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 
