@@ -316,6 +316,32 @@ int copt_lapack_potrs(char uplo , int n , int nrhs,
 {
 	return dpotrs_(&uplo,&n,&nrhs,a,&lda,b,&ldb,info);
 }
+
+/** Cholesky inverse */
+template<class index,class scalar>
+int copt_lapack_potri( char uplo , index n , scalar *a,
+				int lda,
+				int *info)
+{
+	throw COException("Unknown type for lapack wrapper!");
+}
+
+template<>
+int copt_lapack_potri( char uplo , int n , float *a,
+				int lda,
+				int *info)
+{
+	return spotri_(&uplo,&n,a,&lda,info);
+}
+
+template<>
+int copt_lapack_potri( char uplo , int n , double *a,
+				int lda,
+				int *info)
+{
+	return dpotri_(&uplo,&n,a,&lda,info);
+}
+
 }
 
 #endif

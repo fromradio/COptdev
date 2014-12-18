@@ -49,6 +49,9 @@ public:
 	/** solving the problem */
 	Matrix solve ( const Matrix& b );
 
+	/** inver matrix */
+	Matrix inverse ();
+
 	/** validation */
 	void squareValidation( ) const;
 
@@ -129,6 +132,15 @@ template<class Matrix>
 bool CholeskySolver<Matrix>::validation( const Matrix& mat )const
 {
 	return mat.isSymmetric();
+}
+
+template<class Matrix>
+Matrix CholeskySolver<Matrix>::inverse( )
+{
+	Matrix result(__n,__n,__a);
+	copt_lapack_potri('U',__n,result.dataPtr(),__lda,&__info);
+	result.setSymmetricFlag(true);
+	return result;
 }
 
 template<class Matrix>
