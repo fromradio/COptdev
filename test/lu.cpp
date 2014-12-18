@@ -9,8 +9,8 @@ typedef kernel::Vector 							Vector;
 typedef kernel::Matrix 							Matrix;
 typedef COPT::LU<Matrix> 						LU;
 
-const int m = 500;
-const int n = 500;
+const int m = 5;
+const int n = 2;
 int main( int argc , char *argv[] )
 {
 	Matrix mat = Matrix::random(m,m);
@@ -22,8 +22,11 @@ int main( int argc , char *argv[] )
 	Eigen::VectorXd vec(m);
 	for ( int i = 0 ; i < m ; ++ i )
 		vec(i) = v(i);
+	Matrix rhb = Matrix::random(m,n);
 	// std::cout<<"matrix is "<<std::endl<<mat<<std::endl;
 	LU lu(mat);
-	std::cout<<lu.solve(v)<<std::endl;
+	std::cout<<lu.solve(rhb)<<std::endl;
+	std::cout<<lu.inverse()<<std::endl;
+	std::cout<<"result of eigen"<<std::endl<<mm.inverse()<<std::endl;
 	// std::cout<<Eigen::PartialPivLU<Eigen::MatrixXd>(mm).solve(vec)<<std::endl;
 }

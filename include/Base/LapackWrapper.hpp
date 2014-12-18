@@ -52,6 +52,7 @@ int copt_lapack_gelss(index m, index n, index nrhs,
 {
 	throw COException("Unknown type for lapack wrapper!");
 }
+
 template<>
 int copt_lapack_gelss(int m, int n, int nrhs,
 	float *a, int lda, float *b,
@@ -225,6 +226,43 @@ int copt_lapack_getrs( char trans , int n , int nrhs,
 	return dgetrs_(&trans,&n,&nrhs,a,&lda,ipiv,b,&ldb,info);
 }
 
+/** LU inverse */
+template<class index,class scalar>
+int copt_lapack_getri( index n , scalar *a , index lda ,
+				index *ipiv , index *info )
+{
+	throw COException("Unkown type for lapack wrapper!");
+}
+
+template<>
+int copt_lapack_getri( int n , float *a , int lda ,
+				int *ipiv , int *info )
+{
+	float *work = new float[1];
+	int lwork = -1;
+	sgetri_(&n,a,&lda,ipiv,work,&lwork,info);
+	lwork = work[0];
+	delete[]work;
+	work = new float[lwork];
+	int status = sgetri_(&n,a,&lda,ipiv,work,&lwork,info);
+	delete[]work;
+	return status;
+}
+
+template<>
+int copt_lapack_getri( int n , double *a , int lda , 
+				int *ipiv , int *info )
+{
+	double *work = new double[1];
+	int lwork = -1;
+	dgetri_(&n,a,&lda,ipiv,work,&lwork,info);
+	lwork = work[0];
+	delete[] work;
+	work = new double[lwork];
+	int status = dgetri_(&n,a,&lda,ipiv,work,&lwork,info);
+	delete[]work;
+	return status;
+}
 
 }
 
