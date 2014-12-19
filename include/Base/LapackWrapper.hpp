@@ -342,6 +342,145 @@ int copt_lapack_potri( char uplo , int n , double *a,
 	return dpotri_(&uplo,&n,a,&lda,info);
 }
 
+/** qr factorization */
+template<class index,class scalar>
+int copt_lapack_geqrf( index m , index n , scalar *a,
+				index lda , scalar *tau,
+				index *info)
+{
+	throw COException("Unknown type for lapack wrapper!");
+}
+
+template<>
+int copt_lapack_geqrf( int m , int n , float *a,
+				int lda , float *tau,
+				int *info)
+{
+	float *work = new float[1];
+	int lwork = -1;
+	sgeqrf_(&m,&n,a,&lda,tau,work,&lwork,info);
+	lwork = work[0];
+	delete[] work;
+	work = new float[lwork];
+	int status = sgeqrf_(&m,&n,a,&lda,tau,work,&lwork,info);
+	delete[]work;
+	return status;
+}
+
+template<>
+int copt_lapack_geqrf( int m , int n , double *a,
+				int lda , double *tau ,
+				int *info )
+{
+	double *work = new double[1];
+	int lwork = -1;
+	dgeqrf_(&m,&n,a,&lda,tau,work,&lwork,info);
+	lwork = work[0];
+	delete[] work;
+	work = new double[lwork];
+	int status = dgeqrf_(&m,&n,a,&lda,tau,work,&lwork,info);
+	delete[]work;
+	return status;
+}
+
+/** compute Q'*B */
+template<class index , class scalar>
+int copt_lapack_ormqr(char side,char trans,index m , index n,
+				index k,scalar *a , index lda , scalar *tau , scalar *c , index ldc,
+				index *info)
+{
+	throw COException("Unknown type for lapack wrapper!");
+}
+
+template<>
+int copt_lapack_ormqr(char side,char trans,int m,int n,
+				int k,float *a,int lda,float *tau,float *c,int ldc,
+				int *info)
+{
+	float *work = new float[1];
+	int lwork = -1;
+	sormqr_(&side,&trans,&m,&n,&k,a,&lda,tau,c,&ldc,work,&lwork,info);
+	lwork = work[0];
+	delete[] work;
+	work = new float[lwork];
+	int status = sormqr_(&side,&trans,&m,&n,&k,a,&lda,tau,c,&ldc,work,&lwork,info);
+	delete[] work;
+	return status;
+}
+
+template<>
+int copt_lapack_ormqr(char side,char trans,int m,int n,
+				int k, double *a, int lda , double *tau, double *c, int ldc,
+				int *info)
+{
+	double *work = new double[1];
+	int lwork = -1;
+	dormqr_(&side,&trans,&m,&n,&k,a,&lda,tau,c,&ldc,work,&lwork,info);
+	lwork = work[0];
+	delete[] work;
+	work = new double[lwork];
+	int status = dormqr_(&side,&trans,&m,&n,&k,a,&lda,tau,c,&ldc,work,&lwork,info);
+	delete[] work;
+	return status;
+}
+
+/** strsm */
+
+// template<class index,class scalar>
+// int copt_lapack_trsm(char side,char uplo,char transa,char diag,
+// 				index m , index n , scalar alpha, scalar *a, index lda , scalar *b,
+// 				index ldb )
+// {
+// 	throw COException("Unknown type for lapack wrapper!");
+// }
+
+// template<>
+int copt_lapack_trsm(char side,char uplo, char transa, char diag,
+				int m, int n, float alpha, float *a, int lda, float *b,
+				int ldb )
+{
+	return strsm_(&side,&uplo,&transa,&diag,&m,&n,&alpha,a,&lda,b,&ldb);
+}
+
+// template<>
+int copt_lapack_trsm(char side,char uplo,char transa,char diag,
+				int m, int n, double alpha, double *a, int lda, double *b,
+				int ldb )
+{
+	return dtrsm_(&side,&uplo,&transa,&diag,&m,&n,&alpha,a,&lda,b,&ldb);
+}
+
+/** solve QR problem */
+template<class index,class scalar>
+int copt_lapack_geqrs( index m , index n , index nrhs , 
+				scalar *a , index lda , scalar *tau, scalar *b, index ldb,
+				index *info)
+{
+	throw COException("Unknown type for lapack wrapper!");
+}
+
+template<>
+int copt_lapack_geqrs(int m , int n , int nrhs ,
+				float *a , int lda , float *tau , float *b , int ldb,
+				int *info )
+{
+	// compute B: = Q'*B
+	copt_lapack_ormqr('L','T',m,nrhs,n,a,lda,tau,b,ldb,info);
+	// solve R*x = B
+	return copt_lapack_trsm('L','U','N','N',n,nrhs,1.0,a,lda,b,ldb);
+}
+
+template<>
+int copt_lapack_geqrs(int m, int n, int nrhs,
+				double *a, int lda , double *tau, double *b , int ldb,
+				int *info)
+{
+	// compute B:= Q'*B
+	copt_lapack_ormqr('L','T',m,nrhs,n,a,lda,tau,b,ldb,info);
+	// solve R*x = B
+	return copt_lapack_trsm('L','U','N','N',n,nrhs,1.0,a,lda,b,ldb);
+}
+
 }
 
 #endif
