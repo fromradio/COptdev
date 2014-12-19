@@ -68,6 +68,7 @@
 
 #include "LinearAlgo/LUSolver.hpp"
 #include "LinearAlgo/CholeskySolver.hpp"
+#include "LinearAlgo/QRSolver.hpp"
 
 
 
