@@ -170,7 +170,6 @@ public:
 	/*				solve linear system
 	 *
 	 */
-#ifdef USE_LAPACK
 	 Vector lapackSolve( const Vector& vec ){
 		if (__rows != __cols )
 			throw COException("Solving Error: the matrix is not square!");
@@ -187,36 +186,31 @@ public:
 		delete[] a; // delete the temporaray array
 		return v;
 	}
-#endif
 	
-#ifdef EIGEN
-	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec){
-		// currently we use eigen to solve it
-		Eigen::Matrix<scalar,Eigen::Dynamic,Eigen::Dynamic> matrix(__rows,__cols);
-		for ( index i = 0 ; i < __rows ; ++ i )
-		{
-			for ( index j = 0 ;  j < __cols ; ++ j )
-			{
-				matrix(i,j) = this->operator()(i,j);
-			}
-		}
-		Eigen::Matrix<scalar,Eigen::Dynamic,1> vector(vec.size());
-		for ( index i = 0 ; i < vec.size() ; ++ i )
-		{
-			vector(i) = vec[i];
-		}
-		Eigen::Matrix<scalar,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
-		return VectorBase<scalar,index>(result);
-	}
-#endif
-	
-#ifdef USE_LAPACK
+// #ifdef EIGEN
+// 	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec){
+// 		// currently we use eigen to solve it
+// 		Eigen::Matrix<scalar,Eigen::Dynamic,Eigen::Dynamic> matrix(__rows,__cols);
+// 		for ( index i = 0 ; i < __rows ; ++ i )
+// 		{
+// 			for ( index j = 0 ;  j < __cols ; ++ j )
+// 			{
+// 				matrix(i,j) = this->operator()(i,j);
+// 			}
+// 		}
+// 		Eigen::Matrix<scalar,Eigen::Dynamic,1> vector(vec.size());
+// 		for ( index i = 0 ; i < vec.size() ; ++ i )
+// 		{
+// 			vector(i) = vec[i];
+// 		}
+// 		Eigen::Matrix<scalar,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
+// 		return VectorBase<scalar,index>(result);
+// 	}
 	Vector solve( const Vector& vec ){
 		return lapackSolve(vec);
 	}
-#endif
 
-#ifdef USE_LAPACK
+// #ifdef USE_LAPACK
 	Vector leastSquareSolve( const Vector& vec){
 		if( __cols != vec.size() )
 			throw COException("least square error: the size is not consistent!");
@@ -233,7 +227,7 @@ public:
 		delete[]b;
 		return result;
 	}
-#endif
+// #endif
 	
 
 

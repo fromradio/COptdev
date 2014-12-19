@@ -143,7 +143,7 @@ typename LinearSolver<Matrix>::index LinearSolver<Matrix>::colNum() const
 
 
 /*			LU solver of a general linear system. This is actually a
- *			wrapper of famous library lapack.
+ *			wrapper of famous library lapack. 
  *
  *
  */
