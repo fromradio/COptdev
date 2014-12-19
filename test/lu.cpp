@@ -34,15 +34,15 @@ int main( int argc , char *argv[] )
 	std::cout<<lu.solve(rhb)<<std::endl;
 	std::cout<<qr.solve(rhb)<<std::endl; 
 	std::cout<<lu.inverse()<<std::endl;
-	// std::cout<<"solving result"<<std::endl;
-	// std::cout<<cho.solve(mat.transpose()*rhb)<<std::endl;
+	std::cout<<"solving result"<<std::endl;
+	std::cout<<cho.solve(mat.transpose()*rhb)<<std::endl;
 
-	// LU lu2(mtm);
-	// std::cout<<"result of eigen"<<std::endl<<mm.inverse()<<std::endl;
-	// std::cout<<lu2.inverse()<<std::endl;
-	// std::cout<<lu2.inverse()*mtm<<std::endl;
+	LU lu2(mtm);
+	std::cout<<"result of eigen"<<std::endl<<mm.inverse()<<std::endl;
+	std::cout<<lu2.inverse()<<std::endl;
+	std::cout<<lu2.inverse()*mtm<<std::endl;
 
-	// std::cout<<"inverse is "<<std::endl<<cho.inverse()<<std::endl;
-	// std::cout<<cho.inverse()*mtm<<std::endl; 
-	// std::cout<<Eigen::PartialPivLU<Eigen::MatrixXd>(mm).solve(vec)<<std::endl;
+	std::cout<<"inverse is "<<std::endl<<cho.inverse()<<std::endl;
+	std::cout<<cho.inverse()*mtm<<std::endl; 
+	std::cout<<Eigen::PartialPivLU<Eigen::MatrixXd>(mm).solve(vec)<<std::endl;
 }
