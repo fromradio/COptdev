@@ -283,11 +283,14 @@ void VectorBase<scalar,index>::stCombine(const VectorBase& v1,const VectorBase& 
 template<class scalar,class index>
 VectorBase<scalar,index> VectorBase<scalar,index>::random( const index s )
 {
-	std::uniform_real_distribution<scalar> unif(0.0,1.0);
+	std::uniform_real_distribution<typename get_pod_type<scalar>::type> unif(0.0,1.0);
 	VectorBase result(s);
 	for ( int i = 0 ; i < s; ++ i )
 	{
-		result(i) = unif(copt_rand_eng);
+		if(is_real<scalar>::value)
+			ForceAssignment(unif(copt_rand_eng),result(i));
+		else
+			ForceAssignment(std::complex<typename get_pod_type<scalar>::type>(unif(copt_rand_eng),unif(copt_rand_eng)),result(i));
 	}
 	return result;
 }

@@ -16,36 +16,6 @@ inline void readMtxFile(const std::string&filename , T& t)
 	readMtxFile(filename,t,typename T::ObjectCategory());
 }
 
-
-/** force assignment from complex to real */
-template<class T1,class T2>
-void RealToComplex(const T1& t1,T2& t2)
-{
-
-}
-template<class T>
-void ForceAssignment(const T& t1,std::complex<T>& t2)
-{
-	// real to complex
-	if( is_real<T>::value )
-		t2 = std::complex<T>(t1,0);
-}
-
-template<class T>
-void ForceAssignment(const std::complex<T>&t1 , T& t2 )
-{
-	if ( is_real<T>::value )
-		t2 = t1.real();
-}
-
-template<class T>
-void ForceAssignment(const T& t1, T& t2)
-{
-	t2 = t1;
-}
-
-
-
 template<class Matrix>
 inline void readMtxFile( const std::string& filename , Matrix& mat , const matrix_object& )
 {

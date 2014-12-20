@@ -198,6 +198,22 @@ int copt_lapack_getrf( int m , int n , double *a,
 	return dgetrf_(&m,&n,a,&lda,ipiv,info);
 }
 
+template<>
+int copt_lapack_getrf( int m, int n, std::complex<float> *a,
+				int lda, int *ipiv,
+				int *info )
+{
+	return cgetrf_(&m,&n,a,&lda,ipiv,info);
+}
+
+template<>
+int copt_lapack_getrf( int m, int n, std::complex<double> *a,
+				int lda, int *ipiv,
+				int *info)
+{
+	return zgetrf_(&m,&n,a,&lda,ipiv,info);
+}
+
 /** LU solving */
 template<class index,class scalar>
 int copt_lapack_getrs( char trans , index n , index nrhs,
@@ -224,6 +240,24 @@ int copt_lapack_getrs( char trans , int n , int nrhs,
 				int *info)
 {
 	return dgetrs_(&trans,&n,&nrhs,a,&lda,ipiv,b,&ldb,info);
+}
+
+template<>
+int copt_lapack_getrs( char trans, int n, int nrhs,
+				std::complex<float> *a, int lda, int *ipiv,
+				std::complex<float> *b, int ldb,
+				int *info )
+{
+	return cgetrs_(&trans,&n,&nrhs,a,&lda,ipiv,b,&ldb,info);
+}
+
+template<>
+int copt_lapack_getrs( char trans, int n, int nrhs,
+				std::complex<double> *a, int lda, int *ipiv,
+				std::complex<double> *b, int ldb,
+				int *info )
+{
+	return zgetrs_(&trans,&n,&nrhs,a,&lda,ipiv,b,&ldb,info);
 }
 
 /** LU inverse */
@@ -264,6 +298,36 @@ int copt_lapack_getri( int n , double *a , int lda ,
 	return status;
 }
 
+template<>
+int copt_lapack_getri( int n, std::complex<float> *a, int lda,
+				int *ipiv, int *info )
+{
+	std::complex<float> *work = new std::complex<float>[1];
+	int lwork = -1;
+	cgetri_(&n,a,&lda,ipiv,work,&lwork,info);
+	lwork = static_cast<int>(work[0].real());
+	delete[] work;
+	work = new std::complex<float>[lwork];
+	int status = cgetri_(&n,a,&lda,ipiv,work,&lwork,info);
+	delete[]work;
+	return status;
+}
+
+template<>
+int copt_lapack_getri( int n, std::complex<double> *a ,int lda,
+				int *ipiv, int *info )
+{
+	std::complex<double> *work = new std::complex<double>[1];
+	int lwork = -1;
+	zgetri_(&n,a,&lda,ipiv,work,&lwork,info);
+	lwork = static_cast<int>(work[0].real());
+	delete[] work;
+	work = new std::complex<double>[lwork];
+	int status = zgetri_(&n,a,&lda,ipiv,work,&lwork,info);
+	delete[]work;
+	return status;
+}
+
 /** Cholesky factorization */
 template<class index,class scalar>
 int copt_lapack_potrf( char uplo , index n , scalar * a,
@@ -287,6 +351,22 @@ int copt_lapack_potrf( char uplo , int n , double *a ,
 				int *info )
 {
 	return dpotrf_(&uplo,&n,a,&lda,info);
+}
+
+template<>
+int copt_lapack_potrf( char uplo, int n, std::complex<float> *a,
+				int lda,
+				int *info)
+{
+	return cpotrf_(&uplo,&n,a,&lda,info);
+}
+
+template<>
+int copt_lapack_potrf( char uplo, int n, std::complex<double> *a,
+				int lda,
+				int *info)
+{
+	return zpotrf_(&uplo,&n,a,&lda,info);
 }
 
 /** Cholesky solving */
@@ -317,6 +397,24 @@ int copt_lapack_potrs(char uplo , int n , int nrhs,
 	return dpotrs_(&uplo,&n,&nrhs,a,&lda,b,&ldb,info);
 }
 
+template<>
+int copt_lapack_potrs( char uplo, int n, int nrhs,
+				std::complex<float> *a, int lda, std::complex<float> *b,
+				int ldb,
+				int *info)
+{
+	return cpotrs_(&uplo,&n,&nrhs,a,&lda,b,&ldb,info);
+}
+
+template<>
+int copt_lapack_potrs( char uplo, int n, int nrhs,
+				std::complex<double> *a, int lda, std::complex<double> *b,
+				int ldb,
+				int *info )
+{
+	return zpotrs_(&uplo,&n,&nrhs,a,&lda,b,&ldb,info);
+}
+
 /** Cholesky inverse */
 template<class index,class scalar>
 int copt_lapack_potri( char uplo , index n , scalar *a,
@@ -340,6 +438,22 @@ int copt_lapack_potri( char uplo , int n , double *a,
 				int *info)
 {
 	return dpotri_(&uplo,&n,a,&lda,info);
+}
+
+template<>
+int copt_lapack_potri( char uplo, int n, std::complex<float> *a,
+				int lda,
+				int *info )
+{
+	return cpotri_(&uplo,&n,a,&lda,info);
+}
+
+template<>
+int copt_lapack_potri( char uplo, int n, std::complex<double> *a,
+				int lda,
+				int *info )
+{
+	return zpotri_(&uplo,&n,a,&lda,info);
 }
 
 /** qr factorization */
@@ -379,6 +493,38 @@ int copt_lapack_geqrf( int m , int n , double *a,
 	delete[] work;
 	work = new double[lwork];
 	int status = dgeqrf_(&m,&n,a,&lda,tau,work,&lwork,info);
+	delete[]work;
+	return status;
+}
+
+template<>
+int copt_lapack_geqrf( int m , int n , std::complex<float> *a,
+				int lda , std::complex<float> *tau,
+				int *info )
+{
+	std::complex<float> *work = new std::complex<float>[1];
+	int lwork = -1;
+	cgeqrf_(&m,&n,a,&lda,tau,work,&lwork,info);
+	lwork = static_cast<int>(work[0].real());
+	delete[] work;
+	work = new std::complex<float>[lwork];
+	int status = cgeqrf_(&m,&n,a,&lda,tau,work,&lwork,info);
+	delete[] work;
+	return status;
+}
+
+template<>
+int copt_lapack_geqrf( int m , int n , std::complex<double> *a,
+				int lda , std::complex<double>* tau,
+				int *info)
+{
+	std::complex<double> *work = new std::complex<double>[1];
+	int lwork = -1;
+	zgeqrf_(&m,&n,a,&lda,tau,work,&lwork,info);
+	lwork = static_cast<int>(work[0].real());
+	delete[] work;
+	work = new std::complex<double>[lwork];
+	int status = zgeqrf_(&m,&n,a,&lda,tau,work,&lwork,info);
 	delete[]work;
 	return status;
 }
@@ -424,6 +570,38 @@ int copt_lapack_ormqr(char side,char trans,int m,int n,
 	return status;
 }
 
+template<>
+int copt_lapack_ormqr( char side,char trans, int m, int n,
+				int k, std::complex<float> *a, int lda, std::complex<float> *tau,
+				std::complex<float> *c, int ldc,
+				int *info)
+{
+	std::complex<float> *work = new std::complex<float>[1];
+	int lwork = -1;
+	cunmqr_(&side,&trans,&m,&n,&k,a,&lda,tau,c,&ldc,work,&lwork,info);
+	lwork = static_cast<int>(work[0].real());
+	delete[] work;
+	work = new std::complex<float>[lwork];
+	int status = cunmqr_(&side,&trans,&m,&n,&k,a,&lda,tau,c,&ldc,work,&lwork,info);
+	return status;
+}
+
+template<>
+int copt_lapack_ormqr( char side, char trans, int m, int n,
+				int k, std::complex<double> *a, int lda, std::complex<double> *tau,
+				std::complex<double> *c, int ldc,
+				int *info )
+{
+	std::complex<double> *work = new std::complex<double>[1];
+	int lwork = -1;
+	zunmqr_(&side,&trans,&m,&n,&k,a,&lda,tau,c,&ldc,work,&lwork,info);
+	lwork = static_cast<int>(work[0].real());
+	delete[] work;
+	work = new std::complex<double>[lwork];
+	int status = zunmqr_(&side,&trans,&m,&n,&k,a,&lda,tau,c,&ldc,work,&lwork,info);
+	return status;
+}
+
 /** strsm */
 
 // template<class index,class scalar>
@@ -448,6 +626,20 @@ int copt_lapack_trsm(char side,char uplo,char transa,char diag,
 				int ldb )
 {
 	return dtrsm_(&side,&uplo,&transa,&diag,&m,&n,&alpha,a,&lda,b,&ldb);
+}
+
+int copt_lapack_trsm(char side,char uplo, char transa, char diag,
+				int m, int n, std::complex<float> alpha, std::complex<float> *a, int lda,
+				std::complex<float> *b, int ldb )
+{
+	return ctrsm_(&side,&uplo,&transa,&diag,&m,&n,&alpha,a,&lda,b,&ldb);
+}
+
+int copt_lapack_trsm(char side, char uplo, char transa, char diag,
+				int m, int n, std::complex<double> alpha, std::complex<double> *a, int lda,
+				std::complex<double> *b, int ldb )
+{
+	return ztrsm_(&side,&uplo,&transa,&diag,&m,&n,&alpha,a,&lda,b,&ldb);
 }
 
 /** solve QR problem */
@@ -479,6 +671,30 @@ int copt_lapack_geqrs(int m, int n, int nrhs,
 	copt_lapack_ormqr('L','T',m,nrhs,n,a,lda,tau,b,ldb,info);
 	// solve R*x = B
 	return copt_lapack_trsm('L','U','N','N',n,nrhs,1.0,a,lda,b,ldb);
+}
+
+template<>
+int copt_lapack_geqrs(int m, int n, int nrhs,
+				std::complex<float> *a, int lda, std::complex<float> *tau,
+				std::complex<float> *b, int ldb,
+				int *info )
+{
+	// compute B:= Q'*B
+	copt_lapack_ormqr('L','C',m,nrhs,n,a,lda,tau,b,ldb,info);
+	// solve R*x = B
+	return copt_lapack_trsm('L','U','N','N',n,nrhs,std::complex<float>(1.0,0),a,lda,b,ldb);
+}
+
+template<>
+int copt_lapack_geqrs(int m, int n,int nrhs,
+				std::complex<double> *a, int lda, std::complex<double> *tau,
+				std::complex<double> *b, int ldb,
+				int *info )
+{
+	// compute B:= Q'*B
+	copt_lapack_ormqr('L','C',m,nrhs,n,a,lda,tau,b,ldb,info);
+	// solve R*x = B
+	return copt_lapack_trsm('L','U','N','N',n,nrhs,std::complex<double>(1.0,0),a,lda,b,ldb);
 }
 
 }

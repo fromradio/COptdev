@@ -233,6 +233,29 @@ struct scalar_function_tag{};
 struct log_scalar_function_tag:public scalar_function_tag{};
 struct abs_scalar_function_tag:public scalar_function_tag{};
 
+
+/** force assignment from complex to real */
+template<class T>
+void ForceAssignment(const T& t1,std::complex<T>& t2)
+{
+	// real to complex
+	if( is_real<T>::value )
+		t2 = std::complex<T>(t1,0);
+}
+
+template<class T>
+void ForceAssignment(const std::complex<T>&t1 , T& t2 )
+{
+	if ( is_real<T>::value )
+		t2 = t1.real();
+}
+
+template<class T>
+void ForceAssignment(const T& t1, T& t2)
+{
+	t2 = t1;
+}
+
 }// End of namespace COPT
 
 
