@@ -234,7 +234,10 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::operator*(const VectorBase<sc
 		blas::copt_blas_symv(CblasColMajor,CblasUpper,__rows,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 	else if (__trans)
 	{
-		blas::copt_blas_gemv(CblasColMajor,CblasTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemv(CblasColMajor,CblasTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+		else if ( is_complex<scalar>::value )
+			blas::copt_blas_gemv(CblasColMajor,CblasConjTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 	}
 	else
 	{
@@ -250,11 +253,26 @@ MatrixBase<scalar,index> MatrixBase<scalar,index>::operator*(const MatrixBase& m
 		throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
 	MatrixBase result(__rows,mat.cols());
 	if(__trans&&mat.isTranspose())
-		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+	{
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+		else if( is_complex<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasConjTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+	}
 	else if(__trans)
-		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+	{
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+		else if ( is_complex<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+	}
 	else if (mat.isTranspose())
-		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+	{
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+		else if( is_complex<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasConjTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+	}
 	else
 		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.rows(),0.0,result.dataPtr(),__rows);
 	return result;

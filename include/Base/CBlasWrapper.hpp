@@ -188,6 +188,17 @@ void copt_blas_gemv(const enum CBLAS_ORDER order , const enum CBLAS_TRANSPOSE Tr
 }
 
 /** symmetric multiplication */
+
+template<class index,class scalar>
+void copt_blas_symv(const enum CBLAS_ORDER order, const enum CBLAS_UPLO Uplo,
+					const index N, const scalar alpha, const scalar *A,
+					const index lda, const scalar *X , const index incX,
+					const scalar beta, scalar *Y , const index incY )
+{
+	throw COPT::COException("Unknown type for blas wrapper!");
+}
+
+template<>
 void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
 					const int N , const float alpha , const float *A ,
 					const int lda , const float *X , const int incX,
@@ -196,6 +207,7 @@ void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
 	cblas_ssymv(order,Uplo,N,alpha,A,lda,X,incX,beta,Y,incY);
 }
 
+template<>
 void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
 					const int N , const double alpha , const double *A , 
 					const int lda , const double *X , const int incX,
@@ -204,21 +216,23 @@ void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
 	cblas_dsymv(order,Uplo,N,alpha,A,lda,X,incX,beta,Y,incY);
 }
 
-// void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
-// 					const int N , const std::complex<float>&alpha , const std::complex<float>*A,
-// 					const int lda , const std::complex<float> *X , const int incX,
-// 					const std::complex<float>& beta , std::complex<float> *Y , const int incY)
-// {
-// 	cblas_csymv(order,Uplo,N,&alpha,A,lda,X,incX,&beta,Y,incY);
-// }
+void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
+					const int N , const std::complex<float>&alpha , const std::complex<float>*A,
+					const int lda , const std::complex<float> *X , const int incX,
+					const std::complex<float>& beta , std::complex<float> *Y , const int incY)
+{
+	return;
+	// cblas_csymv(order,Uplo,N,&alpha,A,lda,X,incX,&beta,Y,incY);
+}
 
-// void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
-// 					const int N , const std::complex<double>& alpha , const std::complex<double> *A,
-// 					const int lda , const std::complex<double>* X , const int incX , 
-// 					const std::complex<double>& beta , std::complex<double> *Y , const int incY)
-// {
-// 	cblas_zsymv(order,Uplo,N,&alpha,A,lda,X,incX,&beta,Y,incY);
-// }
+void copt_blas_symv(const enum CBLAS_ORDER order , const enum CBLAS_UPLO Uplo,
+					const int N , const std::complex<double>& alpha , const std::complex<double> *A,
+					const int lda , const std::complex<double>* X , const int incX , 
+					const std::complex<double>& beta , std::complex<double> *Y , const int incY)
+{
+	return;
+	// cblas_zsymv(order,Uplo,N,&alpha,A,lda,X,incX,&beta,Y,incY);
+}
 
 /** level three operations */
 
