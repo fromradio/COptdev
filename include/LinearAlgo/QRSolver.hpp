@@ -32,17 +32,12 @@ private:
 	Matrix doSolve( const Matrix& b );
 public:
 
+	/** constructor and deconstructor */
+	//%{
 	QR();
 	QR(const Matrix& mat );
 	~QR();
-	// void compute( const Matrix& mat);
-
-	// void squareValidation () const;
-
-	// Vector solve ( const Vector& b );
-	// Matrix solve ( const Vector& b );
-
-	// Matrix inverse();
+	//%}
 
 	void clear();
 };

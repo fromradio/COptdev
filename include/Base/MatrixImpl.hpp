@@ -573,11 +573,16 @@ void MatrixBase<scalar,index>::setRandom(const index rows,const index cols)
 {
 	if(rows<0||cols<0)
 		throw COException("Please make sure that the number of row and column is bigger than zero!");
-	std::uniform_real_distribution<scalar> unif(0.0,1.0);
+	std::uniform_real_distribution<typename get_pod_type<scalar>::type> unif(0.0,1.0);
 	this->resize(rows,cols);
 	for ( int i = 0 ; i < rows ; ++ i )
 		for ( int j = 0 ; j < cols ; ++ j )
-			this->operator()(i,j)=unif(copt_rand_eng);
+		{
+			if(is_real<scalar>::value)
+				ForceAssignment(unif(copt_rand_eng),this->operator()(i,j));
+			else
+				ForceAssignment(std::complex<typename get_pod_type<scalar>::type>(unif(copt_rand_eng),unif(copt_rand_eng)),this->operator()(i,j));
+		}
 }
 
 template<class scalar,class index>

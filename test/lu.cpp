@@ -4,7 +4,7 @@
 #include <Header>
 
 
-typedef COPT::KernelTrait<double,int> 			kernel;
+typedef COPT::KernelTrait<std::complex<double>,int> 			kernel;
 typedef kernel::Vector 							Vector;
 typedef kernel::Matrix 							Matrix;
 typedef COPT::LU<Matrix> 						LU;
@@ -16,14 +16,14 @@ const int n = 2;
 int main( int argc , char *argv[] )
 {
 	Matrix mat = Matrix::random(m,m);
-	Eigen::MatrixXd mm(m,m);
-	for (int i = 0 ; i < m ; ++ i )
-		for ( int j = 0 ; j < m ; ++ j )
-			mm(i,j) = mat(i,j);
+	// Eigen::MatrixXd mm(m,m);
+	// for (int i = 0 ; i < m ; ++ i )
+	// 	for ( int j = 0 ; j < m ; ++ j )
+	// 		mm(i,j) = mat(i,j);
 	Vector v = Vector::random(m);
-	Eigen::VectorXd vec(m);
-	for ( int i = 0 ; i < m ; ++ i )
-		vec(i) = v(i);
+	// Eigen::VectorXd vec(m);
+	// for ( int i = 0 ; i < m ; ++ i )
+		// vec(i) = v(i);
 	Matrix rhb = Matrix::random(m,n);
 	// std::cout<<"matrix is "<<std::endl<<mat<<std::endl;
 	LU lu(mat);
@@ -38,11 +38,11 @@ int main( int argc , char *argv[] )
 	std::cout<<cho.solve(mat.transpose()*rhb)<<std::endl;
 
 	LU lu2(mtm);
-	std::cout<<"result of eigen"<<std::endl<<mm.inverse()<<std::endl;
+	// std::cout<<"result of eigen"<<std::endl<<mm.inverse()<<std::endl;
 	std::cout<<lu2.inverse()<<std::endl;
 	std::cout<<lu2.inverse()*mtm<<std::endl;
 
 	std::cout<<"inverse is "<<std::endl<<cho.inverse()<<std::endl;
 	std::cout<<cho.inverse()*mtm<<std::endl; 
-	std::cout<<Eigen::PartialPivLU<Eigen::MatrixXd>(mm).solve(vec)<<std::endl;
+	// std::cout<<Eigen::PartialPivLU<Eigen::MatrixXd>(mm).solve(vec)<<std::endl;
 }
