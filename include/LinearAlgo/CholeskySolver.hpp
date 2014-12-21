@@ -91,7 +91,10 @@ void CholeskySolver<Matrix>::doCompute( const Matrix& mat )
 	blas::copt_blas_copy(mat.size(),mat.dataPtr(),1,__a,1);
 	copt_lapack_potrf('U',this->rowNum(),__a,this->lda(),&__info);
 	if( __info != 0 )
-		std::cerr<<"Warning in Cholesky solver: something computation is not wrong!"<<std::endl;
+	{
+		std::cout<<__info<<std::endl;
+		std::cerr<<"Warning in Cholesky solver: something computation is wrong!"<<std::endl;
+	}
 }
 
 template<class Matrix>

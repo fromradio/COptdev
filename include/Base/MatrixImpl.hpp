@@ -259,12 +259,15 @@ MatrixBase<scalar,index> MatrixBase<scalar,index>::operator*(const MatrixBase& m
 		else if( is_complex<scalar>::value )
 			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasConjTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
 	}
-	else if(__trans)
+	else if( __trans )
 	{
+		std::cout<<"right"<<std::endl;
 		if( is_real<scalar>::value )
 			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
-		else if ( is_complex<scalar>::value )
+		else if ( is_complex<scalar>::value ){
+			std::cout<<"here"<<std::endl;
 			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+		}
 	}
 	else if (mat.isTranspose())
 	{
@@ -599,7 +602,10 @@ void MatrixBase<scalar,index>::mtm( MatrixBase& mat ) const
 	int m = this->rows();
 	int n = this->cols();
 	mat.resize(n,n);
-	blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
+	if ( is_real<scalar>::value )
+		blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
+	else
+		blas::copt_blas_herk(CblasColMajor,CblasUpper,CblasConjTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
 	/** remember to assign the other half */
 	for ( int i = 0 ; i < mat.rows() ; ++ i )
 		for ( int j = 0 ; j < i ; ++ j )

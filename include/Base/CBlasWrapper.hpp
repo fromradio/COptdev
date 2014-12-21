@@ -304,6 +304,22 @@ void copt_blas_syrk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
 	cblas_zsyrk(Order,Uplo,Trans,n,k,&alpha,A,lda,&beta,C,ldc);
 }
 
+void copt_blas_herk(const enum CBLAS_ORDER Order,const enum CBLAS_UPLO Uplo,
+				const enum CBLAS_TRANSPOSE Trans, const int n, const int k,
+				const float alpha , const std::complex<float> *A , const int lda,
+				const float beta, std::complex<float> *C , const int ldc )
+{
+	cblas_cherk( Order, Uplo, Trans, n, k, alpha, A, lda, beta, C, ldc);
+}
+
+void copt_blas_herk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
+				const enum CBLAS_TRANSPOSE Trans, const int n, const int k,
+				const double alpha, const std::complex<double>* A, const int lda,
+				const double beta, std::complex<double> *C , const int ldc)
+{
+	cblas_zherk(Order,Uplo,Trans,n,k,alpha,A,lda,beta,C,ldc);
+}
+
 /*				summation
 */
 
