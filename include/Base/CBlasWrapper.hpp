@@ -306,6 +306,22 @@ void copt_blas_syrk(const enum CBLAS_ORDER Order, const enum CBLAS_UPLO Uplo,
 
 void copt_blas_herk(const enum CBLAS_ORDER Order,const enum CBLAS_UPLO Uplo,
 				const enum CBLAS_TRANSPOSE Trans, const int n, const int k,
+				const float alpha , const float *A , const int lda,
+				const float beta, float *C , const int ldc )
+{
+	throw COPT::COException("Unknown type for blas wrapper!");
+}
+
+void copt_blas_herk(const enum CBLAS_ORDER Order,const enum CBLAS_UPLO Uplo,
+				const enum CBLAS_TRANSPOSE Trans, const int n, const int k,
+				const double alpha , const double *A , const int lda,
+				const double beta, double *C , const int ldc )
+{
+	throw COPT::COException("Unknown type for blas wrapper!");
+}
+
+void copt_blas_herk(const enum CBLAS_ORDER Order,const enum CBLAS_UPLO Uplo,
+				const enum CBLAS_TRANSPOSE Trans, const int n, const int k,
 				const float alpha , const std::complex<float> *A , const int lda,
 				const float beta, std::complex<float> *C , const int ldc )
 {

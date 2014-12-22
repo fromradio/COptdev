@@ -172,6 +172,9 @@ private:
 	Eigen::LDLT<Eigen::MatrixXd>			__ldlt;
 #endif
 
+	// using the LU factorization for storing the nessessary information 
+	LU<Matrix>						__lu;
+
 	/** before solving */
 	void solvingBegin();
 
@@ -227,17 +230,22 @@ template<class Problem,class Time>
 void BPSolver<Problem,Time>::doCompute()
 {
 	// get the matrix A^TA+I
-	__p.matA().mtm(__mat);
+	Matrix mtm;
+	__p.matA().mtm(mtm);
 	index dim = __p.dimension();
 	for ( int i = 0 ; i < dim ; ++ i )
-		__mat(i,i) += 1.0;
-#ifdef EIGEN
-	Eigen::MatrixXd m(dim,dim);
-	for ( int i = 0 ; i < dim ; ++ i )
-		for ( int j = 0 ; j < dim ; ++ j )
-			m(i,j) = __mat(i,j);
-	__ldlt.compute(m);
-#endif
+		mtm(i,i) += 1.0;
+
+	__lu.compute(mtm);
+
+	__mat = __p.matA().transpose();
+// #ifdef EIGEN
+// 	Eigen::MatrixXd m(dim,dim);
+// 	for ( int i = 0 ; i < dim ; ++ i )
+// 		for ( int j = 0 ; j < dim ; ++ j )
+// 			m(i,j) = __mat(i,j);
+// 	__ldlt.compute(m);
+// #endif
 }
 
 template<class Problem,class Time>
@@ -260,16 +268,17 @@ void BPSolver<Problem,Time>::xSubproblem()
 template<class Problem,class Time>
 void BPSolver<Problem,Time>::ySubproblem()
 {
-#ifdef EIGEN
-	Vector rhb = __x-__mu*__lambda_x+__p.matA().transpose()*(__p.rhB()-__mu*__lambda_y);
-	Eigen::VectorXd r(rhb.size());
-	int dim = __p.dimension();
-	for ( int i = 0 ; i < dim ; ++ i )
-		r(i) = rhb(i);
-	Eigen::VectorXd y = __ldlt.solve(r);
-	for ( int i = 0 ; i< dim ; ++ i )
-		__y(i) = y(i);
-#endif
+	__y = __lu.solve(__mat*(__p.rhB()-__mu*__lambda_y));
+// #ifdef EIGEN
+// 	Vector rhb = __x-__mu*__lambda_x+__p.matA().transpose()*(__p.rhB()-__mu*__lambda_y);
+// 	Eigen::VectorXd r(rhb.size());
+// 	int dim = __p.dimension();
+// 	for ( int i = 0 ; i < dim ; ++ i )
+// 		r(i) = rhb(i);
+// 	Eigen::VectorXd y = __ldlt.solve(r);
+// 	for ( int i = 0 ; i< dim ; ++ i )
+// 		__y(i) = y(i);
+// #endif
 }
 
 template<class Problem,class Time>
