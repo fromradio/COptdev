@@ -12,7 +12,7 @@ namespace COPT
  *
  */
 template<class Matrix>
-class CholeskySolver
+class Cholesky
 	:
 	public LinearSolver<Matrix>
 {
@@ -42,9 +42,9 @@ public:
 	/** constructor and deconstructor */
 	//%{
 	/** default constructor */
-	CholeskySolver();
-	CholeskySolver(const Matrix& mat);
-	~CholeskySolver();
+	Cholesky();
+	Cholesky(const Matrix& mat);
+	~Cholesky();
 	//%}
 
 	/** inver matrix */
@@ -55,14 +55,14 @@ public:
 };
 
 template<class Matrix>
-CholeskySolver<Matrix>::CholeskySolver()
+Cholesky<Matrix>::Cholesky()
 	:
 	__a(NULL)
 {
 }
 
 template<class Matrix>
-CholeskySolver<Matrix>::CholeskySolver( const Matrix& mat )
+Cholesky<Matrix>::Cholesky( const Matrix& mat )
 	:
 	__a(NULL)
 {
@@ -70,13 +70,13 @@ CholeskySolver<Matrix>::CholeskySolver( const Matrix& mat )
 }
 
 template<class Matrix>
-CholeskySolver<Matrix>::~CholeskySolver()
+Cholesky<Matrix>::~Cholesky()
 {
 	clear();
 }
 
 template<class Matrix>
-void CholeskySolver<Matrix>::doCompute( const Matrix& mat )
+void Cholesky<Matrix>::doCompute( const Matrix& mat )
 {
 	if (!validation(mat))
 	{
@@ -98,12 +98,12 @@ void CholeskySolver<Matrix>::doCompute( const Matrix& mat )
 }
 
 template<class Matrix>
-typename CholeskySolver<Matrix>::Vector CholeskySolver<Matrix>::doSolve( const Vector& b )
+typename Cholesky<Matrix>::Vector Cholesky<Matrix>::doSolve( const Vector& b )
 {
 	if ( this->rowNum() != b.size() )
 	{
 		std::cerr<<"The order of matrix is "<<this->rowNum()<<" and the dimension of vector is "<<b.size()<<std::endl;
-		throw COException("CholeskySolver solving error: the size if not consistent!");
+		throw COException("Cholesky solving error: the size if not consistent!");
 	}
 	Vector result(b);
 	copt_lapack_potrs('U',this->rowNum(),1,__a,this->lda(),result.dataPtr(),result.size(),&__info);
@@ -113,12 +113,12 @@ typename CholeskySolver<Matrix>::Vector CholeskySolver<Matrix>::doSolve( const V
 }
 
 template<class Matrix>
-Matrix CholeskySolver<Matrix>::doSolve( const Matrix& b )
+Matrix Cholesky<Matrix>::doSolve( const Matrix& b )
 {
 	if ( this->rowNum() != b.rows() )
 	{
 		std::cerr<<"The order of matrix is "<<this->rowNum()<<" and the dimension of vector is "<<b.rows()<<std::endl;
-		throw COException("CholeskySolver solving error: the size if not consistent!");
+		throw COException("Cholesky solving error: the size if not consistent!");
 	}
 	Matrix result(b);
 	copt_lapack_potrs('U',this->rowNum(),b.cols(),__a,this->lda(),result.dataPtr(),result.rows(),&__info);
@@ -128,13 +128,13 @@ Matrix CholeskySolver<Matrix>::doSolve( const Matrix& b )
 }
 
 template<class Matrix>
-bool CholeskySolver<Matrix>::validation( const Matrix& mat )const
+bool Cholesky<Matrix>::validation( const Matrix& mat )const
 {
 	return mat.isSymmetric();
 }
 
 template<class Matrix>
-Matrix CholeskySolver<Matrix>::inverse( )
+Matrix Cholesky<Matrix>::inverse( )
 {
 	this->squareValidation();
 	Matrix result(this->rowNum(),this->rowNum(),__a);
@@ -144,7 +144,7 @@ Matrix CholeskySolver<Matrix>::inverse( )
 }
 
 template<class Matrix>
-void CholeskySolver<Matrix>::clear()
+void Cholesky<Matrix>::clear()
 {
 	SAFE_DELETE_ARRAY(__a);
 }

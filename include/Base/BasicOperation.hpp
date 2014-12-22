@@ -76,5 +76,15 @@ protected:
 /** random engine */
 std::mt19937 copt_rand_eng(time(NULL));
 
+
+/** the types of linear solvers that COPT contains now */
+enum LinearSolverType
+{
+LUSolver,				// LU solver for matrices (lapack)
+QRSolver,				// QR solver for matrices (lapack)
+CholeskySolver,			// Cholesky solver for symmetric semidefine matrix (lapack)
+EigenWrap				// Eigen solver from third party eigen might be used
+};
+
 } // End of namespace COPT
 #endif

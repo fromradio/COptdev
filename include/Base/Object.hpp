@@ -31,9 +31,19 @@ public:
 	}
 
 	virtual ~COPTObject(){}
+
+	/** return the information about the COPT object */
 	const std::string& info() {return __str;}
+
+	/** standard operations for a general concern */
+	virtual void swap( COPTObject& obj );
 
 };
 
+void COPTObject::swap( COPTObject& obj)
+{
 }
+
+
+}// End of namespace COPT
 #endif // OBJECT_HPP__
