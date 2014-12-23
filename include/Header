@@ -61,9 +61,10 @@
 #include "Algorithms/omp.hpp"
 #include "Algorithms/ProximalOperator.hpp"
 #include "Algorithms/Lasso.hpp"
-#include "Algorithms/Eigenvalue.hpp"
 
+/** Linear Algorithms */
 #include "LinearAlgo/LinearSolver.hpp"
+#include "LinearAlgo/Eigenvalue.hpp"
 #include "LinearAlgo/LUSolver.hpp"
 #include "LinearAlgo/CholeskySolver.hpp"
 #include "LinearAlgo/QRSolver.hpp"
