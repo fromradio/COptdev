@@ -25,6 +25,8 @@ class VectorBase
 public:
 	/** 	scalar type 	*/
 	typedef 				FT						scalar;
+	/** 	the pod type of scalar */
+	typedef typename get_pod_type<scalar>::type 	podscalar;
 	/** 	size type 		*/
 	typedef 				I 						index;
 	/**		define the category 	*/
@@ -165,10 +167,10 @@ public:
 	/*
 	 * 			Square norm of the VectorBase
 	 */
-	scalar squaredNorm() const;
+	podscalar squaredNorm() const;
 
-	scalar absNorm() const{
-		scalar result = 0;
+	podscalar absNorm() const{
+		podscalar result = 0;
 		for (index i = 0 ; i < this->size() ; ++ i )
 		{
 			result += std::abs(this->operator[](i));
@@ -176,7 +178,7 @@ public:
 		return result;
 	}
 	/** normalize current vector and previous norm is returned*/
-	scalar normalize();
+	podscalar normalize();
 	
 	// dot operation
 	scalar dot(const VectorBase& vec) const{

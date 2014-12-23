@@ -37,7 +37,7 @@ bool VectorBase<scalar,index>::operator<(const VectorBase<scalar,index>& vec)con
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
-		if(this->operator[](i)>=vec[i])
+		if(LargerThan(this->operator[](i),vec[i]))
 			return false;
 	}
 	return true;
@@ -48,7 +48,7 @@ bool VectorBase<scalar,index>::operator<(const scalar s)const
 {
 	for ( index i = 0 ; i < this->size() ; ++ i )
 	{
-		if(this->operator[](i)>=s)
+		if(LargerThan(this->operator[](i),s))
 			return false;
 	}
 	return true;
@@ -60,7 +60,7 @@ bool VectorBase<scalar,index>::operator<=(const VectorBase<scalar,index>& vec)co
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
-		if(this->operator[](i)>vec[i])
+		if(StrictLargerThan(this->operator[](i),vec[i]))
 			return false;
 	}
 	return true;
@@ -71,7 +71,7 @@ bool VectorBase<scalar,index>::operator<=(const scalar s)const
 {
 	for ( index i = 0 ; i < this->size() ; ++ i )
 	{
-		if(this->operator[](i)>s)
+		if(StrictLargerThan(this->operator[](i),s))
 			return false;
 	}
 	return true;
@@ -83,7 +83,7 @@ bool VectorBase<scalar,index>::operator>(const VectorBase<scalar,index>& vec)con
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
-		if(this->operator[](i)<=vec[i])
+		if(LessThan(this->operator[](i),vec[i]))
 			return false;
 	}
 	return true;
@@ -94,7 +94,7 @@ bool VectorBase<scalar,index>::operator>(const scalar s)const
 {
 	for ( index i = 0 ; i < this->size() ; ++ i )
 	{
-		if(this->operator[](i)<=s)
+		if(LessThan(this->operator[](i),s))
 			return false;
 	}
 	return true;
@@ -106,7 +106,7 @@ bool VectorBase<scalar,index>::operator>=(const VectorBase<scalar,index>& vec)co
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
-		if(this->operator[](i)<vec[i])
+		if(StrictLessThan(this->operator[](i),vec[i]))
 			return false;
 	}
 	return true;
@@ -117,7 +117,7 @@ bool VectorBase<scalar,index>::operator>=(const scalar s)const
 {
 	for ( index i = 0 ; i < this->size() ; ++ i )
 	{
-		if(this->operator[](i)<s)
+		if(StrictLessThan(this->operator[](i),s))
 			return false;
 	}
 	return true;
@@ -170,16 +170,16 @@ bool VectorBase<scalar,index>::operator!=(const scalar s)const
 }
 
 template<class scalar,class index>
-typename VectorBase<scalar,index>::scalar VectorBase<scalar,index>::squaredNorm() const
+typename VectorBase<scalar,index>::podscalar VectorBase<scalar,index>::squaredNorm() const
 {
-	scalar norm = blas::copt_blas_nrm2(this->size(),this->dataPtr(),this->interval());
+	podscalar norm = blas::copt_blas_nrm2(this->size(),this->dataPtr(),this->interval());
 	return norm*norm;
 }
 
 template<class scalar,class index>
-scalar VectorBase<scalar,index>::normalize()
+typename VectorBase<scalar,index>::podscalar VectorBase<scalar,index>::normalize()
 {
-	scalar norm = std::sqrt(squaredNorm());
+	podscalar norm = std::sqrt(squaredNorm());
 	scale(1.0/norm);
 	return norm;
 }

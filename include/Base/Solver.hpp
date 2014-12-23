@@ -31,6 +31,7 @@ public:
 protected:
 	typedef typename kernel::index 				index;
 	typedef typename kernel::scalar 			scalar;
+	typedef typename get_pod_type<scalar>::type podscalar;
 	typedef typename kernel::Vector 			Vector;
 
 	/** the journal list of solver */
@@ -42,9 +43,9 @@ protected:
 	/** final iteration number */
 	index 				__iter_num;
 	/** error threshold */
-	scalar 				__thresh;
+	podscalar			__thresh;
 	/** final estimated error */
-	scalar 				__estimated_error;
+	podscalar 			__estimated_error;
 	/** the terminal type of solver */
 	TerminalType 		__terminal_type;
 
@@ -62,18 +63,18 @@ protected:
 	/** an iteration 
 	 *  the estimated error is returned for iteration
 	 */
-	virtual scalar doOneIteration() = 0;
+	virtual podscalar doOneIteration() = 0;
 
 public:
 	typedef solver_object 				ObjectCategory;
 	/** default constructor */
 	GeneralSolver(
 		const index maxiteration = 1000,
-		const scalar thresh = 1e-8);
+		const podscalar thresh = 1e-8);
 	/** virtual deconstructor */
 	virtual ~GeneralSolver(){}
 	/** one single iteration */
-	scalar oneIteration();
+	podscalar oneIteration();
 	/** kernel function: solve the problem */
 	void solve();
 	/** kernel function: compute or initialize the problem */
@@ -82,16 +83,16 @@ public:
 
 	/** getter and setter */
 	//%{
-	void 	setMaxIteration(const index maxiteration);
-	index 	maxIterationNumber() const;
-	void 	setIterationNumber(const index iter);
-	index 	iterationNumber() const;
-	void 	setThreshold( const scalar thresh);
-	scalar 	threshold() const;
-	void 	setEstimatedError(const scalar erro);
-	scalar 	estimatedError() const;
+	void 		setMaxIteration(const index maxiteration);
+	index 		maxIterationNumber() const;
+	void 		setIterationNumber(const index iter);
+	index 		iterationNumber() const;
+	void 		setThreshold( const podscalar thresh);
+	podscalar 	threshold() const;
+	void 		setEstimatedError(const podscalar error);
+	podscalar 	estimatedError() const;
 	/** compute the objective function */
-	virtual scalar objective() const = 0;
+	virtual podscalar objective() const = 0;
 	/** get the result */
 	virtual const Vector& result() const = 0;
 	//%}
@@ -102,7 +103,7 @@ public:
 template<class kernel,class Time>
 GeneralSolver<kernel,Time>::GeneralSolver(
 	const index maxiteration,
-	const scalar thresh)
+	const podscalar thresh)
 	:
 	__journal(*this),
 	__max_iteration(maxiteration),
@@ -158,10 +159,10 @@ void GeneralSolver<kernel,Time>::solve()
 }
 
 template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::scalar GeneralSolver<kernel,Time>::oneIteration()
+typename GeneralSolver<kernel,Time>::podscalar GeneralSolver<kernel,Time>::oneIteration()
 {
 	__journal.iterationBegin();
-	scalar e = this->doOneIteration();
+	podscalar e = this->doOneIteration();
 	__journal.iterationEnd();
 	return e;
 }
@@ -191,25 +192,25 @@ typename GeneralSolver<kernel,Time>::index GeneralSolver<kernel,Time>::iteration
 }
 
 template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::setThreshold( const scalar thresh )
+void GeneralSolver<kernel,Time>::setThreshold( const podscalar thresh )
 {
 	__thresh = thresh;
 }
 
 template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::scalar GeneralSolver<kernel,Time>::threshold() const
+typename GeneralSolver<kernel,Time>::podscalar GeneralSolver<kernel,Time>::threshold() const
 {
 	return __thresh;
 }
 
 template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::setEstimatedError(const scalar error )
+void GeneralSolver<kernel,Time>::setEstimatedError(const podscalar error )
 {
 	__estimated_error = error;
 }
 
 template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::scalar GeneralSolver<kernel,Time>::estimatedError() const
+typename GeneralSolver<kernel,Time>::podscalar GeneralSolver<kernel,Time>::estimatedError() const
 {
 	return __estimated_error;
 }

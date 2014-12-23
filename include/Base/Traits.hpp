@@ -167,16 +167,17 @@ template<class T,class I = int >
 class KernelTrait
 {
 public:
-	typedef T 							scalar;
-	typedef I 							index;
-	typedef typename is_index<I>::size	size;
+	typedef T 											scalar;
+	typedef typename get_pod_type<scalar>::type 		podscalar;
+	typedef I 											index;
+	typedef typename is_index<I>::size					size;
 	// whether the kernel is valid:
 	static const bool valid  = is_scalar<T>::value&&is_index<I>::value;
 
-	typedef Array<T,I> 					Array;
-	typedef VectorBase<T,I>				Vector;
-	typedef MatrixBase<T,I>				Matrix;
-	typedef SpMatrixBase<T,I>			SpMatrix;
+	typedef Array<T,I> 									Array;
+	typedef VectorBase<T,I>								Vector;
+	typedef MatrixBase<T,I>								Matrix;
+	typedef SpMatrixBase<T,I>							SpMatrix;
 };
 
 /** tags */
