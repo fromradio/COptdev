@@ -228,6 +228,7 @@ class VectorProblem
 {
 
 	typedef typename kernel::scalar 		scalar;
+	typedef typename kernel::podscalar 		podscalar;
 	typedef typename kernel::index 			index;
 	typedef typename kernel::Matrix 		Matrix;
 	typedef typename kernel::Vector 		Vector;
@@ -247,7 +248,7 @@ public:
 	//%}
 
 	/** compute the objective function */
-	virtual scalar objective( const Vector& x ) const = 0;
+	virtual podscalar objective( const Vector& x ) const = 0;
 
 	/** check whether the input is valid */
 	virtual bool isValidInput( const Vector& x ) const = 0;

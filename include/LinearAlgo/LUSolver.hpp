@@ -7,35 +7,15 @@
 namespace COPT
 {
 
-template<class Matrix>
-class LinearSolver
-	:
-	noncopyable
-{
-
-	typedef typename Matrix::scalar 		scalar;
-	typedef typename Matrix::index 			index;
-	typedef VectorBase<scalar,index>		Vector;
-
-public:
-
-	virtual ~LinearSolver() {}
-
-	/** solving several right hand vectors */
-	virtual Matrix compute ( const Matrix& b ) = 0;
-
-	/** solving one right hand vector */
-	virtual Vector compute ( const Vector& b ) = 0;
-
-	/** clear the solver */
-	virtual void clear( ) = 0;
-
-	/** square validation */
-	virtual void squareValidation() = 0;
-};
-
+/*			LU solver of a general linear system. This is actually a
+ *			wrapper of famous library lapack. 
+ *
+ *
+ */
 template<class Matrix>
 class LU
+	:
+	public LinearSolver<Matrix>
 {
 private:
 	typedef typename Matrix::scalar 		scalar;
@@ -46,37 +26,26 @@ private:
 	scalar 						*__a;
 	/** the size of array */
 	index 						__size;
-	/** lda of a */
-	index 						__lda;
-	/** the row number of the input matrix */
-	index 						__rows;
-	/** the column number of the input matrix */
-	index 						__cols;
 	/** piv */
 	index 						*__piv;
 	/** the factorization information */
 	index 						__info;
 
+	void doCompute( const Matrix& mat );
+	Vector doSolve ( const Vector& b );
+	Matrix doSolve ( const Matrix& b );
+
 public:
 
 	/** constructor and deconstructor */
 	//%{
-	LU ();
+	LU ( );
 	LU ( const Matrix& mat );
 	~LU();
 	//%}
 
-	/** computation of the linear system */
-	void compute( const Matrix& mat );
-
 	/** square validation before solving */
-	void squareValidation() const;
-
-	/** solve one right hand vector */
-	Vector solve ( const Vector& b );
-
-	/** solve several right hand vectors */
-	Matrix solve ( const Matrix& b );
+	// void squareValidation() const;
 
 	/** inverse matrix */
 	Matrix inverse ( );
@@ -112,61 +81,52 @@ LU<Matrix>::~LU()
 }
 
 template<class Matrix>
-void LU<Matrix>::compute( const Matrix& mat )
+void LU<Matrix>::doCompute( const Matrix& mat )
 {
-	SAFE_DELETE_ARRAY(__a);
-	SAFE_DELETE_ARRAY(__piv);
+	clear();
 	__a = new scalar[mat.size()];
 	__piv = new index[std::min(mat.rows(),mat.cols())];
-	__lda = mat.rows();
-	__size = mat.size();
-	__rows = mat.rows();
-	__cols = mat.cols();
+	this->setLDA(mat.rows());
+	this->setRowNum(mat.rows());
+	this->setColNum(mat.cols());
 	blas::copt_blas_copy(mat.size(),mat.dataPtr(),1,__a,1);
 	copt_lapack_getrf(mat.rows(),mat.cols(),__a,mat.rows(),__piv,&__info);
 }
 
 template<class Matrix>
-void LU<Matrix>::squareValidation() const
+typename LU<Matrix>::Vector LU<Matrix>::doSolve( const Vector& b )
 {
-	if (__rows!=__cols)
-		throw COException("Linear system solving error: the matrix is not square! ");
-}
-
-template<class Matrix>
-typename LU<Matrix>::Vector LU<Matrix>::solve( const Vector& b )
-{
-	squareValidation();
-	if ( __rows != b.size() )
+	this->squareValidation();
+	if ( this->rowNum() != b.size() )
 	{
-		std::cerr<<"the order of matrix is "<<__rows<<" and the size of vector is "<<b.size()<<std::endl;
+		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of vector is "<<b.size()<<std::endl;
 		throw COException("Linear system solving error: the size is not consistent!");
 	}
 	Vector result(b);
-	copt_lapack_getrs('N',__rows,1,__a,__lda,__piv,result.dataPtr(),result.size(),&__info);
+	copt_lapack_getrs('N',this->rowNum(),1,__a,this->lda(),__piv,result.dataPtr(),result.size(),&__info);
 	return result;
 }
 
 template<class Matrix>
-Matrix LU<Matrix>::solve( const Matrix& b )
+Matrix LU<Matrix>::doSolve( const Matrix& b )
 {
-	squareValidation();
-	if( __rows != b.rows() )
+	this->squareValidation();
+	if( this->rowNum() != b.rows() )
 	{
-		std::cerr<<"the order of matrix is "<<__rows<<" and the size of right hand vectors are "<<b.rows()<<std::endl;
+		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of right hand vectors are "<<b.rows()<<std::endl;
 		throw COException("Linear system solving error: the size is not consistent!");
 	}
 	Matrix result(b);
-	copt_lapack_getrs('N',__rows,b.cols(),__a,__lda,__piv,result.dataPtr(),result.rows(),&__info);
+	copt_lapack_getrs('N',this->rowNum(),b.cols(),__a,this->lda(),__piv,result.dataPtr(),result.rows(),&__info);
 	return result;
 }
 
 template<class Matrix>
 Matrix LU<Matrix>::inverse( )
 {
-	squareValidation();
-	Matrix result(__rows,__cols,__a);
-	copt_lapack_getri(__rows,result.dataPtr(),__rows,__piv,&__info);
+	this->squareValidation();
+	Matrix result(this->rowNum(),this->rowNum(),__a);
+	copt_lapack_getri(this->rowNum(),result.dataPtr(),this->rowNum(),__piv,&__info);
 	return result;
 }
 

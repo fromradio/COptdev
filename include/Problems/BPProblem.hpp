@@ -19,6 +19,7 @@ class BPProblem
 {
 private:
 	typedef typename kernel::scalar 				scalar;
+	typedef typename kernel::podscalar				podscalar;
 	typedef typename kernel::index 					index;
 	typedef typename kernel::Vector 				Vector;
 	typedef typename kernel::Matrix 				Matrix;
@@ -41,7 +42,7 @@ public:
 		);
 	//%}
 
-	scalar objective ( const Vector& x ) const;
+	podscalar objective ( const Vector& x ) const;
 
 	/** judge whether the input x is feasible or not */
 	bool feasible( const Vector& x ) const;
@@ -94,7 +95,7 @@ bool BPProblem<kernel>::isValidInput( const Vector& x ) const
 }
 
 template<class kernel>
-typename BPProblem<kernel>::scalar BPProblem<kernel>::objective(const Vector& x) const
+typename BPProblem<kernel>::podscalar BPProblem<kernel>::objective(const Vector& x) const
 {
 	return x.absNorm();
 }
@@ -109,7 +110,10 @@ template<class kernel>
 bool BPProblem<kernel>::isValid( ) const
 {
 	if ( this->dimension() != __axb.matA().cols() )
+	{
+		std::cerr<<"the dimension of the problem is "<<this->dimension()<<" and the column number of A is "<<__axb.matA().cols()<<std::endl;
 		return false;
+	}
 	return __axb.matA().rows()==__axb.rhB().size();
 }
 
@@ -149,6 +153,7 @@ private:
 
 	typedef typename Problem::KernelTrait				kernel;
 	typedef typename kernel::scalar 					scalar;
+	typedef typename kernel::podscalar 					podscalar;
 	typedef typename kernel::index 						index;
 	typedef typename kernel::Vector 					Vector;
 	typedef typename kernel::Matrix 					Matrix;
@@ -162,15 +167,28 @@ private:
 	/** storing the matrix for y sub problem */
 	Matrix 							__mat;
 	/** mu */
-	scalar 							__mu;
+	podscalar 						__mu;
+	/** the scaling factor of mu on each step */
+	podscalar 						__rho;
+	/** the frobenius norm of the input matrix */
+	podscalar 						__fnorm;
 	/** lambda for x */
 	Vector 							__lambda_x;
 	/** lambda for y */
 	Vector 							__lambda_y;
 	/** the linear solver */
 #ifdef EIGEN
-	Eigen::LDLT<Eigen::MatrixXd>			__ldlt;
+	Eigen::LDLT<Eigen::MatrixXd>	__ldlt;
 #endif
+
+	/** the type of linear solver that is used */
+	LinearSolverType 				__linear_type;
+
+	/** the pointer to the linear solver */
+	LinearSolver<Matrix> 			*__linear_solver;
+
+	/** using the LU factorization for storing the nessessary information */
+	LU<Matrix>						__lu;
 
 	/** before solving */
 	void solvingBegin();
@@ -180,7 +198,7 @@ private:
 	 */
 	void doCompute();
 
-	scalar doOneIteration();
+	podscalar doOneIteration();
 
 	/** solve x sub problem */
 	void xSubproblem();
@@ -194,21 +212,32 @@ private:
 	/** update of lambda y */
 	void lambdaYUpdate();
 
+	/** generate solver */
+	void genreateLinearSolver();
+
 public:
 
 	/** constructor and deconstructor */
 	//%{
 	BPSolver( 
 		const Problem& p,
+		const podscalar rho = 1.0,
 		const index maxiteration = 10000,
-		const scalar thresh = 1e-10 );
+		const podscalar thresh = 1e-10,
+		const enum LinearSolverType type = COPT::CholeskySolver );
+	~BPSolver();
 	//%}
 
+	/** setter and getter */
+	//%{
 	/** compute the objective value */
-	scalar objective() const;
-
+	podscalar objective() const;
 	/** obtain the result */
 	const Vector& result() const;
+	/** set the linear solve type */
+	void setLinearSolverType(const enum LinearSolverType type);
+	//%}
+
 
 };
 
@@ -227,28 +256,38 @@ template<class Problem,class Time>
 void BPSolver<Problem,Time>::doCompute()
 {
 	// get the matrix A^TA+I
-	__p.matA().mtm(__mat);
+	Matrix mtm;
+	__p.matA().mtm(mtm);
 	index dim = __p.dimension();
 	for ( int i = 0 ; i < dim ; ++ i )
-		__mat(i,i) += 1.0;
-#ifdef EIGEN
-	Eigen::MatrixXd m(dim,dim);
-	for ( int i = 0 ; i < dim ; ++ i )
-		for ( int j = 0 ; j < dim ; ++ j )
-			m(i,j) = __mat(i,j);
-	__ldlt.compute(m);
-#endif
+		mtm(i,i) += 1.0;
+	genreateLinearSolver();
+	__linear_solver->compute(mtm);
+	__mat = __p.matA().transpose();
+	__fnorm = blas::copt_blas_nrm2(__mat.size(),__mat.dataPtr(),1);
+	__fnorm = __fnorm*__fnorm;
+// #ifdef EIGEN
+// 	Eigen::MatrixXd m(dim,dim);
+// 	for ( int i = 0 ; i < dim ; ++ i )
+// 		for ( int j = 0 ; j < dim ; ++ j )
+// 			m(i,j) = __mat(i,j);
+// 	__ldlt.compute(m);
+// #endif
 }
 
 template<class Problem,class Time>
-typename BPSolver<Problem,Time>::scalar BPSolver<Problem,Time>::doOneIteration()
+typename BPSolver<Problem,Time>::podscalar BPSolver<Problem,Time>::doOneIteration()
 {
+	std::cout<<"x"<<std::endl;
 	xSubproblem();
+	std::cout<<"y"<<std::endl;
 	ySubproblem();
+	std::cout<<"lambda"<<std::endl;
 	lambdaXUpdate();
 	lambdaYUpdate();
+	__mu = __mu*__rho;
 
-	return (__x-__y).squaredNorm();
+	return (__x-__y).squaredNorm()/__fnorm;
 }
 
 template<class Problem,class Time>
@@ -260,16 +299,18 @@ void BPSolver<Problem,Time>::xSubproblem()
 template<class Problem,class Time>
 void BPSolver<Problem,Time>::ySubproblem()
 {
-#ifdef EIGEN
-	Vector rhb = __x-__mu*__lambda_x+__p.matA().transpose()*(__p.rhB()-__mu*__lambda_y);
-	Eigen::VectorXd r(rhb.size());
-	int dim = __p.dimension();
-	for ( int i = 0 ; i < dim ; ++ i )
-		r(i) = rhb(i);
-	Eigen::VectorXd y = __ldlt.solve(r);
-	for ( int i = 0 ; i< dim ; ++ i )
-		__y(i) = y(i);
-#endif
+	__y = __linear_solver->solve(__mat*(__p.rhB()-__mu*__lambda_y));
+	// __y = __lu.solve(__mat*(__p.rhB()-__mu*__lambda_y));
+// #ifdef EIGEN
+// 	Vector rhb = __x-__mu*__lambda_x+__p.matA().transpose()*(__p.rhB()-__mu*__lambda_y);
+// 	Eigen::VectorXd r(rhb.size());
+// 	int dim = __p.dimension();
+// 	for ( int i = 0 ; i < dim ; ++ i )
+// 		r(i) = rhb(i);
+// 	Eigen::VectorXd y = __ldlt.solve(r);
+// 	for ( int i = 0 ; i< dim ; ++ i )
+// 		__y(i) = y(i);
+// #endif
 }
 
 template<class Problem,class Time>
@@ -285,21 +326,66 @@ void BPSolver<Problem,Time>::lambdaYUpdate()
 }
 
 template<class Problem,class Time>
+void BPSolver<Problem,Time>::genreateLinearSolver()
+{
+	SAFE_DELETE(__linear_solver);
+	switch(__linear_type)
+	{
+		case LUSolver:
+		{
+			__linear_solver = new LU<Matrix>;
+		}
+		break;
+		case QRSolver:
+		{
+			__linear_solver = new QR<Matrix>;
+		}
+		break;
+		case CholeskySolver:
+		{
+			__linear_solver = new Cholesky<Matrix>;
+		}
+		break;
+		case EigenWrap:
+		{
+			__linear_solver = new EigenSolver<Matrix>;
+		}
+		break;
+		default:
+		{
+		throw COException("Unknown linear solver for BP solver!");
+		}
+		break;
+	}
+}
+
+template<class Problem,class Time>
 BPSolver<Problem,Time>::BPSolver( 
 	const Problem& p,
+	const podscalar rho,
 	const index maxiteration,
-	const scalar thresh
+	const podscalar thresh,
+	const enum LinearSolverType type
 	 )
 	:
 	GeneralSolver<kernel,Time>(maxiteration,thresh),
 	__p(p),
-	__mu(1.0)
+	__mu(1.0),
+	__rho(rho),
+	__linear_type(type),
+	__linear_solver(NULL)
 {
 	this->compute();
 }
 
 template<class Problem,class Time>
-typename BPSolver<Problem,Time>::scalar BPSolver<Problem,Time>::objective() const
+BPSolver<Problem,Time>::~BPSolver()
+{
+	SAFE_DELETE(__linear_solver);
+}
+
+template<class Problem,class Time>
+typename BPSolver<Problem,Time>::podscalar BPSolver<Problem,Time>::objective() const
 {
 	return __p.objective(__x);
 }
@@ -308,6 +394,12 @@ template<class Problem,class Time>
 const typename BPSolver<Problem,Time>::Vector& BPSolver<Problem,Time>::result() const
 {
 	return __x;
+}
+
+template<class Problem,class Time>
+void BPSolver<Problem,Time>::setLinearSolverType( const enum LinearSolverType type )
+{
+	__linear_type = type;
 }
 
 

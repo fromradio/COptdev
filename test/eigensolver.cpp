@@ -1,6 +1,6 @@
 #include <Header>
 
-typedef COPT::KernelTrait<double,int> 			kernel;
+typedef COPT::KernelTrait<std::complex<double>,int> 			kernel;
 typedef kernel::Matrix 							Matrix;
 typedef kernel::Vector 							Vector;
 typedef COPT::PartialEigenSolver<Matrix>		EigenSolver;
@@ -10,6 +10,9 @@ int main(int argc,char* argv[])
 	m(0,0)=2;m(1,1)=1;
 	Matrix mtm;
 	m.mtm(mtm);
+	mtm(0,0) = std::complex<double>(1.0,0);
+	mtm(0,1) = std::complex<double>(0,-1);
+	mtm(1,0) = std::complex<double>(0,1);
 	std::cout<<mtm<<std::endl;
 	EigenSolver solver(mtm);
 	std::cout<<solver.computeLargestEigenvalue()<<std::endl;

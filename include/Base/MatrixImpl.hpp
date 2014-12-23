@@ -234,7 +234,10 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::operator*(const VectorBase<sc
 		blas::copt_blas_symv(CblasColMajor,CblasUpper,__rows,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 	else if (__trans)
 	{
-		blas::copt_blas_gemv(CblasColMajor,CblasTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemv(CblasColMajor,CblasTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+		else if ( is_complex<scalar>::value )
+			blas::copt_blas_gemv(CblasColMajor,CblasConjTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 	}
 	else
 	{
@@ -250,11 +253,29 @@ MatrixBase<scalar,index> MatrixBase<scalar,index>::operator*(const MatrixBase& m
 		throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
 	MatrixBase result(__rows,mat.cols());
 	if(__trans&&mat.isTranspose())
-		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
-	else if(__trans)
-		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+	{
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+		else if( is_complex<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasConjTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+	}
+	else if( __trans )
+	{
+		std::cout<<"right"<<std::endl;
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+		else if ( is_complex<scalar>::value ){
+			std::cout<<"here"<<std::endl;
+			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+		}
+	}
 	else if (mat.isTranspose())
-		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+	{
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+		else if( is_complex<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasConjTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+	}
 	else
 		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.rows(),0.0,result.dataPtr(),__rows);
 	return result;
@@ -555,11 +576,16 @@ void MatrixBase<scalar,index>::setRandom(const index rows,const index cols)
 {
 	if(rows<0||cols<0)
 		throw COException("Please make sure that the number of row and column is bigger than zero!");
-	std::uniform_real_distribution<scalar> unif(0.0,1.0);
+	std::uniform_real_distribution<typename get_pod_type<scalar>::type> unif(0.0,1.0);
 	this->resize(rows,cols);
 	for ( int i = 0 ; i < rows ; ++ i )
 		for ( int j = 0 ; j < cols ; ++ j )
-			this->operator()(i,j)=unif(copt_rand_eng);
+		{
+			if(is_real<scalar>::value)
+				ForceAssignment(unif(copt_rand_eng),this->operator()(i,j));
+			else
+				ForceAssignment(std::complex<typename get_pod_type<scalar>::type>(unif(copt_rand_eng),unif(copt_rand_eng)),this->operator()(i,j));
+		}
 }
 
 template<class scalar,class index>
@@ -576,7 +602,10 @@ void MatrixBase<scalar,index>::mtm( MatrixBase& mat ) const
 	int m = this->rows();
 	int n = this->cols();
 	mat.resize(n,n);
-	blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
+	if ( is_real<scalar>::value )
+		blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
+	else
+		blas::copt_blas_herk(CblasColMajor,CblasUpper,CblasConjTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
 	/** remember to assign the other half */
 	for ( int i = 0 ; i < mat.rows() ; ++ i )
 		for ( int j = 0 ; j < i ; ++ j )
@@ -588,17 +617,18 @@ template<class Matrix>
 class PartialEigenSolver;
 
 template<class scalar,class index>
-scalar MatrixBase<scalar,index>::operationNorm() const
+typename MatrixBase<scalar,index>::podscalar MatrixBase<scalar,index>::operationNorm() const
 {
 	MatrixBase mtm;
 	this->mtm(mtm);
 	PartialEigenSolver<MatrixBase> solver(mtm);
-	scalar e = solver.computeLargestEigenvalue();
+	podscalar e = solver.computeLargestEigenvalue();
 	return std::sqrt(e);
 }
+///////////////End of implementation of 'MatrixBase'
+
 
 /*******************Implementation of Triplet******************/
-
 template<class scalar,class index>
 TripletBase<scalar,index>::TripletBase(
 	const index r,

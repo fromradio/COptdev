@@ -62,6 +62,26 @@ scalar computeProximal( const AbsFunction& func , const scalar v , const scalar 
 		return 0;
 }
 
+template<class scalar>
+std::complex<scalar> computeProximal( const AbsFunction& func , const std::complex<scalar> v , const scalar lambda , const abs_scalar_function_tag& )
+{
+	// proximal operator on real and imag part
+	scalar r,i;
+	if( v.real()>= lambda )
+		r = v.real()-lambda;
+	else if (v.real()<= -lambda)
+		r = v.real()+lambda;
+	else
+		r = 0;
+	if(v.imag()>=lambda)
+		i = v.imag()-lambda;
+	else if(v.imag()<=-lambda)
+		i=v.imag()+lambda;
+	else
+		i=0;
+	return std::complex<scalar>(r,i);
+}
+
 template<class Vector,class scalar>
 void computeProximal( const AbsFunction& func, const Vector& v , const scalar lambda , const abs_scalar_function_tag& , Vector& x )
 {
@@ -75,6 +95,12 @@ void computeProximal( const AbsFunction& func, const Vector& v , const scalar la
 
 template<class Function,class scalar>
 scalar computeProximal( const Function& func , const scalar v , const scalar lambda )
+{
+	return computeProximal(func,v,lambda,typename Function::function_category());
+}
+
+template<class Function,class scalar>
+std::complex<scalar> computeProximal( const Function& func, const std::complex<scalar>& v, const scalar lambda)
 {
 	return computeProximal(func,v,lambda,typename Function::function_category());
 }

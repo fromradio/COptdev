@@ -31,9 +31,20 @@ public:
 	}
 
 	virtual ~COPTObject(){}
+
+	/** return the information about the COPT object */
 	const std::string& info() {return __str;}
 
+	/*			a clear function 
+	 *			some classes of COPT might contain some pointer stuff which
+	 *			has to be released when it is necessary.
+	 */
+	virtual void clear();
 };
 
+void COPTObject::clear()
+{
 }
+
+}// End of namespace COPT
 #endif // OBJECT_HPP__

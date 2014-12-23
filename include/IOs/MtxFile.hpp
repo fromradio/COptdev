@@ -16,12 +16,13 @@ inline void readMtxFile(const std::string&filename , T& t)
 	readMtxFile(filename,t,typename T::ObjectCategory());
 }
 
-
 template<class Matrix>
 inline void readMtxFile( const std::string& filename , Matrix& mat , const matrix_object& )
 {
 	if(filename.substr(filename.find_last_of(".")+1)=="mtx")
 	{
+		typedef typename Matrix::scalar 			scalar;
+		typedef typename get_pod_type<scalar>::type podtype;		
 		std::ifstream fin(filename);
 		if(!fin)
 		{
@@ -37,8 +38,6 @@ inline void readMtxFile( const std::string& filename , Matrix& mat , const matri
 			if(temp.c_str()[0] == '%' )
 				continue;
 			else if(temp.empty())
-				continue;
-			else if (temp.c_str()[0] == ' ')
 				continue;
 			else
 			{
@@ -69,7 +68,23 @@ inline void readMtxFile( const std::string& filename , Matrix& mat , const matri
 				}
 				else
 				{
-					mat.dataPtr()[i++]=atof(tokens[0].c_str());
+					// real matrix
+					if (tokens.size() == 1 )
+					{
+						if(is_real<scalar>::value)
+							mat.dataPtr()[i++]=static_cast<podtype>(atof(tokens[0].c_str()));
+						else
+						{
+							ForceAssignment(std::complex<podtype>(static_cast<podtype>(atof(tokens[0].c_str())),0.0),mat.dataPtr()[i++]);
+						}
+					}
+					else if(tokens.size() == 2 )
+					{
+						if(is_complex<scalar>::value)
+							ForceAssignment(std::complex<podtype>(static_cast<podtype>(atof(tokens[0].c_str())),static_cast<podtype>(atof(tokens[1].c_str()))),mat.dataPtr()[i++]);
+						else
+							throw COException("Mtx reading error: try to assign complex value to a real matrix!");
+					}
 				}
 			}
 		}
@@ -86,6 +101,8 @@ inline void readMtxFile( const std::string& filename , SpMatrix& mat , const sp_
 {
 	if(filename.substr(filename.find_last_of(".")+1)=="mtx")
 	{
+		typedef typename SpMatrix::scalar 				scalar;
+		typedef typename get_pod_type<scalar>::type		podtype;
 		// deal the matrix
 		std::ifstream fin(filename);
 		if(!fin)
@@ -143,7 +160,6 @@ inline void readMtxFile( const std::string& filename , SpMatrix& mat , const sp_
 				{
 					if(sizeof(typename SpMatrix::index)==4)
 					{
-
 						tris.push_back(typename SpMatrix::Triplet(atoi(tokens[0].c_str())-1,atoi(tokens[1].c_str())-1,atof(tokens[2].c_str())));
 					}
 					else
@@ -165,6 +181,8 @@ inline void readMtxFile( const std::string& filename , Vector& vec , const vecto
 {
 	if(filename.substr(filename.find_last_of(".")+1)=="mtx")
 	{
+		typedef typename Vector::scalar 			scalar;
+		typedef typename get_pod_type<scalar>::type podtype;
 		// deal the matrix
 		std::ifstream fin(filename);
 		if(!fin)
@@ -182,8 +200,8 @@ inline void readMtxFile( const std::string& filename , Vector& vec , const vecto
 				continue;
 			else if(temp.empty())
 				continue;
-			else if(temp.c_str()[0] == ' ')
-				continue;
+			// else if(temp.c_str()[0] == ' ')
+			// 	continue;
 			else
 			{
 				std::istringstream iss(temp);
@@ -218,8 +236,24 @@ inline void readMtxFile( const std::string& filename , Vector& vec , const vecto
 				}
 				else
 				{
-					vec[i] = atof(tokens[0].c_str());
-					++ i;
+					if( tokens.size() == 1 )
+					{
+						// real vector
+						if(is_real<scalar>::value)
+							vec(i++) = static_cast<scalar>(atof(tokens[0].c_str()));
+						else
+							ForceAssignment(std::complex<podtype>(static_cast<podtype>(atof(tokens[0].c_str())),0.0),vec(i++));
+					}
+					else
+					{
+						// complex vector
+						if(is_complex<scalar>::value)
+						{
+							ForceAssignment(std::complex<podtype>(static_cast<podtype>(atof(tokens[0].c_str())),static_cast<podtype>(atof(tokens[1].c_str()))),vec(i++));
+						}
+						else
+							throw COException("Mtx file reading error: try to assign complex value to a real vector!");
+					}
 				}
 			}
 		}
