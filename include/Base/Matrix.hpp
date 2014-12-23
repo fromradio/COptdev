@@ -25,6 +25,8 @@ public:
 
 	/** the scalar type */
 	typedef 			FT 				 			scalar;
+	/** pod scalar type */
+	typedef typename get_pod_type<scalar>::type 	podscalar;
 	/** the size type used */
 	typedef 			I 							index;						
 	/** define fthe category */
@@ -337,7 +339,7 @@ public:
 	/** norms */
 	//%{
 	/** compute the operation norm */
-	scalar operationNorm() const;
+	podscalar operationNorm() const;
 	//%}
 
 };// End of class MatrixBase

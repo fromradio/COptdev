@@ -35,15 +35,16 @@ public:
 	/** return the information about the COPT object */
 	const std::string& info() {return __str;}
 
-	/** standard operations for a general concern */
-	virtual void swap( COPTObject& obj );
-
+	/*			a clear function 
+	 *			some classes of COPT might contain some pointer stuff which
+	 *			has to be released when it is necessary.
+	 */
+	virtual void clear();
 };
 
-void COPTObject::swap( COPTObject& obj)
+void COPTObject::clear()
 {
 }
-
 
 }// End of namespace COPT
 #endif // OBJECT_HPP__

@@ -13,6 +13,7 @@ class SymmetricToTridiagonal
 private:
 	typedef typename Matrix::Kernel 				kernel;
 	typedef typename kernel::scalar 				scalar;
+	typedef typename kernel::podscalar 				podscalar;
 	typedef typename kernel::index 					index;
 
 	/** uplo */
@@ -20,9 +21,9 @@ private:
 	/** the dimension of symmetric matrix */
 	index 			__n;
 	/** the diagonal elements */
-	scalar 			*__d;
+	podscalar 		*__d;
 	/** the sub-diagonal elements */
-	scalar			*__e;
+	podscalar		*__e;
 	/** tau */
 	scalar 			*__tau;
 	/** information */
@@ -41,11 +42,19 @@ public:
 	/** getter */
 	//%{
 	index n() const;
-	const scalar* d() const;
-	const scalar* e() const;
+	const podscalar* d() const;
+	const podscalar* e() const;
 	//%}
 };
 
+/*			'ParitialEigenSolver' can partially compute the eigenvalues of a dense
+ *			matrix. The algorithms takes a tridiagonal as input which can be achieved
+ *			by previous class 'SymmetricToTridiagonal'. If no SymmetricToTridiagonal is
+ *			used as input, the class itself computes it at first. The solver can compute 
+ *			the eigenvalues in a range of indices like il<=i<=iu as well as a range of 
+ *			values like vi<=v<=vu.
+ *
+ */
 template<class Matrix>
 class PartialEigenSolver
 {
@@ -53,6 +62,7 @@ private:
 	typedef typename Matrix::Kernel 			kernel;
 	typedef typename kernel::index 				index;
 	typedef typename kernel::scalar 			scalar;
+	typedef typename kernel::podscalar 			podscalar;
 	typedef SymmetricToTridiagonal<Matrix>		tri_generator;
 
 	/** the triagonal */
@@ -62,7 +72,7 @@ private:
 	/** the actual number of eigenvalues fount */
 	index 				__m;
 	/** storing the eigenvalues */
-	scalar 				*__w;
+	podscalar 			*__w;
 	/** block infomation */
 	index 				*__iblock;
 	/**	nsplit */
@@ -75,19 +85,21 @@ private:
 	bool 				__is_solved;
 
 public:
-	PartialEigenSolver();
+	PartialEigenSolver( );
 	PartialEigenSolver( const Matrix& mat );
-	~PartialEigenSolver();
+	~PartialEigenSolver( );
 
 	void compute(const Matrix& mat);
 
-	void solveIndex( index il, index iu );
+	/** solve partial eigenvalue problem in range [il,iu] */
+	void solveIndex( const index il, const index iu );
+	/** solve partial eigenvalue problem in value range [vl,vu] */
+	void solveValueRange( const podscalar vl, const podscalar vu);
 
-	scalar computeLargestEigenvalue();
+	podscalar computeLargestEigenvalue();
 };
 
 /********************Implementation of 'SymmetricToTridiagonal'****************/
-
 template<class Matrix>
 SymmetricToTridiagonal<Matrix>::SymmetricToTridiagonal()
 	:
@@ -118,10 +130,15 @@ void SymmetricToTridiagonal<Matrix>::compute(const Matrix& mat)
 	SAFE_DELETE_ARRAY(__d);
 	SAFE_DELETE_ARRAY(__e);
 	SAFE_DELETE_ARRAY(__tau);
-	__d = new scalar[__n];
-	__e = new scalar[__n-1];
+	__d = new podscalar[__n];
+	__e = new podscalar[__n-1];
 	__tau = new scalar[__n-1];
-	copt_lapack_sytrd(__uplo,__n,const_cast<scalar*>(mat.dataPtr()),mat.rows(),__d,__e,__tau,&__info);
+	if ( is_real<scalar>::value )
+		copt_lapack_sytrd(__uplo,__n,const_cast<scalar*>(mat.dataPtr()),mat.rows(),__d,__e,__tau,&__info);
+	else if( is_complex<scalar>::value )
+		copt_lapack_hetrd(__uplo,__n,const_cast<scalar*>(mat.dataPtr()),mat.rows(),__d,__e,__tau,&__info);
+	else
+		throw COException("Unknown scalar type for symmetric matrix calculation!");
 }
 
 template<class Matrix>
@@ -138,19 +155,21 @@ typename SymmetricToTridiagonal<Matrix>::index SymmetricToTridiagonal<Matrix>::n
 }
 
 template<class Matrix>
-const typename SymmetricToTridiagonal<Matrix>::scalar* SymmetricToTridiagonal<Matrix>::d() const
+const typename SymmetricToTridiagonal<Matrix>::podscalar* SymmetricToTridiagonal<Matrix>::d() const
 {
 	return __d;
 }
 
 template<class Matrix>
-const typename SymmetricToTridiagonal<Matrix>::scalar* SymmetricToTridiagonal<Matrix>::e() const
+const typename SymmetricToTridiagonal<Matrix>::podscalar* SymmetricToTridiagonal<Matrix>::e() const
 {
 	return __e;
 }
+//////////////End of implementation of 'SymmetricToTridiagonal'
 
-/*********************Implementation of 'PartialEigenSolver'****************/
 
+
+/*********************Implementation of 'PartialEigenSolver'****************/ 
 template<class Matrix>
 PartialEigenSolver<Matrix>::PartialEigenSolver()
 	:
@@ -190,7 +209,7 @@ void PartialEigenSolver<Matrix>::compute( const Matrix& mat )
 	SAFE_DELETE_ARRAY(__w);
 	SAFE_DELETE_ARRAY(__iblock);
 	SAFE_DELETE_ARRAY(__isplit);
-	__w = new scalar[__dim];
+	__w = new podscalar[__dim];
 	__iblock = new index[__dim];
 	__isplit = new index[__dim];
 	__is_solved = false;
@@ -199,16 +218,16 @@ void PartialEigenSolver<Matrix>::compute( const Matrix& mat )
 template<class Matrix>
 void PartialEigenSolver<Matrix>::solveIndex( index il , index iu)
 {
-	scalar *work = new scalar[4*__dim];
+	podscalar *work = new podscalar[4*__dim];
 	index *iwork = new index[3*__dim];
-	copt_lapack_stebz('I','B',__dim,0.0,0.0,il,iu,0.0,const_cast<scalar*>(__tri.d()),const_cast<scalar*>(__tri.e()) ,&__m,&__nsplit,__w,__iblock,__isplit,work,iwork,&__info);
+	copt_lapack_stebz('I','B',__dim,0.0,0.0,il,iu,0.0,const_cast<podscalar*>(__tri.d()),const_cast<podscalar*>(__tri.e()) ,&__m,&__nsplit,__w,__iblock,__isplit,work,iwork,&__info);
 	delete[]work;
 	delete[]iwork;
 	__is_solved = true;
 }
 
 template<class Matrix>
-typename PartialEigenSolver<Matrix>::scalar PartialEigenSolver<Matrix>::computeLargestEigenvalue()
+typename PartialEigenSolver<Matrix>::podscalar PartialEigenSolver<Matrix>::computeLargestEigenvalue()
 {
 	solveIndex(__dim,__dim);
 	return __w[0];

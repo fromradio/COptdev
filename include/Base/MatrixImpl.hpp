@@ -617,17 +617,18 @@ template<class Matrix>
 class PartialEigenSolver;
 
 template<class scalar,class index>
-scalar MatrixBase<scalar,index>::operationNorm() const
+typename MatrixBase<scalar,index>::podscalar MatrixBase<scalar,index>::operationNorm() const
 {
 	MatrixBase mtm;
 	this->mtm(mtm);
 	PartialEigenSolver<MatrixBase> solver(mtm);
-	scalar e = solver.computeLargestEigenvalue();
+	podscalar e = solver.computeLargestEigenvalue();
 	return std::sqrt(e);
 }
+///////////////End of implementation of 'MatrixBase'
+
 
 /*******************Implementation of Triplet******************/
-
 template<class scalar,class index>
 TripletBase<scalar,index>::TripletBase(
 	const index r,
