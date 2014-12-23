@@ -124,6 +124,15 @@ int copt_lapack_sytrd(char uplo , index n , scalar* a , index lda , scalar *d , 
 {
 	throw COException("Unknown type for lapack wrapper!");
 }
+
+template<class index, class scalar>
+int copt_lapack_sytrd(char uplo, index n, std::complex<scalar>* a, int lda,
+					scalar *d, scalar *e, std::complex<scalar>* tau, 
+					index *info )
+{
+	throw COException("Unknown type for lapack wrapper!");
+}
+
 template<>
 int copt_lapack_sytrd(char uplo , int n , float* a , int lda , float *d ,float *e , float *tau ,  int *info )
 {
@@ -151,6 +160,54 @@ int copt_lapack_sytrd(char uplo , int n , double *a , int lda , double *d , doub
 	work = new double[lwork];
 	int status = dsytrd_(&uplo,&n,a,&lda,d,e,tau,work,&lwork,info);
 	delete[]work;
+	return status;
+}
+
+template<class index,class scalar>
+int copt_lapack_hetrd(char uplo, int n, scalar *a, int lda,
+				scalar *d, scalar *e, scalar *tau,
+				index *info )
+{
+	throw COException("Unknown type for lapack wrapper!");
+}
+
+template<class index,class scalar>
+int copt_lapack_hetrd(char uplo, int n, std::complex<scalar>* a, int lda, 
+				scalar *d, scalar *e, std::complex<scalar>* tau,
+				index *info )
+{
+	throw COException("Unknown type for lapack wrapper!");
+}
+
+template<>
+int copt_lapack_hetrd(char uplo, int n, std::complex<float> *a, int lda,
+				float *d, float *e, std::complex<float> *tau,
+				int *info )
+{
+	std::complex<float> *work = new std::complex<float>[1];
+	int lwork = -1;
+	chetrd_(&uplo,&n,a,&lda,d,e,tau,work,&lwork,info);
+	lwork = static_cast<int>(work[0].real());
+	delete[]work;
+	work = new std::complex<float>[lwork];
+	int status = chetrd_(&uplo,&n,a,&lda,d,e,tau,work,&lwork,info);
+	delete[]work;
+	return status;
+}
+
+template<>
+int copt_lapack_hetrd(char uplo, int n, std::complex<double> *a, int lda,
+				double *d, double *e, std::complex<double> *tau,
+				int *info )
+{
+	std::complex<double> *work = new std::complex<double>[1];
+	int lwork = -1;
+	zhetrd_(&uplo,&n,a,&lda,d,e,tau,work,&lwork,info);
+	lwork = static_cast<int>(work[0].real());
+	delete[]work;
+	work = new std::complex<double>[lwork];
+	int status = zhetrd_(&uplo,&n,a,&lda,d,e,tau,work,&lwork,info);
+	delete[] work;
 	return status;
 }
 

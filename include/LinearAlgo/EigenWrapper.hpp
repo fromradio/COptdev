@@ -26,7 +26,9 @@ private:
 	void doCompute(const Matrix& mat){}
 	Vector doSolve( const Vector& b ){return Vector();}
 	Matrix doSolve( const Matrix& b ){return Matrix();}
+
 public:
+	
 	EigenSolver(){}
 	~EigenSolver(){}
 
