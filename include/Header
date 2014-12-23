@@ -39,7 +39,7 @@
 
 #include "Base/CBlasWrapper.hpp"
 #include "Base/LapackWrapper.hpp"
-#include "Base/UmfPackWrapper.hpp"
+#include "Base/UMFPackWrapper.hpp"
 #include "Base/Array.hpp"
 #include "Base/Vector.hpp"
 #include "Base/VectorImpl.hpp"
