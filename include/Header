@@ -12,7 +12,9 @@
 #include <set>
 #include <cmath>
 #include <random>
+#include <time.h>
 
+#include <iterator>
 #include <complex>
 #include <ThirdParty/cblas.h>
 #include <ThirdParty/clapack.h>
@@ -27,15 +29,18 @@
 #include <Eigen/Dense>
 #endif
 
+
+#include "Base/Traits.hpp"
+#include "Base/COException.hpp"
 #include "Base/Object.hpp"
 #include "Base/BasicOperation.hpp"
-#include "Base/COException.hpp"
-#include "Base/Traits.hpp"
-
+#include "Base/TimeStatistics.hpp"
+#include "Base/JournalList.hpp"
+#include "Base/Printer.hpp"
 
 #include "Base/CBlasWrapper.hpp"
 #include "Base/LapackWrapper.hpp"
-#include "Base/UmfPackWrapper.hpp"
+#include "Base/UMFPackWrapper.hpp"
 #include "Base/Array.hpp"
 #include "Base/Vector.hpp"
 #include "Base/VectorImpl.hpp"
@@ -56,8 +61,21 @@
 #include "Algorithms/Simplex.hpp"
 #include "Algorithms/omp.hpp"
 #include "Algorithms/ProximalOperator.hpp"
+#include "Algorithms/Lasso.hpp"
+#include "LinearAlgo/Eigenvalue.hpp"
+
+#include "LinearAlgo/LinearSolver.hpp"
+#include "LinearAlgo/LUSolver.hpp"
+#include "LinearAlgo/CholeskySolver.hpp"
+#include "LinearAlgo/QRSolver.hpp"
+#include "LinearAlgo/EigenWrapper.hpp"
+
+#include "Problems/LPProblem.hpp"
+#include "Problems/BPProblem.hpp"
 
 
-#include <time.h>
+
+
+
 
 #endif
