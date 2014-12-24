@@ -9,7 +9,7 @@ typedef kernel::Vector 					Vector;
 typedef kernel::scalar					scalar;
 typedef kernel::index 					Index;
 
-const int sizevec = 4;
+const int sizevec = 10000000;
 void summation( const int id , const int p );
 /*		Compute the summation of two vectors
  *		The first processor is the main processor
@@ -19,30 +19,24 @@ int main( int argc , char* argv[])
 {
 
 	int id, p;
-	
+	double wtime;
 
 	MPI::Init(argc,argv);
 	MPI::Status status;
 
 	id = MPI::COMM_WORLD.Get_rank();
 	p = MPI::COMM_WORLD.Get_size();
-	// std::cout<<"size is "<<sizeof(scalar)<<' '<<sizeof(MPI::)<<' '<<sizeof(double)<<std::endl;
-	// if(id==0)
-	// {
-	// 	scalar* s = new scalar[2];
-	// 	s[0]=1.0;
-	// 	s[1]=2.0;
-	// 	MPI::COMM_WORLD.Send(&s[0],2,MPI::DOUBLE,1,1);
-	// }
-	// else if(id==1)
-	// {
-	// 	scalar* ss = new scalar[2];
-	// 	MPI::COMM_WORLD.Recv(ss,2,MPI::DOUBLE,0,1,status);
-	// 	std::cout<<ss[0]<<std::endl;
-	// 	std::cout<<ss[1]<<std::endl;
-	// }
-	// std::cout<<id<<" "<<p<<std::endl;
+
+	if (id==0)
+		wtime = MPI::Wtime();
+
 	summation(id,p);
+
+	if (id==0)
+		wtime = MPI::Wtime()-wtime;
+
+	if (id==0)
+		std::cout<<"time elapsed: "<<wtime<<"s."<<std::endl;
 	MPI::Finalize();
 }
 
@@ -64,9 +58,10 @@ void summation( const int id , const int p )
 	{
 		Vector v1 = Vector::random(sizevec);
 		Vector v2 = Vector::random(sizevec);
-		std::cout<<"the first vector is "<<v1<<std::endl;
-		std::cout<<"the second vector is "<<v2<<std::endl;
-		std::cout<<"the summation is "<<v1+v2<<std::endl;
+		result = new scalar[sizevec];
+		for ( int i = 0 ; i < sizevec ; ++ i )
+			result[i] = v1(i)+v2(i);
+		Vector r(sizevec,result);
 	}
 	else
 	{
@@ -74,49 +69,44 @@ void summation( const int id , const int p )
 		{
 			Vector v1 = Vector::random(sizevec);
 			Vector v2 = Vector::random(sizevec);
-			std::cout<<"the first vector is "<<v1<<std::endl;
-			std::cout<<"the second vector is "<<v2<<std::endl;
+			// std::cout<<"the first vector is "<<v1<<std::endl;
+			// std::cout<<"the second vector is "<<v2<<std::endl;
 			s1 = v1.dataPtr();
 			s2 = v2.dataPtr();
 			int t1 = 1;
 			int t2 = 2;
+			std::cout<<"send begins"<<std::endl;
 			for ( int i = 1 ; i < p-1 ; ++ i )
 			{
-				MPI::COMM_WORLD.Send(&s1[sizevec*(i-1)],sizevec/(p-1),MPI::DOUBLE,i,t1);
-				MPI::COMM_WORLD.Send(&s2[sizevec*(i-1)],sizevec/(p-1),MPI::DOUBLE,i,t2);
+				// std::cout<<s1[sizevec/(p-1)*(i-1)]<<std::endl;
+				MPI::COMM_WORLD.Send(&s1[sizevec/(p-1)*(i-1)],sizevec/(p-1),MPI::DOUBLE,i,t1);
+				MPI::COMM_WORLD.Send(&s2[sizevec/(p-1)*(i-1)],sizevec/(p-1),MPI::DOUBLE,i,t2);
 			}
-			MPI::COMM_WORLD.Send(&s1[sizevec*(p-2)],sizevec-sizevec/(p-1)*(p-2),MPI::DOUBLE,p-1,t1);
-				MPI::COMM_WORLD.Send(&s2[sizevec*(p-2)],sizevec-sizevec/(p-1)*(p-2),MPI::DOUBLE,p-1,t2);
+			MPI::COMM_WORLD.Send(&s1[sizevec/(p-1)*(p-2)],sizevec-sizevec/(p-1)*(p-2),MPI::DOUBLE,p-1,t1);
+			MPI::COMM_WORLD.Send(&s2[sizevec/(p-1)*(p-2)],sizevec-sizevec/(p-1)*(p-2),MPI::DOUBLE,p-1,t2);
+			std::cout<<"send over!"<<std::endl;
+			result = new scalar[sizevec];
 		}
-		else
+		MPI::COMM_WORLD.Bcast(result,sizevec,MPI::DOUBLE,0);
+		if( id > 0 )
 		{
-			// std::cout<<"processor "<<id<<" with length "<<l<<std::endl;
 			int t1 = 1,t2 = 2;
 			s1 = new scalar[l];
 			s2 = new scalar[l];
 			MPI::COMM_WORLD.Recv(s1,l,MPI::DOUBLE,0,t1,status);
 			MPI::COMM_WORLD.Recv(s2,l,MPI::DOUBLE,0,t2,status);
-			std::cout<<id<<" receive success!"<<std::endl;
+			// std::cout<<id<<" receive success!"<<std::endl;
 			result = new scalar[l];
 			for ( int i = 0 ; i < l ; ++ i )
 			{
-				result[i] = s1[(id-1)*l+i]+s2[(id-1)*l+i];
+				std::cout<<id<<" "<<i<<std::endl;
+				result[(id-1)*(sizevec/(p-1))+i] = s1[i]+s2[i];
+				// std::cout<<result[i]<<std::endl;
 			}
-			int tag = 3;
-			MPI::COMM_WORLD.Send(result,l,MPI::DOUBLE,0,tag);
-		}
-
-		if ( id == 0 )
-		{
-			Vector result(sizevec);
-			int length=sizevec/(p-1);
-			int tag = 3;
-			for ( int i = 1 ; i < p - 1 ; ++ i )
-			{
-				MPI::COMM_WORLD.Recv(&result.dataPtr()[(i-1)*length],length,MPI::DOUBLE,i,tag,status);
-			}
-			MPI::COMM_WORLD.Recv(&result.dataPtr()[(p-2)*length],sizevec-(p-2)*length,MPI::DOUBLE,p-1,tag,status);
-			std::cout<<"the summation is "<<result<<std::endl;
+			// int tag = 3;
+			// MPI::COMM_WORLD.Send(result,l,MPI::DOUBLE,0,tag);
+			delete[] s1;
+			delete[] s2;
 		}
 	}
 }

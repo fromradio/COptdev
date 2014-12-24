@@ -25,10 +25,12 @@ class VectorBase
 public:
 	/** 	scalar type 	*/
 	typedef 				FT						scalar;
+	/** 	the pod type of scalar */
+	typedef typename get_pod_type<scalar>::type 	podscalar;
 	/** 	size type 		*/
 	typedef 				I 						index;
 	/**		define the category 	*/
-	typedef 				vector_tag 				Category;
+	typedef 				vector_object 			ObjectCategory;
 	/**		define the kernel 		*/
 	typedef 				KernelTrait<FT,index>	Kernel;
 
@@ -136,21 +138,27 @@ public:
 	//%{
 	/** operator< */
 	bool operator< (const VectorBase& vec)const;
+	bool operator< (const scalar s)const;
 
 	/** operator<= */
 	bool operator<=(const VectorBase& vec)const;
+	bool operator<=(const scalar s)const;
 
 	/** operator> */
 	bool operator> (const VectorBase& vec)const;
+	bool operator> (const scalar s)const;
 
 	/** operator>= */
 	bool operator>=(const VectorBase& vec)const;
+	bool operator>=(const scalar s)const;
 
 	/** operator== */
 	bool operator==(const VectorBase& vec)const;
+	bool operator==(const scalar s)const;
 
 	/** operator!= */
 	bool operator!=(const VectorBase& vec)const;
+	bool operator!=(const scalar s)const;
 	//%}
 
 	/*
@@ -159,19 +167,26 @@ public:
 	/*
 	 * 			Square norm of the VectorBase
 	 */
-	scalar squaredNorm() const{
-		scalar result = 0;
-		for ( index i = 0 ; i < this->size() ; ++ i ){
-			result += this->operator[](i)*this->operator[](i);
+	podscalar squaredNorm() const;
+
+	podscalar absNorm() const{
+		podscalar result = 0;
+		for (index i = 0 ; i < this->size() ; ++ i )
+		{
+			result += std::abs(this->operator[](i));
 		}
 		return result;
 	}
 	/** normalize current vector and previous norm is returned*/
-	scalar normalize();
+	podscalar normalize();
 	
 	// dot operation
 	scalar dot(const VectorBase& vec) const{
-		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
+		if(this->size()!=vec.size()) 
+		{
+			std::cerr<<"one size is "<<this->size()<<" and another size is "<<vec.size()<<std::endl;
+			throw COException("VectorBase dot operation error: the length of two VectorBases do not equal to each other");
+		}
 		else{
 			scalar sum = blas::copt_blas_dot(this->size(),this->dataPtr(),this->interval(),vec.dataPtr(),vec.interval());
 			return sum;
@@ -199,7 +214,11 @@ public:
 
 	// summation operation
 	VectorBase operator+ (const VectorBase& vec) const{
-		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
+		if(this->size()!=vec.size())
+		{
+			std::cerr<<"one size is "<<this->size()<<" another size is "<<vec.size()<<std::endl;
+			throw COException("VectorBase summation error: the length of two VectorBases do not equal to each other");
+		}
 		VectorBase result(this->size());
 		for ( index i = 0 ; i < this->size() ; ++ i ){
 			result[i] = this->operator[](i)+vec[i];
@@ -209,7 +228,11 @@ public:
 
 	//subtraction operation
 	VectorBase operator- (const VectorBase& vec) const{
-		if(this->size()!=vec.size()) throw COException("VectorBase error: the length of two VectorBases do not equal to each other");
+		if(this->size()!=vec.size()) 
+		{
+			std::cerr<<"one size is "<<this->size()<<" another size is "<<vec.size()<<std::endl;
+			throw COException("VectorBase summation error: the length of two VectorBases do not equal to each other");
+		}
 		VectorBase result(this->size());
 		for ( index i = 0 ; i < this->size() ; ++ i ){
 			result[i] = this->operator[](i)-vec[i];

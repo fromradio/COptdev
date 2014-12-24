@@ -18,7 +18,7 @@ all:$(BIN_TARGET)
 
 
 $(BIN_TARGET):$(OBJ)
-	$(CC) $(OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
+	$(CC) $(OBJ) $(DIR_LIB) -o $@ $(LIBS)
 
 $(DIR_OBJ)/%.o:%.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
@@ -116,6 +116,36 @@ bin/mpitest: obj/mpitest.o
 	mpic++ obj/mpitest.o $(DIR_LIB) -o $@ $(LIBS)
 obj/mpitest.o: test/openmpi_test.cpp
 	mpic++ $(CFLAGS) -c $< -o $@
+
+lasso: bin/lasso
+bin/lasso: obj/lasso.o
+	$(CC) obj/lasso.o $(DIR_LIB) -o $@ $(LIBS)
+obj/lasso.o: test/lasso.cpp include/Algorithms/Lasso.hpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+eigensolver: bin/eigensolver
+bin/eigensolver: obj/eigensolver.o
+	$(CC) obj/eigensolver.o $(DIR_LIB) -o $@ $(LIBS)
+obj/eigensolver.o: test/eigensolver.cpp include/Algorithms/Eigenvalue.hpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+iotest: bin/iotest
+bin/iotest: obj/iotest.o
+	$(CC) obj/iotest.o $(DIR_LIB) -o $@ $(LIBS)
+obj/iotest.o: test/io_test.cpp include/IOs/MtxFile.hpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+lpproblem: bin/lpproblem
+bin/lpproblem: obj/lpproblem.o
+	$(CC) obj/lpproblem.o $(DIR_LIB) -o $@ $(LIBS)
+obj/lpproblem.o: test/lp_problem.cpp include/Problems/LPProblem.hpp include/Problems/BPProblem.hpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
+lu: bin/lu
+bin/lu: obj/lu.o
+	$(CC) obj/lu.o $(DIR_LIB) -o $@ $(LIBS)
+obj/lu.o: test/lu.cpp include/LinearAlgo/LUSolver.hpp
+	$(CC) $(CFLAGS) -c $< -o $@
 #$(TEST_BIN): $(TEST_OBJ)
 #	$(CC) $(TEST_OBJ) $(DIR_LIB) -o $@ -lcblas -lblas
 

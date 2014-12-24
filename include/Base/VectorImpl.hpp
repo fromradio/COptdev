@@ -37,7 +37,18 @@ bool VectorBase<scalar,index>::operator<(const VectorBase<scalar,index>& vec)con
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
-		if(this->operator[](i)>=vec[i])
+		if(LargerThan(this->operator[](i),vec[i]))
+			return false;
+	}
+	return true;
+}
+
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator<(const scalar s)const
+{
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(LargerThan(this->operator[](i),s))
 			return false;
 	}
 	return true;
@@ -49,7 +60,18 @@ bool VectorBase<scalar,index>::operator<=(const VectorBase<scalar,index>& vec)co
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
-		if(this->operator[](i)>vec[i])
+		if(StrictLargerThan(this->operator[](i),vec[i]))
+			return false;
+	}
+	return true;
+}
+
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator<=(const scalar s)const
+{
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(StrictLargerThan(this->operator[](i),s))
 			return false;
 	}
 	return true;
@@ -61,7 +83,18 @@ bool VectorBase<scalar,index>::operator>(const VectorBase<scalar,index>& vec)con
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
-		if(this->operator[](i)<=vec[i])
+		if(LessThan(this->operator[](i),vec[i]))
+			return false;
+	}
+	return true;
+}
+
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator>(const scalar s)const
+{
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(LessThan(this->operator[](i),s))
 			return false;
 	}
 	return true;
@@ -73,7 +106,18 @@ bool VectorBase<scalar,index>::operator>=(const VectorBase<scalar,index>& vec)co
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
-		if(this->operator[](i)<vec[i])
+		if(StrictLessThan(this->operator[](i),vec[i]))
+			return false;
+	}
+	return true;
+}
+
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator>=(const scalar s)const
+{
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(StrictLessThan(this->operator[](i),s))
 			return false;
 	}
 	return true;
@@ -85,7 +129,18 @@ bool VectorBase<scalar,index>::operator==(const VectorBase<scalar,index>& vec)co
 	if (this->size() != vec.size() )
 		return false;
 	for ( index i = 0 ; i < this->size() ; ++ i ){
-		if(this->operator[](i)!=vec[i])
+		if(!IS_ZERO(std::abs(this->operator[](i)-vec[i])))
+			return false;
+	}
+	return true;
+}
+
+template<class scalar,class index>
+bool VectorBase<scalar,index>::operator==(const scalar s)const
+{
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(!IS_ZERO(std::abs(this->operator[](i)-s)))
 			return false;
 	}
 	return true;
@@ -104,9 +159,27 @@ bool VectorBase<scalar,index>::operator!=(const VectorBase<scalar,index>& vec)co
 }
 
 template<class scalar,class index>
-scalar VectorBase<scalar,index>::normalize()
+bool VectorBase<scalar,index>::operator!=(const scalar s)const
 {
-	scalar norm = std::sqrt(squaredNorm());
+	for ( index i = 0 ; i < this->size() ; ++ i )
+	{
+		if(this->operator[](i)!=s)
+			return true;
+	}
+	return false;
+}
+
+template<class scalar,class index>
+typename VectorBase<scalar,index>::podscalar VectorBase<scalar,index>::squaredNorm() const
+{
+	podscalar norm = blas::copt_blas_nrm2(this->size(),this->dataPtr(),this->interval());
+	return norm*norm;
+}
+
+template<class scalar,class index>
+typename VectorBase<scalar,index>::podscalar VectorBase<scalar,index>::normalize()
+{
+	podscalar norm = std::sqrt(squaredNorm());
 	scale(1.0/norm);
 	return norm;
 }
@@ -210,12 +283,14 @@ void VectorBase<scalar,index>::stCombine(const VectorBase& v1,const VectorBase& 
 template<class scalar,class index>
 VectorBase<scalar,index> VectorBase<scalar,index>::random( const index s )
 {
-	std::mt19937 eng;
-	std::uniform_real_distribution<scalar> unif(0.0,1.0);
+	std::uniform_real_distribution<typename get_pod_type<scalar>::type> unif(0.0,1.0);
 	VectorBase result(s);
 	for ( int i = 0 ; i < s; ++ i )
 	{
-		result(i) = unif(eng);
+		if(is_real<scalar>::value)
+			ForceAssignment(unif(copt_rand_eng),result(i));
+		else
+			ForceAssignment(std::complex<typename get_pod_type<scalar>::type>(unif(copt_rand_eng),unif(copt_rand_eng)),result(i));
 	}
 	return result;
 }

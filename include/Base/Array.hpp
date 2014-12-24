@@ -7,6 +7,8 @@
 namespace COPT
 {
 
+class DataObject: public COPTObject
+{};
 /*		class Array describes a base class for basic dense data types used in COPT
  *		like vector and matrix. The array can be referred to another array or independent 
  *		array. 
@@ -15,7 +17,7 @@ namespace COPT
 template<class T,class I>
 class Array
 	:
-	public COPTObject
+	public DataObject
 {
 public:
 	/**		define the scalar type 			*/
@@ -23,7 +25,7 @@ public:
 	/** 	define the size type 			*/
 	typedef 				I 					index;
 	/**		define the category 			*/
-	typedef 				data_tag 			Category;
+	typedef 				array_object 		ObjectCategory;
 	/** 	define the kernel trait 		*/
 	typedef 				KernelTrait<T,I>	Kernel;
 
@@ -49,7 +51,6 @@ public:
 
 	Array()
 		:
-		COPTObject(),
 		__size(0),
 		__inter(1),
 		__data_ptr(NULL),
@@ -59,7 +60,6 @@ public:
 
 	Array ( const index size, const scalar* data = NULL, const index inter = 1 )
 		:
-		COPTObject(),
 		__size(size),
 		__inter(1),
 		__data_ptr(new scalar[size]),
@@ -76,7 +76,6 @@ public:
 
 	Array( const index size , const referred_array& , scalar* data ,const index inter = 1)
 		:
-		COPTObject(),
 		__size(size),
 		__inter(inter),
 		__data_ptr(data),
@@ -85,8 +84,6 @@ public:
 	}
 
 	Array( const Array& arr )
-		:
-		COPTObject()
 	{
 		if(arr.isReferred())
 			setReferredArray(arr.size(),arr.dataPtr(),arr.interval());

@@ -11,9 +11,11 @@
 namespace COPT
 {
 /*
-	Class of 'MatrixBase'
-		the data is stored column by column
-*/
+ *	Class of 'MatrixBase'
+ *		the data is stored column by column
+ *		the matrix is assumed not to be transpose or symmetric
+ *		but symmetric and transpose flag is designed
+ */
 template<class FT,class I = int>
 class MatrixBase
 	:
@@ -23,10 +25,12 @@ public:
 
 	/** the scalar type */
 	typedef 			FT 				 			scalar;
+	/** pod scalar type */
+	typedef typename get_pod_type<scalar>::type 	podscalar;
 	/** the size type used */
 	typedef 			I 							index;						
 	/** define fthe category */
-	typedef 			matrix_tag 					Category;
+	typedef 			matrix_object				ObjectCategory;
 	/** define the trait */
 	typedef 			KernelTrait<FT,index>		Kernel;
 
@@ -44,6 +48,12 @@ private:
 	/** the size of columns */
 	index 					__cols;
 
+	/** whether the matrix is symmetric */
+	bool					__sym;
+
+	/** whether the matrix is transpose */
+	bool 					__trans;
+
 	//%}
 public:
 	/** constructor and deconstructor */
@@ -51,7 +61,7 @@ public:
 	/** default constructor */
 	MatrixBase();
 
-	MatrixBase(const index m, const index n,scalar* data=NULL);
+	MatrixBase(const index m, const index n, const scalar* data=NULL);
 
 	/** Copy assignment */
 	MatrixBase(const MatrixBase& mat);
@@ -86,86 +96,41 @@ public:
 	const Vector col( const index num ) const;
 
 
-	// set element using Arr
+	/** set element using Arr */
 
-	void set ( const index i , scalar value ){
-		if ( i < 0 )
-			throw COException("MatrixBase error: index is less that zero!");
-		else if ( i >= __rows*__cols )
-			throw COException("MatrixBase error: index is out of range!");
-		else
-			this->operator[](i) = value;
-	}
+	void set ( const index i , const scalar value );
+
 
 	/** resize the matrix */
 	void resize ( index m , index n );
 
-	/*
-		Copy operation
-	*/
-	MatrixBase& operator= ( const MatrixBase& mat ) {
-		if( __rows != mat.rows() || __cols != mat.cols() ){
-			__rows = mat.rows();
-			__cols = mat.cols();
-			SAFE_DELETE_ARRAY(this->dataPtr());
-			this->reset(__rows*__cols);
-		}
+	/** set the matrix to be symmetric */
+	void setSymmetricFlag( bool sym );
+	bool isSymmetric() const;
 
-		for ( index i = 0 ; i < __rows*__cols ; ++ i )
-			this->operator[](i) = mat.data(i);
-		return *this;
-	}
+	/** set the matrix to be transpose mode */
+	void setTransposeFlag( bool sym );
+	bool isTranspose() const;
+
+	/** Copy operation */
+	MatrixBase& operator= ( const MatrixBase& mat );
 
 	/*
 		Mathematical operations
 	*/
 
-	// summation
-	// need to be tested
-		
-	MatrixBase operator+ (const MatrixBase& mat) {
-		if ( __rows != mat.rows() || __cols != mat.cols() ) 
-			throw COException("MatrixBase summation error: the size of two matrices are not consistent!");
-		MatrixBase result(__rows,__cols);
-		for ( index i = 0 ; i < __rows*__cols ; ++ i )
-			result.set(i,this->operator[](i)+mat.data(i));
-		return result;
-	}
+	/** summation */
+	MatrixBase operator+ (const MatrixBase& mat);
 
 	// subtraction
 	// need to be tested
-	MatrixBase operator- (const MatrixBase& mat) {
-		if ( __rows != mat.rows() || __cols != mat.cols() ) 
-			throw COException("MatrixBase subtraction error: the size of two matrices are not consistent!");
-		MatrixBase result(__rows,__cols);
-		for ( index i = 0 ; i < __rows*__cols ; ++ i )
-			result.set(i,this->operator[](i)-mat.data(i));
-		return result;
-	}
+	MatrixBase operator- (const MatrixBase& mat);
 
-	// multiply
-	// need to be tested
-	VectorBase<scalar,index> operator* ( const VectorBase<scalar,index>& vec ) const{
-		if ( __cols != vec.size() )
-			throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
-		VectorBase<scalar,index> result(__rows);
-		for ( index i = 0 ; i < __rows ; ++ i ){
-			for ( index j = 0 ; j < __cols ; ++ j )
-				result[i]+= operator()(i,j)*vec[j];
-		}
-		return result;
-	}
-	// need to be tested
-	MatrixBase operator* ( const MatrixBase& mat ) const{
-		if ( __cols != mat.rows() )
-			throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
-		MatrixBase result (__rows,mat.cols());
-		for ( index i = 0 ; i < __rows ; ++ i )
-			for ( index j = 0 ; j < mat.cols() ; ++ j )
-				for ( index k = 0 ; k < __cols ; ++ k )
-					result(i,j) += operator()(i,k)*mat(k,j);
-		return result;
-	}
+	/** matrix multiplications */
+	VectorBase<scalar,index> operator* ( const VectorBase<scalar,index>& vec ) const;
+
+	/** matrix and matrix multiplication */
+	MatrixBase operator* ( const MatrixBase& mat ) const;
 
 
 	// multiplication between a scalar and a matrix
@@ -185,13 +150,12 @@ public:
 	}
 
 	// transpose
-	MatrixBase transpose() const{
-		MatrixBase result(__cols,__rows);
-		for ( index i = 0 ; i < __cols ; ++ i )
-			for ( index j = 0 ; j < __rows ; ++ j )
-				result(i,j) = this->operator()(j,i);
-		return result;
-	}
+	MatrixBase transpose() const;
+
+	/** transpose muliplication */
+	Vector transMulti( const Vector& vec ) const;
+
+	MatrixBase transMulti(const MatrixBase& mat) const;
 
 	/*				overload of ostream
 	 */
@@ -208,7 +172,6 @@ public:
 	/*				solve linear system
 	 *
 	 */
-
 	 Vector lapackSolve( const Vector& vec ){
 		if (__rows != __cols )
 			throw COException("Solving Error: the matrix is not square!");
@@ -226,31 +189,30 @@ public:
 		return v;
 	}
 	
-#ifdef EIGEN
-	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec){
-		// currently we use eigen to solve it
-		Eigen::Matrix<scalar,Eigen::Dynamic,Eigen::Dynamic> matrix(__rows,__cols);
-		for ( index i = 0 ; i < __rows ; ++ i )
-		{
-			for ( index j = 0 ;  j < __cols ; ++ j )
-			{
-				matrix(i,j) = this->operator()(i,j);
-			}
-		}
-		Eigen::Matrix<scalar,Eigen::Dynamic,1> vector(vec.size());
-		for ( index i = 0 ; i < vec.size() ; ++ i )
-		{
-			vector(i) = vec[i];
-		}
-		Eigen::Matrix<scalar,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
-		return VectorBase<scalar,index>(result);
-	}
-#else
+// #ifdef EIGEN
+// 	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec){
+// 		// currently we use eigen to solve it
+// 		Eigen::Matrix<scalar,Eigen::Dynamic,Eigen::Dynamic> matrix(__rows,__cols);
+// 		for ( index i = 0 ; i < __rows ; ++ i )
+// 		{
+// 			for ( index j = 0 ;  j < __cols ; ++ j )
+// 			{
+// 				matrix(i,j) = this->operator()(i,j);
+// 			}
+// 		}
+// 		Eigen::Matrix<scalar,Eigen::Dynamic,1> vector(vec.size());
+// 		for ( index i = 0 ; i < vec.size() ; ++ i )
+// 		{
+// 			vector(i) = vec[i];
+// 		}
+// 		Eigen::Matrix<scalar,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
+// 		return VectorBase<scalar,index>(result);
+// 	}
 	Vector solve( const Vector& vec ){
 		return lapackSolve(vec);
 	}
-#endif
 
+// #ifdef USE_LAPACK
 	Vector leastSquareSolve( const Vector& vec){
 		if( __cols != vec.size() )
 			throw COException("least square error: the size is not consistent!");
@@ -267,7 +229,7 @@ public:
 		delete[]b;
 		return result;
 	}
-
+// #endif
 	
 
 
@@ -368,6 +330,18 @@ public:
 		MatrixBase& m);
 	//%}
 
+	/** set a random matrix */
+	void setRandom( const index rows, const index cols);
+	static inline MatrixBase random( const index rows, const index cols);
+	/** compute A^TA of a given matrix */
+	void mtm(MatrixBase& mat) const;
+
+	/** norms */
+	//%{
+	/** compute the operation norm */
+	podscalar operationNorm() const;
+	//%}
+
 };// End of class MatrixBase
 
 
@@ -463,7 +437,7 @@ public:
 	typedef 	T 						scalar;
 	typedef  	I 	 					index;
 	typedef 	TripletBase<T,I>		Triplet;
-	typedef 	matrix_tag 				Category;
+	typedef 	sp_matrix_object 		ObjectCategory;
 	typedef 	KernelTrait<T,I>		kernel;
 private:
 
@@ -590,10 +564,6 @@ public:
 	void neg();
 
 	//%}
-
-
-
-
 
 	/** element access */
 	//%{

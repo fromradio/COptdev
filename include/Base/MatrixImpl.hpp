@@ -12,7 +12,9 @@ MatrixBase<scalar,index>::MatrixBase()
 	:
 	Arr(),
 	__rows(0),
-	__cols(0)
+	__cols(0),
+	__sym(false),
+	__trans(false)
 {
 }
 
@@ -20,11 +22,13 @@ template<class scalar,class index>
 MatrixBase<scalar,index>::MatrixBase(
 	index m,
 	index n,
-	scalar* data)
+	const scalar* data)
 	:
 	Arr(m*n,data),
 	__rows(m),
-	__cols(n)
+	__cols(n),
+	__sym(false),
+	__trans(false)
 {
 }
 
@@ -34,7 +38,9 @@ MatrixBase<scalar,index>::MatrixBase(
 	:
 	Arr(mat.rows()*mat.cols(),mat.dataPtr()),
 	__rows(mat.rows()),
-	__cols(mat.cols())
+	__cols(mat.cols()),
+	__sym(mat.isSymmetric()),
+	__trans(mat.isTranspose())
 {
 }
 
@@ -62,6 +68,17 @@ typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::operator() 
 		throw COException("MatrixBase error: index is less than zero!");
 	else if (i>=__rows||j>=__cols)
 		throw COException("MatrixBase error: index is out of range!");
+	else if (__sym)
+	{
+		if ( i <= j )
+			return this->operator[](j*__rows+i);
+		else
+			return this->operator[](i*__rows+j);
+	}
+	else if(__trans)
+	{
+		return this->operator[](i*__cols+j);
+	}
 	else{
 		return this->operator[](j*__rows+i);
 	}
@@ -71,6 +88,17 @@ template<class scalar,class index>
 const typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::operator() ( const index i , const index j ) const
 {
 	return const_cast<MatrixBase&>(*this).operator()(i,j);
+}
+
+template<class scalar,class index>
+void MatrixBase<scalar,index>::set(const index i , const scalar value)
+{
+	if ( i < 0 )
+		throw COException("MatrixBase error: index is less that zero!");
+	else if ( i >= __rows*__cols )
+		throw COException("MatrixBase error: index is out of range!");
+	else
+		this->operator[](i) = value;
 }
 
 template<class scalar,class index>
@@ -86,7 +114,9 @@ const typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::data 
 template<class scalar,class index>
 VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num){
 	if ( num >= __rows || num < 0 )
-		throw COException("MatrixBase error: row index out of range!");
+		throw COException("MatrixBase error: row index out of range when getting a row of the matrix!");
+	else if(__trans)
+		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 	else
 		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
 }
@@ -94,7 +124,9 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num){
 template<class scalar,class index>
 const VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num )const {
 	if ( num >= __rows || num < 0 )
-		throw COException("MatrixBase error: row index out of range!");
+		throw COException("MatrixBase error: row index out of range when getting a row of the matrix!");
+	else if(__trans)
+		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 	else
 		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
 }
@@ -102,7 +134,9 @@ const VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num )co
 template<class scalar,class index>
 VectorBase<scalar,index> MatrixBase<scalar,index>::col(const index num){
 	if ( num >= __cols || num < 0 )
-		throw COException("MatrixBase error: col index out of range!");
+		throw COException("MatrixBase error: col index out of range when getting a column of the matrix!");
+	else if(__trans)
+		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
 	else
 		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 }
@@ -110,10 +144,38 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::col(const index num){
 template<class scalar,class index>
 const VectorBase<scalar,index> MatrixBase<scalar,index>::col(const index num) const{
 	if ( num >= __cols || num < 0 )
-		throw COException("MatrixBase error: col index out of range!");
+		throw COException("MatrixBase error: col index out of range when getting a column of the matrix!");
+	else if(__trans)
+		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
 	else
 		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 }
+
+template<class scalar,class index>
+void MatrixBase<scalar,index>::setSymmetricFlag( bool sym )
+{
+	__sym = sym;
+}
+
+template<class scalar,class index>
+bool MatrixBase<scalar,index>::isSymmetric() const
+{
+	return __sym;
+}
+
+template<class scalar,class index>
+void MatrixBase<scalar,index>::setTransposeFlag( bool trans )
+{
+	__trans = trans;
+}
+
+template<class scalar,class index>
+bool MatrixBase<scalar,index>::isTranspose() const
+{
+	return __trans;
+}
+
+
 
 template<class scalar,class index>
 void MatrixBase<scalar,index>::resize(index m,index n)
@@ -121,6 +183,141 @@ void MatrixBase<scalar,index>::resize(index m,index n)
 	__rows = m;
 	__cols = n;
 	this->reset(m*n);
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index>& MatrixBase<scalar,index>::operator=(const MatrixBase& mat)
+{
+	if(__rows != mat.rows() || __cols != mat.cols() )
+	{
+		__rows = mat.rows();
+		__cols = mat.cols();
+		this->reset(__rows*__cols);
+	}
+	blas::copt_blas_copy(__rows*__cols,mat.dataPtr(),1,this->dataPtr(),1);
+	__trans = mat.isTranspose();
+	__sym = mat.isSymmetric();
+	return *this;
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::operator+(const MatrixBase& mat )
+{
+	if ( __rows != mat.rows() || __cols != mat.cols() )
+	{
+		throw COException("MatrixBase summation error: the size of two matrices are not consistent!");
+	}
+	MatrixBase result(*this);
+	blas::copt_blas_axpy(this->size(),1.0,mat.dataPtr(),1,result.dataPtr(),1);
+	return result;
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::operator-(const MatrixBase& mat )
+{
+	if ( __rows != mat.rows() || __cols != mat.cols() )
+	{
+		throw COException("MatrixBase summation error: the size of two matrices are not consistent!");
+	}
+	MatrixBase result(*this);
+	blas::copt_blas_axpy(this->size(),-1.0,mat.dataPtr(),1,result.dataPtr(),1);
+	return result;
+}
+
+template<class scalar,class index>
+VectorBase<scalar,index> MatrixBase<scalar,index>::operator*(const VectorBase<scalar,index>& vec )const
+{
+	if ( __cols != vec.size() )
+		throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
+	VectorBase<scalar,index> result(__rows);
+	if (__sym)
+		blas::copt_blas_symv(CblasColMajor,CblasUpper,__rows,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+	else if (__trans)
+	{
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemv(CblasColMajor,CblasTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+		else if ( is_complex<scalar>::value )
+			blas::copt_blas_gemv(CblasColMajor,CblasConjTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+	}
+	else
+	{
+		blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__rows,__cols,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+	}
+	return result;
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::operator*(const MatrixBase& mat )const
+{
+	if ( __cols != mat.rows() )
+		throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
+	MatrixBase result(__rows,mat.cols());
+	if(__trans&&mat.isTranspose())
+	{
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+		else if( is_complex<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasConjTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+	}
+	else if( __trans )
+	{
+		std::cout<<"right"<<std::endl;
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+		else if ( is_complex<scalar>::value ){
+			std::cout<<"here"<<std::endl;
+			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+		}
+	}
+	else if (mat.isTranspose())
+	{
+		if( is_real<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+		else if( is_complex<scalar>::value )
+			blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasConjTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+	}
+	else
+		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.rows(),0.0,result.dataPtr(),__rows);
+	return result;
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::transpose() const
+{
+	MatrixBase result(__cols,__rows,this->dataPtr());
+	result.setTransposeFlag(true);
+	return result;
+}
+
+template<class scalar,class index>
+VectorBase<scalar,index> MatrixBase<scalar,index>::transMulti( const Vector& vec ) const
+{
+	if(__rows != vec.size() )
+		throw COException("transpose multiplication error: the size of vector and matrix is not consistent!");
+	Vector result(__cols);
+	if(__trans)
+		blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+	else
+		blas::copt_blas_gemv(CblasColMajor,CblasTrans,__rows,__cols,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+	return result;
+}
+
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::transMulti(const MatrixBase& mat ) const
+{
+	if(__rows != mat.rows() )
+		throw COException("transpose multiplication error: the size of two matrices are not consistent!");
+	MatrixBase result(__cols,mat.cols());
+	if (__trans&&mat.isTranspose())
+		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),result.rows());
+	else if(__trans)
+		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.rows(),0.0,result.dataPtr(),result.rows());
+	else if(mat.isTranspose())
+		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),result.rows());
+	else
+		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__cols,mat.cols(),__rows,1.0,
+			this->dataPtr(),__rows,mat.dataPtr(),mat.rows(),0.0,result.dataPtr(),result.rows());
+	return result;
 }
 
 template<class scalar,class index>
@@ -374,8 +571,64 @@ void MatrixBase<scalar,index>::stCombineAlongColumn(const MatrixBase& m1,const M
 	}
 }
 
-/**			Implementation of Triplet			*/
+template<class scalar,class index>
+void MatrixBase<scalar,index>::setRandom(const index rows,const index cols)
+{
+	if(rows<0||cols<0)
+		throw COException("Please make sure that the number of row and column is bigger than zero!");
+	std::uniform_real_distribution<typename get_pod_type<scalar>::type> unif(0.0,1.0);
+	this->resize(rows,cols);
+	for ( int i = 0 ; i < rows ; ++ i )
+		for ( int j = 0 ; j < cols ; ++ j )
+		{
+			if(is_real<scalar>::value)
+				ForceAssignment(unif(copt_rand_eng),this->operator()(i,j));
+			else
+				ForceAssignment(std::complex<typename get_pod_type<scalar>::type>(unif(copt_rand_eng),unif(copt_rand_eng)),this->operator()(i,j));
+		}
+}
 
+template<class scalar,class index>
+MatrixBase<scalar,index> MatrixBase<scalar,index>::random(const index rows,const index cols)
+{
+	MatrixBase result;
+	result.setRandom(rows,cols);
+	return result;
+}
+
+template<class scalar,class index>
+void MatrixBase<scalar,index>::mtm( MatrixBase& mat ) const
+{
+	int m = this->rows();
+	int n = this->cols();
+	mat.resize(n,n);
+	if ( is_real<scalar>::value )
+		blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
+	else
+		blas::copt_blas_herk(CblasColMajor,CblasUpper,CblasConjTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
+	/** remember to assign the other half */
+	for ( int i = 0 ; i < mat.rows() ; ++ i )
+		for ( int j = 0 ; j < i ; ++ j )
+			mat.operator[](i+j*mat.cols()) = mat.operator[](j+i*mat.cols());
+	mat.setSymmetricFlag(true);
+}
+
+template<class Matrix>
+class PartialEigenSolver;
+
+template<class scalar,class index>
+typename MatrixBase<scalar,index>::podscalar MatrixBase<scalar,index>::operationNorm() const
+{
+	MatrixBase mtm;
+	this->mtm(mtm);
+	PartialEigenSolver<MatrixBase> solver(mtm);
+	podscalar e = solver.computeLargestEigenvalue();
+	return std::sqrt(e);
+}
+///////////////End of implementation of 'MatrixBase'
+
+
+/*******************Implementation of Triplet******************/
 template<class scalar,class index>
 TripletBase<scalar,index>::TripletBase(
 	const index r,
