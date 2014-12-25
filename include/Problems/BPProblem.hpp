@@ -143,6 +143,8 @@ const typename BPProblem<kernel>::Vector& BPProblem<kernel>::rhB() const
 
 ///////////////End of implementation of 'BPProblem'
 
+
+
 template<class Problem,class Time = NoTimeStatistics>
 class BPSolver
 	:

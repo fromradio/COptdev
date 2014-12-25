@@ -15,8 +15,8 @@
 #include <time.h>
 
 #include <complex>
-#include <ThirdParty/cblas.h>
-#include <ThirdParty/clapack.h>
+#include "ThirdParty/cblas.h"
+#include "ThirdParty/clapack.h"
 #include <umfpack.h>
 #include <algorithm>
 #include <limits>
