@@ -2,8 +2,9 @@
 
 MathPlot::MathPlot(const QwtText& text,QWidget *parent)
 	:
-	QwtPlot(text,parent)
+	QStackedWidget(parent)
 {
+	this->addWidget(new QwtPlot(text,this));
 	this->setLineWidth(3);
 	this->setFrameStyle(QFrame::Panel|QFrame::Sunken);
 }

@@ -16,9 +16,9 @@ PlotWidget::PlotWidget(QWidget*parent , const QwtText& text )
 {
 	// __plot_widget->canvas()->setStyleSheet(QString::fromUtf8("border:1px solid red"));
 	__color_dialog->hide();
-	__color_dialog->setCurrentColor(__plot_widget->palette().color(QPalette::Background));
+	__color_dialog->setCurrentColor(__plot_widget->currentWidget()->palette().color(QPalette::Background));
 	// __plot_widget->setMargin(10);
-	reinterpret_cast<QFrame*>(__plot_widget->canvas())->setFrameStyle(QFrame::NoFrame);
+	// reinterpret_cast<QFrame*>(__plot_widget->currentWidget()->canvas())->setFrameStyle(QFrame::NoFrame);
 	QGridLayout *gridlayout = new QGridLayout(this);
 	
 	gridlayout->setMargin(30);
@@ -47,7 +47,7 @@ PlotWidget::PlotWidget(QWidget*parent , const QwtText& text )
 
 	connect(__color_dialog,SIGNAL(currentColorChanged(const QColor&)),this,SLOT(setPlotWidgetBackground(const QColor&)));
 
-	__plot_widget->replot();
+	reinterpret_cast<QwtPlot*>(__plot_widget->currentWidget())->replot();
 }
 
 QSize PlotWidget::minimumSizeHint() const
@@ -70,9 +70,9 @@ void PlotWidget::setPlotWidgetBackground(const QColor& col)
 {
 	QPalette pal(__plot_widget->palette());
 	pal.setColor(QPalette::Background,col);
-	__plot_widget->setAutoFillBackground(true);
-	__plot_widget->setPalette(pal);
-	__plot_widget->replot();
+	__plot_widget->currentWidget()->setAutoFillBackground(true);
+	__plot_widget->currentWidget()->setPalette(pal);
+	reinterpret_cast<QwtPlot*>(__plot_widget->currentWidget())->replot();
 }
 
 void PlotWidget::openFile()
@@ -101,15 +101,15 @@ void PlotWidget::readData( const double *xdata, const double *ydata, int size )
 {
 	QwtPlotCurve *const curve = new QwtPlotCurve;
 	curve->setSamples(xdata,ydata,size);
-	curve->attach(__plot_widget);
+	curve->attach(reinterpret_cast<QwtPlot*>(__plot_widget->currentWidget()));
 	curve->setPen(QColor(255,0,0),3.0);
 	double minx = *std::min_element(xdata,xdata+size);
 	double maxx = *std::max_element(xdata,xdata+size);
 	double miny = *std::min_element(ydata,ydata+size);
 	double maxy = *std::max_element(ydata,ydata+size);
-	__plot_widget->setAxisScale(QwtPlot::xBottom,minx,maxx);
-	__plot_widget->setAxisScale(QwtPlot::yLeft,miny,maxy);
-	__plot_widget->replot();
+	reinterpret_cast<QwtPlot*>(__plot_widget->currentWidget())->setAxisScale(QwtPlot::xBottom,minx,maxx);
+	reinterpret_cast<QwtPlot*>(__plot_widget->currentWidget())->setAxisScale(QwtPlot::yLeft,miny,maxy);
+	reinterpret_cast<QwtPlot*>(__plot_widget->currentWidget())->replot();
 
 }
 
