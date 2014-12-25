@@ -17,9 +17,9 @@
 // #include "qwt/qwt_plot_curve.h"
 // #include "qwt/qwt_text.h"
 
-#if QWT_VERSION >= 0x060100 || !WIN32
-#include "qwt/qwt_point_data.h"
-#endif
+// #if QWT_VERSION >= 0x060100 || !WIN32
+// #include "qwt/qwt_point_data.h"
+// #endif
 
 int main(int argc, char *argv[])
 {

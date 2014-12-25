@@ -9,6 +9,7 @@
 #include <QtGui/QPushButton>
 #include <QtGui/QGridLayout>
 #include <QDockWidget>
+#include "widget.h"
 
 class DrawWidget : public QWidget
 {
