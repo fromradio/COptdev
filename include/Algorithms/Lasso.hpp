@@ -319,6 +319,12 @@ public:
 
 	void proximalSolve();
 
+	/** check whether the input is valid */
+	bool isValidInput( const Vector& x ) const;
+
+	/** check whether the problem is a valid problem */
+	bool isValid( ) const;
+
 	/** getter and setter */
 	//%{
 	const Matrix& matA() const;
@@ -624,6 +630,24 @@ LassoProblem<kernel>::LassoProblem(
 template<class kernel>
 void LassoProblem<kernel>::proximalSolve()
 {
+}
+
+template<class kernel>
+bool LassoProblem<kernel>::isValid( ) const
+{
+	if (__A.rows()!=__b.size())
+		return false;
+	else 
+		return true;
+}
+
+template<class kernel>
+bool LassoProblem<kernel>::isValidInput( const Vector& x ) const
+{
+	if (__A.cols() != x.size() )
+		return false;
+	else 
+		return true;
 }
 
 template<class kernel>

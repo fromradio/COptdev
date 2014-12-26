@@ -8,7 +8,7 @@ typedef COPT::KernelTrait<std::complex<double>,int> 			kernel;
 typedef kernel::Vector 							Vector;
 typedef kernel::Matrix 							Matrix;
 typedef COPT::LU<Matrix> 						LU;
-typedef COPT::CholeskySolver<Matrix>			Cholesky;
+typedef COPT::Cholesky<Matrix>					Cholesky;
 typedef COPT::QR<Matrix> 						QR;
 
 const int m = 5;

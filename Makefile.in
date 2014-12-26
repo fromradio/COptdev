@@ -1,27 +1,47 @@
-#
-# Makefile.in
-#
+#-----------------------------------------------------
+# Example Makefile.in for library COPT
+#-----------------------------------------------------
 
-DIR_INC += -I./include/Base -I./include/LeastSquares -I./include/FunctionRepository -I./include/Algorithms -I./include/ThirdParty -I./include
-DIR_SRC += ./src/Frame ./src/LeastSquares ./src
+#-----------------------------------------------------
+# Compilers
+#-----------------------------------------------------
+
+CC 	= gcc
+CXX = g++
+
+#-----------------------------------------------------
+# Flags for compilers
+#----------------------------------------------------- 
+
+CFLAGS 		= -g -Wall
+CXXFLAGS 	= -O3
+
+#-----------------------------------------------------
+# Include Path
+#-----------------------------------------------------
+
+DIR_INC = -I./include
+
+#-----------------------------------------------------
+# Library Path
+#-----------------------------------------------------
+
+DIR_LIB = ./
+
+#-----------------------------------------------------
+# Libraries that are used
+#-----------------------------------------------------
+
+LIB = -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -llapack -lcblas -lblas
+
+#-----------------------------------------------------
+# OBJ Path
+#-----------------------------------------------------
+
 DIR_OBJ = ./obj
+
+#-----------------------------------------------------
+# BIN Path
+#-----------------------------------------------------
+
 DIR_BIN = ./bin
-
-# DIR_LIB = -L./libs
-
-SRC = $(foreach n, $(DIR_SRC),$(wildcard $(n)/*.cpp))
-# TT = $(patsubst %.cpp,%.o,$(SRC))
-# TT = $(notdir $(SRC))
-OBJ = $(patsubst %.cpp,$(DIR_OBJ)/%.o,$(notdir $(SRC)))
-
-LIBS = -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -llapack -lcblas -lblas
-
-TARGET = all
-BIN_TARGET = $(DIR_BIN)/$(TARGET)
-
-CC = g++
-CFLAGS = -g -Wall $(DIR_INC)
-
-vpath %.cpp ./src/Frame
-vpath %.cpp ./src/LeastSquares
-vpath %.cpp ./src
