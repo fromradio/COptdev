@@ -37,8 +37,6 @@ private:
 	index 										__maxiteration;
 	/** the result */
 	Vector 										__x;
-
-	Eigen::LDLT<Eigen::MatrixXd>				__linear_solver;
 	//%}
 
 	// void init();
@@ -113,9 +111,8 @@ private:
 	/** whether the problem is solved */
 	bool 							__is_solved;
 
-#ifdef EIGEN
-	Eigen::LDLT<Eigen::MatrixXd>	__linear_solver;
-#endif
+	/** linear solver */
+	LU<Matrix> 						__linear_solver;
 
 	/** implementation of virtual functions */
 	//%{
@@ -137,7 +134,6 @@ public:
 		const scalar thresh = 1e-8);
 	//%}
 
-	// void compute();
 	/** sub-problems */
 	//%{
 	void xSubProblem(const Vector& zk,const Vector& yk,Vector& xn);
@@ -341,11 +337,6 @@ void LassoProximalSolver<Problem,Time>::doCompute()
 	/** compute the beta */
 	__p.matA().mtm(__mtm);
 	__mt = __p.matA().transpose();
-	Eigen::MatrixXd mat(__mtm.rows(),__mtm.cols());
-	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
-		for ( int j = 0 ; j < __mtm.cols() ; ++ j )
-			mat(i,j) = __mtm(i,j);
-	__linear_solver.compute(mat);
 	scalar e = __p.matA().operationNorm();
 	__mu = 1.0/(2*e*e);
 }
@@ -448,32 +439,19 @@ void LassoADMMSolver<Problem,Time>::doCompute()
 {
 	__p.matA().mtm(__mtm);
 	__mt = __p.matA().transpose();
-#ifdef EIGEN
-	Eigen::MatrixXd mat(__mtm.rows(),__mtm.cols());
-	Eigen::MatrixXd iden = Eigen::MatrixXd::Identity(__mtm.rows(),__mtm.cols());
-	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
-		iden(i,i) = 1.0/(2*__rho);
-	
-	for ( int i = 0 ; i < __mtm.rows() ; ++ i )
-		for ( int j = 0 ; j < __mtm.cols() ; ++ j )
-			mat(i,j) = __mtm(i,j);
-	mat = mat+iden;
+	Matrix mat(__mtm);
+	for ( int i = 0 ; i < mat.rows() ; ++ i )
+	{
+		mat(i,i) += 1.0/(2*__rho);	
+	}
 	__linear_solver.compute(mat);
-#endif
 }
 
 template<class Problem,class Time>
 void LassoADMMSolver<Problem,Time>::xSubProblem(const Vector& zk,const Vector& yk,Vector&xn)
 {
 	Vector rhd = __mt*__p.obB()+1.0/(2.0*__rho)*(zk-yk);
-#ifdef EIGEN
-	Eigen::VectorXd vec(rhd.size());
-	for ( int i = 0 ; i < rhd.size() ; ++ i )
-		vec(i) = rhd(i);
-	vec = __linear_solver.solve(vec);
-	for ( int i = 0 ; i < rhd.size() ; ++ i )
-		xn(i) = vec(i);
-#endif
+	xn = __linear_solver.solve(rhd);
 }
 
 template<class Problem,class Time>
@@ -526,7 +504,6 @@ const typename LassoADMMSolver<Problem,Time>::Vector& LassoADMMSolver<Problem,Ti
 template<class Problem,class Time>
 void FISTALassoSolver<Problem,Time>::doCompute()
 {
-	std::cout<<"computation"<<std::endl;
 	__x.resize(__p.matA().cols());
 	__y.resize(__p.matA().cols());
 	__atb = __p.matA().transMulti(__p.obB());

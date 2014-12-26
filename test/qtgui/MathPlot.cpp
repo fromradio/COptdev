@@ -13,3 +13,5 @@ QSize MathPlot::minimumSizeHint() const
 {
 	return QSize(500,500);
 }
+
+void QSize 
