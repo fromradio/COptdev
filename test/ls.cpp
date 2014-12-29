@@ -1,35 +1,28 @@
 #include <Header>
+#include <IO>
+ 
+typedef double 		FT;
+typedef COPT::KernelTrait<FT>		kernel;
+typedef kernel::Matrix 				Matrix;
+typedef kernel::Vector 				Vector;
+typedef COPT::LeastSquaresProblem<kernel>	problem;
+typedef COPT::LeastMeanSquareSolver<problem,COPT::SolverTimeStatistics>	lmssolver;
+typedef COPT::LeastSquareSolver<problem,COPT::SolverTimeStatistics>	lssolver;
+typedef COPT::RecursiveLeastSquareSolver<problem,COPT::SolverTimeStatistics> 	rlssolver;
 
-typedef double		 					FT;
-typedef COPT::Array<FT> 				Array;
-typedef COPT::VectorBase<FT>			Vector;
-typedef COPT::MatrixBase<FT>	 		Matrix;
-typedef COPT::KernelTrait<FT>			kernel;
-
-
+const int m = 180;
+const int n = 360;
 int main(int argc,char* argv[])
 {
-	Matrix A(4,2); 
- 	A(0,0) = 1; A(0,1) = -1;
- 	A(1,0) = -1;A(1,1) = 1; 
- 	A(2,0) = 2; A(2,1) = -2;
- 	A(3,0) = -3;A(3,1) = 1;
- 	Vector b(4);
- 	b[0] = 1;
- 	b[1] = 2;
- 	b[2] = 3;
- 	b[3] = 4;
- 	std::cout<<A<<std::endl;
- 	std::cout<<b<<std::endl;
- 	typedef COPT::LeastSquaresSolver<FT>       LeastSquares;
- 	LeastSquares ls(A,b);
- 	Vector x(2);
- 	ls.solve(x);
- 	ls.printInfo();
- 	ls.setType(LeastSquares::LS);
- 	ls.solve(x);
- 	ls.printInfo();
- 	ls.setType(LeastSquares::RLS);
- 	ls.solve(x);
- 	ls.printInfo();
+	Matrix A;
+	Vector b;
+	A = Matrix::random(m,n);
+	b = Vector::random(m);
+	problem pro(A,b);
+	lmssolver lmssol(pro);
+
+	COPT::Printer::printType(A,std::cout);
+
+	lmssol.solve();
+
 }
