@@ -143,7 +143,7 @@ public:
 	{}
 	~VectorFunctionSystem(){}
 
-	Vector FunctionValue( Vector& vec) 
+	Vector FunctionValue(const Vector& vec) const
 	{
 		Vector f(__m);
 		f[0] = (vec[0]-50)*(vec[0]-50) + (vec[1]-10)*(vec[1]-20);
@@ -151,7 +151,7 @@ public:
 		return f;
 	}
 
-	Matrix JacobiFun( Vector& vec) 
+	Matrix JacobiFun(const Vector& vec) const
 	{
 		Matrix J(__m, __n);
 		J(0, 0) = 2*vec[0]-100;
