@@ -57,13 +57,13 @@
 #include "Algorithms/AlternatingDirectionMethodOfMultipliers.hpp"
 #include "Algorithms/NonLinearSolver.hpp"
 #include "Algorithms/NonLinearSolverImpl.hpp"
-#include "Algorithms/NonLinearSquare.hpp"
+
 #include "Algorithms/Simplex.hpp"
 #include "Algorithms/omp.hpp"
 #include "Algorithms/ProximalOperator.hpp"
 #include "Algorithms/Lasso.hpp"
 #include "LinearAlgo/Eigenvalue.hpp"
-
+#include "Algorithms/NonLinearSquare.hpp"
 #include "LinearAlgo/LinearSolver.hpp"
 #include "LinearAlgo/LUSolver.hpp"
 #include "LinearAlgo/CholeskySolver.hpp"
