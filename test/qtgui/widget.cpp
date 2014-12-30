@@ -7,6 +7,7 @@
 #include <fstream>
 #include <QPalette>
 #include <QColorDialog>
+#include <QComboBox>
 
 
 PlotWidget::PlotWidget(QWidget*parent , const QwtText& text )
@@ -31,7 +32,10 @@ PlotWidget::PlotWidget(QWidget*parent , const QwtText& text )
 	QPushButton *cancelbutton 	= new QPushButton("Cancel");
 	QPushButton *changebutton 	= new QPushButton("Background");
 
+	QComboBox *combobox = new QComboBox;
+	combobox->addItem("1");
 	/** set the vlayout */
+	vlayout->addWidget(combobox);
 	vlayout->addStretch();
 	vlayout->addWidget(testbutton);
 	vlayout->addWidget(readbutton);
@@ -46,6 +50,8 @@ PlotWidget::PlotWidget(QWidget*parent , const QwtText& text )
 	connect(changebutton,SIGNAL(clicked()),this,SLOT(changeBackground()));
 
 	connect(__color_dialog,SIGNAL(currentColorChanged(const QColor&)),this,SLOT(setPlotWidgetBackground(const QColor&)));
+
+	connect(combobox,SIGNAL(activated(int)),__plot_widget,SLOT(setCurrentIndex(int)));
 
 	reinterpret_cast<QwtPlot*>(__plot_widget->currentWidget())->replot();
 }

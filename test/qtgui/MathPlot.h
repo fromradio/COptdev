@@ -5,12 +5,16 @@
 #include <qwt/qwt_plot.h>
 #include <qwt/qwt_plot_curve.h>
 #include <qwt/qwt_text.h>
+#include <list>
 
 class MathPlot : public QStackedWidget
 {
 	Q_OBJECT
 
-	int 			__plot_size;
+	QwtText 					__text;
+	QWidget* 					__parent;
+	std::list<QwtPlot*>			__plots;
+	int 						__number_of_plots;
 	
 public:
 
@@ -18,7 +22,9 @@ public:
 
 	QSize minimumSizeHint() const;
 
-	int insertOneQwtPlot();
+	void pushOneQwtPlot();
+
+	void popOneQwtPlot();
 
 };
 

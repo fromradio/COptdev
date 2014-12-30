@@ -5,177 +5,309 @@
 namespace COPT
 {
 
-template<class T>
+template<class Problem, class Time = NoTimeStatistics>
 class NonLinearSquare
+	:
+	public GeneralSolver<typename Problem::KernelTrait, Time>
 {
 private:
-	typedef VectorBase<T>					VT;
-	typedef MatrixBase<T>	 			Matrix;
+	typedef typename Problem::KernelTrait::index		index;
+	typedef typename Problem::KernelTrait::scalar 		scalar;
+	typedef typename Problem::KernelTrait::Vector 		Vector;
+	typedef typename Problem::KernelTrait::Matrix 		Matrix;
+
 	/*
 	 *		vector functions that are used
 	 *				
 	 */
-	VectorFunctionSystem<T>*		__vfs;
+
+	 const Problem&				__p;
 	//	point value
-	VT 						  		  __x;
+	Vector						__x;
 	//	function dimension
-	int 							  __m;
+	index 						__m;
 	//	variable dimension
-	int 							  __n;
+	index						__n;
 	//	constants
-	T 							 	__tao;
-	int 							  __v;
-	int 						__iternum;
+	scalar 						__tao;
+	scalar						__v;
+	//	iteration number
+	index 						__iter_num;
+	index						__maxiteration;
+	/*	A is approximately equal to Hessian	matrix 	*/	
+	Matrix 						__A;	
+	/*	g is approximately equal to Gradient	*/
+	Vector 						__g;
+	//	scaling factor
+	scalar						__u;
+	bool						__found;
 
 
 	/*
 	 *		non-linear square solver
 	 */
-	void           			    doSolve();
 
+	void solvingBegin();
+	void doCompute();
+	scalar doOneIteration();
+	void doSolve();
 public:
 	/*
 	 *		Constructor
 	 */ 
 	NonLinearSquare(
-		VectorFunctionSystem<T>* vfs,
-		int m,
-		int n,
-		T tao = 1e-3,
-		int v = 2,
-		int iternum = 100
+		const Problem& p,
+		const Vector& x,
+		const scalar tao = 1e-3,
+		const scalar v = 2.0,
+		const index iternum = 1000
 		);
 	
-	/*
-	 *		Destructor
-	 */ 
-	~NonLinearSquare();
-
-	void solve(VT& initial_x);
-
 	// 	output
 	void printInfo();
+	//	objective value
+	scalar objective() const;
 	// 	optimal point
-	VT& OptimalPoint() {return __x;}
+	const Vector& result() const;
 
 };
 
-template<class T>
-NonLinearSquare<T>::NonLinearSquare(
-	VectorFunctionSystem<T>* vfs,
-	int m,
-	int n,
-	T tao,
-	int v,
-	int iternum
+template<class Problem,class Time>
+void NonLinearSquare<Problem,Time>::doCompute( )
+{
+	__A = __p.Jacobi(__x).transpose()*(__p.Jacobi(__x));	
+	__g = __p.Jacobi(__x)*(__p.Fvalue(__x));
+
+	scalar max = fabs(__A(0,0));
+	for(int i=0; i<__n; i++){
+		if(fabs(__A(i,i))>max)
+			max=__A(i,i);
+	}
+	__u = __tao*max;
+}
+
+template<class Problem,class Time>
+NonLinearSquare<Problem,Time>::NonLinearSquare( 
+	const Problem& p,
+	const Vector& x,
+	const scalar tao,
+	const scalar v,
+	const index iternum
 	)
-    :
-    __vfs(vfs),
-    __m(m),
-    __n(n),
-    __tao(tao),
-    __v(v),
-    __iternum(iternum)
+    	:
+    	__p(p),
+    	__x(x),
+    	__tao(tao),
+    	__v(v),
+    	__maxiteration(iternum)
 {
 
+	this->doCompute();
 }
 
-template<class T>
-NonLinearSquare<T>::~NonLinearSquare()
+template<class Problem,class Time>
+void NonLinearSquare<Problem,Time>::solvingBegin()
 {
-
+	__m = __p.functiondimension();
+	__n = __p.variabledimension();
 }
 
-template<class T>
-void NonLinearSquare<T>::doSolve()
+template<class Problem,class Time>
+typename NonLinearSquare<Problem,Time>::scalar  NonLinearSquare<Problem,Time>::doOneIteration()
 {
 	/*
 		Levenberg Marquardt method
 	*/
 
-	/*	A is approximately equal to Hessian	matrix 	*/	
-	Matrix A = __vfs->JacobiFun(__x).transpose()*(__vfs->JacobiFun(__x));	
-	/*	g is approximately equal to Gradient	*/
-	VT g = __vfs->JacobiFun(__x)*(__vfs->FunctionValue(__x));
+	scalar e = 1e-8;
+	scalar rho;
+	Vector h;
+	Vector x;
 
-	double max = fabs(A(0,0));
+	__found = (__g.dot(__g) <= e);
+	Matrix B(__A);
+	Vector k(__g);	
+
 	for(int i=0; i<__n; i++){
-		if(fabs(A(i,i))>max)
-			max=A(i,i);
+		B(i,i) = __A(i,i)+__u;
+		k[i]=-__g[i];
 	}
-	double u = __tao*max;
+		
+	/*	Solve linear equations	*/	
+	h = B.solve(k);
 
-	/*
-	 *	the iteration terminals if the error is less than a threshold
-	 *		or the iteration number is larger than a threshold
-	 */
-	int iternum = 0;
-	/*	error	*/
-	double e = 1e-8;
-	
-	bool found = ( g.dot(g) <= e );
-	double p;
+	if ( h.dot(h) < e*(e+__x.dot(__x)) )
+	{
+		__found = true;
+		return h.dot(h);
+	}
+	else
+	{
+		x = __x + h;
 
-	VT x;
-	
-	while ( !found && iternum < __iternum ){
-		++ iternum;
-		Matrix B(A);
-		VT k(g);	
-		for(int i=0; i<__n; i++){
-			B(i,i) = A(i,i)+u;
-			k[i]=-g[i];
-		}
-			
-		/*	Solve linear equations	*/	
-		VT h = B.solve(k);
+		/*	Judgment flag	rho = (F(__x)-F(x))/L(h,u,g)	*/
+		rho = (__p.Fvalue(__x).dot(__p.Fvalue(__x))/2-__p.Fvalue(x).dot(__p.Fvalue(x))/2)/(0.5*h.dot(__u*h-__g));
 
-		if ( h.dot(h) < e*(e+__x.dot(__x)) )
+		if (rho > 0.0)
 		{
-			found = true;
+			__x = x;
+			__A = __p.Jacobi(__x).transpose()*(__p.Jacobi(__x));
+			__g = __p.Jacobi(__x).transpose()*(__p.Fvalue(__x));
+			__found = ( __g.dot(__g) <= e );
+			scalar uu=1/3;
+			if ( 1-(2*rho-1)*(2*rho-1)*(2*rho-1) > uu )
+			{
+				uu = 1-(2*rho-1)*(2*rho-1)*(2*rho-1);
+			}
+			__u = __u*uu;
+			__v = 2.0;
 		}
 		else
 		{
-			x = __x + h;
-
-			/*	Judgment flag	p = (F(__x)-F(x))/L(h,u,g)	*/
-			p = (__vfs->FunctionValue(__x).dot(__vfs->FunctionValue(__x))/2-__vfs->FunctionValue(x).dot(__vfs->FunctionValue(x))/2)/(0.5*h.dot(u*h-g));
-
-			if (p > 0.0)
-			{
-				__x = x;
-				A = __vfs->JacobiFun(__x).transpose()*(__vfs->JacobiFun(__x));
-				g = __vfs->JacobiFun(__x).transpose()*(__vfs->FunctionValue(__x));
-				found = ( g.dot(g) <= e );
-				double uu=1/3;
-				if ( 1-(2*p-1)*(2*p-1)*(2*p-1) > uu )
-				{
-					uu = 1-(2*p-1)*(2*p-1)*(2*p-1);
-				}
-				u = u*uu;
-				__v = 2;
-			}
-			else
-			{
-				u = u*__v;
-				__v = 2*__v;
-			}			
-		}
+			__u = __u*__v;
+			__v = 2*__v;
+		}	
+		return __g.dot(__g);		
 	}
 }
 
-template<class T>
-void NonLinearSquare<T>::solve(VT& initial_x)
+template<class Problem,class Time>
+void NonLinearSquare<Problem,Time>::doSolve()
 {
-	__x = initial_x;
-	doSolve();
+	__iter_num = 0;
+	do
+	{
+		this->__estimated_error = this->oneIteration();
+		if(++__iter_num >= __maxiteration)
+		{
+			this->__terminal_type = this->MaxIteration;
+			break;
+		}
+	}while( !__found );
+	if( __found )
+		this->__terminal_type = this->Optimal;
 }
 
-template<class T>
-void NonLinearSquare<T>::printInfo()
+template<class Problem,class Time>
+void NonLinearSquare<Problem,Time>::printInfo()
 {
 	std::cout<<"The optimal point is "<<__x<<std::endl;
 }
+
+template<class Problem,class Time>
+typename NonLinearSquare<Problem,Time>::scalar NonLinearSquare<Problem,Time>::objective() const
+{
+	return __p.objective(__x);
+}
+
+template<class Problem,class Time>
+const typename NonLinearSquare<Problem,Time>::Vector& NonLinearSquare<Problem,Time>::result() const
+{
+	return __x;
+}
+
+
+/***********************Implementation of NonLinearSquareProblem************************/
+
+template<class kernel>
+class NonLinearSquareProblem
+	:
+	public VectorProblem<kernel>
+{
+private:
+	typedef typename kernel::index			index;
+	typedef typename kernel::scalar 		scalar;
+	typedef typename kernel::Matrix 		Matrix;
+	typedef typename kernel::Vector 		Vector;
+
+	VectorFunctionSystem<scalar>		__vfs;
+	index 					__m;
+	index 					__n;
+	scalar					__lambda;
+
+public:
+	NonLinearSquareProblem(
+		const VectorFunctionSystem<scalar>& vfs,
+		const index m,
+		const index n,
+		const scalar lambda = 0.5);
+
+	bool isValidInput (const Vector& x) const;
+	bool isValid() const;
+	const index& functiondimension() const;
+	const index& variabledimension() const;
+	const scalar& lambda() const;
+	Vector Fvalue(const Vector& x) const;
+	Matrix Jacobi(const Vector& x) const;
+	scalar objective( const Vector& x) const;
+
+};
+
+
+template<class kernel>
+NonLinearSquareProblem<kernel>::NonLinearSquareProblem(
+	const VectorFunctionSystem<scalar>& vfs,
+	const index m,
+	const index n,
+	const scalar lambda)
+	:
+	__vfs(vfs),
+	__m(m),
+	__n(n),
+	__lambda(lambda)
+{  
+}
+
+template<class kernel>
+bool NonLinearSquareProblem<kernel>::isValidInput( const Vector& x ) const
+{
+	return ( x.size() == __n);
+}
+
+template<class kernel>
+bool NonLinearSquareProblem<kernel>::isValid() const
+{
+	return ( __m <= __n);
+}
+
+template<class kernel>
+const typename kernel::index& NonLinearSquareProblem<kernel>::functiondimension() const
+{
+	return __m;
+}
+
+template<class kernel>
+const typename kernel::index& NonLinearSquareProblem<kernel>::variabledimension() const
+{
+	return __n;
+}
+
+template<class kernel>
+const typename kernel::scalar& NonLinearSquareProblem<kernel>::lambda() const
+{
+	return __lambda;
+}
+
+template<class kernel>
+typename kernel::Vector NonLinearSquareProblem<kernel>::Fvalue(const Vector& x ) const
+{
+	return __vfs.FunctionValue(x);
+}
+
+template<class kernel>
+typename kernel::Matrix NonLinearSquareProblem<kernel>::Jacobi(const Vector& x ) const
+{
+	return __vfs.JacobiFun(x);
+}
+
+template<class kernel>
+typename kernel::scalar NonLinearSquareProblem<kernel>::objective( const Vector& x ) const
+{
+	return __vfs.FunctionValue(x).dot(__vfs.FunctionValue(x));
+}
+
+
+/***********************Implementation of VectorProblem************************/
 
 
 } // End of namespace COPT
