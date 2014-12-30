@@ -7,6 +7,18 @@
 
 namespace COPT
 {
+/*			QR factorization of a dense matrix. 
+ *			The solver is kind of  Lapack wrapper which uses traditional 
+ *			lapack solver to factorize a dense matrix. Unlike directly solving a linear system, this QR solver first factorize the matrix and stores necessary information. Then the coming right hand vectors are easily solved in a short time. What's more, the solver derives from 'LinearSolver'.
+ *			
+ *			Usage introduction:
+ *				The QR solver takes the type of matrix as template. The first thing you have to do is to make sure what matrix is used. (real and complex matrices are supported )
+ *			Kernel functions:
+ *				void QR::compute( const Matrix& mat ): the function computes the input matrix and stores everthing need
+ *				Vector QR::compute( const Vector& b ): solves a linear system Ax=b where A is the input matrix in compute.
+ *				Matrix QR::compute( const Matrix& b ): similar to the former one but takes Matrix as input and output type meanning several right hand vectors are computed.
+ *
+ */
 template<class Matrix>
 class QR
 	:
@@ -26,8 +38,8 @@ private:
 	index 					__info;
 	//%}
 
-	void doCompute ( const Matrix& mat );
 
+	void doCompute ( const Matrix& mat );
 	Vector doSolve( const Vector& b );
 	Matrix doSolve( const Matrix& b );
 public:

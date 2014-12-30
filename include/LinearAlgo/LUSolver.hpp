@@ -7,8 +7,7 @@
 namespace COPT
 {
 
-/*			LU solver of a general linear system. This is actually a
- *			wrapper of famous library lapack. 
+/*			LU solver of a general linear system. This is actually a wrapper of famous library lapack. The solver aims to factorize any input matrix A with A=LU. 
  *
  *
  */

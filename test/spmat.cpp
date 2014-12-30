@@ -1,13 +1,13 @@
 #include <Header>
 
 
-typedef double		 					FT;
-typedef COPT::KernelTrait<FT>			kernel;
-typedef kernel::Array 					Array;
-typedef kernel::Vector 					Vector;
-typedef kernel::Matrix 					Matrix;
-typedef COPT::TripletBase<FT>		 	Triplet;
-typedef COPT::SpMatrixBase<FT,int>		SpMatrix;
+typedef double		 						FT;
+typedef COPT::KernelTrait<FT,int>			kernel;
+typedef kernel::Array 						Array;
+typedef kernel::Vector 						Vector;
+typedef kernel::Matrix 						Matrix;
+typedef COPT::TripletBase<FT,int>		 	Triplet;
+typedef COPT::SpMatrixBase<FT,int>			SpMatrix;
 
 int main(int argc,char* argv[])
 {

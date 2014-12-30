@@ -16,14 +16,14 @@
 
 #include <iterator>
 #include <complex>
-#include "ThirdParty/cblas.h"
-#include "ThirdParty/clapack.h"
+#include <ThirdParty/cblas.h>
+#include <ThirdParty/clapack.h>
 #include <umfpack.h>
 #include <algorithm>
 #include <limits>
 
 
-// #define EIGEN 1
+#define EIGEN 1
 
 #ifdef EIGEN
 #include <Eigen/Dense>
@@ -50,17 +50,6 @@
 #include "Base/Function.hpp"
 #include "Base/Solver.hpp"
 #include "FunctionRepository/FuncRepository.hpp"
-
-/** Linear Algorithms */
-#include "LinearAlgo/LinearSolver.hpp"
-#include "LinearAlgo/Eigenvalue.hpp"
-#include "LinearAlgo/LUSolver.hpp"
-#include "LinearAlgo/CholeskySolver.hpp"
-#include "LinearAlgo/QRSolver.hpp"
-#include "LinearAlgo/EigenWrapper.hpp"
-
-
-
 #include "Algorithms/Conjugate.hpp"
 #include "Algorithms/LineSearch.hpp"
 #include "Algorithms/BFGS.hpp"
@@ -68,12 +57,25 @@
 #include "Algorithms/AlternatingDirectionMethodOfMultipliers.hpp"
 #include "Algorithms/NonLinearSolver.hpp"
 #include "Algorithms/NonLinearSolverImpl.hpp"
-
+#include "Algorithms/NonLinearSquare.hpp"
 #include "Algorithms/Simplex.hpp"
 #include "Algorithms/omp.hpp"
 #include "Algorithms/ProximalOperator.hpp"
 #include "Algorithms/Lasso.hpp"
+<<<<<<< HEAD
+#include "LinearAlgo/Eigenvalue.hpp"
 
+#include "LinearAlgo/LinearSolver.hpp"
+=======
+
+/** Linear Algorithms */
+#include "LinearAlgo/LinearSolver.hpp"
+#include "LinearAlgo/Eigenvalue.hpp"
+>>>>>>> upstream/master
+#include "LinearAlgo/LUSolver.hpp"
+#include "LinearAlgo/CholeskySolver.hpp"
+#include "LinearAlgo/QRSolver.hpp"
+#include "LinearAlgo/EigenWrapper.hpp"
 
 #include "Problems/LPProblem.hpp"
 #include "Problems/BPProblem.hpp"

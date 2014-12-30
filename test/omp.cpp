@@ -1,12 +1,12 @@
 #include <Header>
 
 typedef double		 					FT;
-typedef COPT::Array<FT> 				Array;
-typedef COPT::VectorBase<FT,long>		Vector;
-typedef COPT::MatrixBase<FT,long>	 	Matrix;
-typedef COPT::TripletBase<FT>		 	Triplet;
-typedef COPT::SpMatrixBase<FT>			SpMatrix;
-typedef COPT::KernelTrait<FT,long>		kernel;
+typedef COPT::Array<FT,int> 			Array;
+typedef COPT::VectorBase<FT,int>		Vector;
+typedef COPT::MatrixBase<FT,int>	 	Matrix;
+typedef COPT::TripletBase<FT,int>		 	Triplet;
+typedef COPT::SpMatrixBase<FT,int>			SpMatrix;
+typedef COPT::KernelTrait<FT,int>		kernel;
 typedef COPT::OMPSolver<kernel>			OMPSolver;
 
 int main(int argc,char*argv[])
@@ -27,17 +27,4 @@ int main(int argc,char*argv[])
 	solver.solve(b,3 );
 	std::cout<<"result is "<<solver.result()<<std::endl; 
 	std::cout<<"fitting error is "<<solver.fittingError()<<std::endl;
-	// OMPSolver::normalizeAtomMatrix(A,norms);
-	// std::cout<<A<<std::endl;
-	// std::cout<<"norms are "<<norms<<std::endl;
-	// Matrix ATA = A.transpose()*A;
-	// OMPSolver::normalizeAtomMatrix(A,ATA,norms);
-	// std::cout<<ATA<<std::endl;
-	// std::list<long> indices;
-	// indices.push_back(OMPSolver::findIndex(A,b));
-	// Vector co;
-	// Vector residual;
-	// OMPSolver::updateCoefficient(A,A.transpose(),ATA,b,indices,co,residual);
-	// std::cout<<co<<std::endl;
-	// std::cout<<residual<<std::endl;
 }

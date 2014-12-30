@@ -238,7 +238,6 @@ int main(int argc,char* argv[])
 	COPT::NonLinearSquare<FT> lm(&func, 2, 2);
 	lm.solve(initial_x);
 	lm.printInfo();
-
 }
 
 
