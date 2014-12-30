@@ -1,9 +1,16 @@
-#ifndef BASICOPERATION_H
-#define BASICOPERATION_H
+//		Copyright (C) Ruimin Wang, ruimin.wang13@gmail.com
+//		Copyright (C) MathU
 
+#ifndef BASIC_DEFINITION_HPP__
+#define BASIC_DEFINITION_HPP__
+
+/*			This file introduces basic definitions of open source library
+ *			COPT. 
+ *
+ */
 namespace COPT
 {
-	
+
 #ifdef _WIN64
 typedef __int64 		COPTlong;
 #else

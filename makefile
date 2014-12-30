@@ -5,7 +5,7 @@
 
 include ./Makefile.in
 
-all: matrix simplex vecmat spmat umfpack umfpackwrapper omp ls eigen lapack proximal mpitest lasso eigensolver iotest lpproblem lu 
+all: matrix simplex vecmat spmat umfpack umfpackwrapper omp ls nls eigen lapack proximal mpitest lasso eigensolver iotest lpproblem lu 
 
 matrix: bin/matrix
 bin/matrix: obj/matrix.o
@@ -53,6 +53,12 @@ ls: bin/ls
 bin/ls: obj/ls.o
 	$(CXX) obj/ls.o -L$(DIR_LIB) -o $@ $(LIB)
 obj/ls.o: test/ls.cpp
+	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
+
+nls: bin/nls
+bin/nls: obj/nls.o
+	$(CXX) obj/nls.o -L$(DIR_LIB) -o $@ $(LIB)
+obj/nls.o: test/nls.cpp
 	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
 
 eigen: bin/eigen
