@@ -3,19 +3,6 @@
 
 namespace COPT
 {
-
-// #if defined(__LP__64)
-	typedef int 		copt_int;
-	typedef int 		copt_logical;
-	typedef float 		copt_real;
-	typedef double 		copt_doublereal;
-// #else
-	// typedef long int 	copt_int;
-	// typedef long int 	copt_logical;
-	// typedef float 		copt_real;
-	// typedef double 		copt_doublereal;
-// #endif
-
 	
 #ifdef _WIN64
 typedef __int64 		COPTlong;
@@ -23,7 +10,9 @@ typedef __int64 		COPTlong;
 typedef long 			COPTlong;
 #endif
 typedef unsigned long 	longsize;
-/** COPTlong */
+
+/** the string that is used */
+typedef std::string 			ostring;
 
 
 const double ZERO_THRESH = 1e-10;				// the threshold to judge whether a scalar is zero

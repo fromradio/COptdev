@@ -9,10 +9,10 @@
 */
 namespace COPT{
 
-/*		A general design for solver. The solver derives from a Time
- *		Stastistics class to help it compute time cost of the solver.
- *		The solver contains general information like max iteration 
- *		number, final iteration number, threshold, estimated error
+/*			A general design for solver. The solver derives from a Time
+ *			Stastistics class to help it compute time cost of the solver.
+ *			The solver contains general information like max iteration 
+ *			number, final iteration number, threshold, estimated error
  */	
 template<class kernel , class Time=NoTimeStatistics>
 class GeneralSolver
@@ -29,9 +29,10 @@ public:
 		NotFeasible
 	};
 protected:
+
 	typedef typename kernel::index 				index;
 	typedef typename kernel::scalar 			scalar;
-	typedef typename get_pod_type<scalar>::type podscalar;
+	typedef typename kernel::podscalar 			podscalar;
 	typedef typename kernel::Vector 			Vector;
 
 	/** the journal list of solver */

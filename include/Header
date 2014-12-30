@@ -27,10 +27,10 @@
 #include <umfpack.h>
 
 /** Base of COPT */
+#include "Base/BasicDefinition.hpp"
 #include "Base/Traits.hpp"
 #include "Base/COException.hpp"
 #include "Base/Object.hpp"
-#include "Base/BasicOperation.hpp"
 #include "Base/TimeStatistics.hpp"
 #include "Base/JournalList.hpp"
 #include "Base/Printer.hpp"
