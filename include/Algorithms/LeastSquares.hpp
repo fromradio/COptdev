@@ -8,338 +8,545 @@
 
 namespace COPT
 {
-/*			class "LeastSquaresSolver"
-*           Currently,three methods are contained:
-*           Least Mean Square Method
-*           Least Square Method
-*           Recursive Least Square Method
-*/
-template<class Scalar>
-class LeastSquaresSolver
+/*         Least Mean Square solver for LeastSquares problem
+*
+*
+*/ 
+template<class Problem,class Time = NoTimeStatistics>
+class LeastMeanSquareSolver
+    :
+    public GeneralSolver<typename Problem::KernelTrait,Time>
 {
-public:
-	/** enum: type of algorithms */
-	enum SolverType{
-		LMS,       //Least Mean Square method
-		LS,        //Least Square method
-		RLS,       //Recursive Least Square method
-	};
-
 private:
+	typedef typename Problem::KernelTrait::index		index;
+	typedef typename Problem::KernelTrait::scalar 		scalar;
+	typedef typename Problem::KernelTrait::Vector 		Vector;
+	typedef typename Problem::KernelTrait::Matrix 		Matrix;
 	/** private variables */
 	//%{
+	/** the reference to the problem */
+	const Problem&              __p;
+
 	/** the coefficient matrix */
-	const MatrixBase<Scalar>&   __A;
+	Matrix                      __A;
 
 	/** constant vector */
-	const VectorBase<Scalar>&   __b;
+	Vector                      __b;
+
+	/** iteration number */
+	scalar                      __iter_n;
+
+	/** rows of __A */
+	Vector                      __Ar;
+
+	/** elements of __b */
+	scalar                      __be;
 
 	/** parameter of Least Mean Square method */
-	Scalar                      __mu;
-
-	/** parameter of Recursive Least Square method */
-	Scalar                      __lam;
-
-	/** parameter of Recursive Least Square method */
-	Scalar                      __delta;
+	scalar                      __mu;
 
 	/** the final result */
-	VectorBase<Scalar>          __x;
-
-	/** the type of the solver,LMS as default */
-	SolverType                  __type;
+	Vector                      __x;
 
 	//%} end of variables
 
-    /** the main algorithm */
-	void            doSolve();	
+	// void init();
+
+	LeastMeanSquareSolver();
+
+	void doSolve();
+
+	void solvingBegin();
+	void doCompute();
+	scalar doOneIteration();
+
 
 public:
+
+//	typedef leastmeansquare_solver              ObjectCategory;
 	/** constructor and deconstructor */
 	//%{
-	LeastSquaresSolver(
-		const MatrixBase<Scalar>& A,
-		const VectorBase<Scalar>& b,
-		const Scalar mu = 0.01,
-		const Scalar lam = 1,
-		const Scalar delta = 250,
-		const SolverType type = LMS
-		);
+	LeastMeanSquareSolver(
+		const Problem& s ,
+		const scalar mu = 0.01);
+
 	//%} end of constructor and deconstructor
 
 	/** setter and getter */
 	//%{
-	/** set the type of the solver:LMS,LS or RLS */
-	void setType(const SolverType type);
-
-    /** interface for solving the problem */
-	void solve(VectorBase<Scalar>& x);
-
+	/** the final result of proximal solver */
+	const Vector& result() const;
 	//%}
 
-	/** print the solver information */
-	void printInfo();
+	scalar objective() const;
 
-	/** return the result */
-	const VectorBase<Scalar>& result() const{return __x;}
-
-
-
-public:
-	/** algorithms */
-	//%{
-
-	/*
-	 *    Least Mean Square algorithm
-	 *    /param A:          the coefficient matrix
-	 *    /param b:          constant vector
-	 *    /param mu:         step size
-	 *    /param x:          weight we want to find
-	 */
-	static inline void leastMeanSquareMethod(
-		const MatrixBase<Scalar>& A,
-		const VectorBase<Scalar>& b,
-		const Scalar mu,
-		VectorBase<Scalar>& x
-		);
-
-	/*
-	 *    Least Square Method
-	 *    /param A:          the coefficient matrix
-	 *    /param b:          constant vector
-	 *    /param x:          weight we want to find
-	 */
-	static inline void leastSquareMethod(
-		const MatrixBase<Scalar>& A,
-		const VectorBase<Scalar>& b,
-		VectorBase<Scalar>& x
-		);
-
-	/*
-	 *    Recursive Least Square algorithm 
-	 *    /param A:         the coefficient matrix
-	 *    /param b:         constant vector
- 	 *    /param x:         weight we want to find   
-	 *    /param lam:       related to the forgetting factor
-	 *    /param delta:     in order to define P(0)   
-	 */
-	static inline void recursiveLeastSquareMethod(
-		const MatrixBase<Scalar>& A,
-		const VectorBase<Scalar>& b,
-		VectorBase<Scalar>& x,
-		const Scalar lam = 1,
-		const Scalar delta = 250);
-
-	//%} end of algorithms
-
-private:
-
-	/** private functions */
-	//%{
-
-	/*
-	 *    Least Mean Square algorithm update step
-	 *    /param a:         row of the coefficient matrix
-	 *    /param b:         target value corresponding to a
-	 *    /param mu:        step size
-	 *    /param x:         weight we find after each step
-	 */
-	static inline void leastMeanSquareUpdate(
-		const VectorBase<Scalar>& a,
-		const Scalar b,
-		const Scalar mu,
-		VectorBase<Scalar>& x
-	);
-
-	/*
-	 *    Recursive Least Square algorithm update step
-	 *    /param a:         row of the coefficient matrix
-	 *    /param b:         target value corresponding to a
-	 *    /param x:         weight we find after each step   
-	 *    /param p:         a trival variable    
-	 *    /param lam:       related to the forgetting factor
-	 *    /param delta:     in order to define P(0)   
-	 */
-	static inline void recursiveLeastSquareUpdate(
-		const VectorBase<Scalar>& a,
-		const Scalar b,
-		VectorBase<Scalar>& x,
-		MatrixBase<Scalar>& p,
-		const Scalar lam,
-		const Scalar delta
-	);
-
-	//%} end of private functions
 };
 
 
-template<class Scalar>
-LeastSquaresSolver<Scalar>::LeastSquaresSolver(
-	const MatrixBase<Scalar>& A,
-	const VectorBase<Scalar>& b,
-	const Scalar mu,
-	const Scalar lam,
-	const Scalar delta,
-	const SolverType type
-	)
+
+
+/*         Least Square solver for LeastSquares problem
+*
+*
+*/ 
+
+template<class Problem,class Time = NoTimeStatistics>
+class LeastSquareSolver
     :
-    __A(A),
-    __b(b),
-    __mu(mu),
-    __lam(lam),
-    __delta(delta),
-    __type(type)	
+    public GeneralSolver<typename Problem::KernelTrait,Time>
 {
-}
+private:
+	typedef typename Problem::KernelTrait::index		index;
+	typedef typename Problem::KernelTrait::scalar 		scalar;
+	typedef typename Problem::KernelTrait::Vector 		Vector;
+	typedef typename Problem::KernelTrait::Matrix 		Matrix;
+	/** private variables */
+	//%{
+	/** the reference to the problem */
+	const Problem&              __p;
+
+	/** the coefficient matrix */
+	Matrix                      __A;
+
+	/** constant vector */
+	Vector                      __b;
+
+	/** the final result */
+	Vector                      __x;
+
+	//%} end of variables
+
+	// void init();
+
+	LeastSquareSolver();
+
+	void doSolve();
+
+	void solvingBegin();
+	void doCompute();
+	scalar doOneIteration();
+    scalar objective() const;
 
 
-template<class Scalar>
-void LeastSquaresSolver<Scalar>::setType(const SolverType type)
+public:
+
+//	typedef leastsquare_solver              ObjectCategory;
+	/** constructor and deconstructor */
+	//%{
+	LeastSquareSolver(
+		const Problem& s);
+
+	//%} end of constructor and deconstructor
+
+	/** setter and getter */
+	//%{
+	/** the final result of proximal solver */
+	const Vector& result() const;
+	//%}
+
+};
+
+
+
+
+/*         Recursive Least Square solver for LeastSquares problem
+*
+*
+*/ 
+
+template<class Problem,class Time = NoTimeStatistics>
+class RecursiveLeastSquareSolver
+    :
+    public GeneralSolver<typename Problem::KernelTrait,Time>
 {
-	__type = type;
-}
+private:
+	typedef typename Problem::KernelTrait::index		index;
+	typedef typename Problem::KernelTrait::scalar 		scalar;
+	typedef typename Problem::KernelTrait::Vector 		Vector;
+	typedef typename Problem::KernelTrait::Matrix 		Matrix;
+	/** private variables */
+	//%{
+	/** the reference to the problem */
+	const Problem&              __p;
+
+	/** the coefficient matrix */
+	Matrix                      __A;
+
+	/** constant vector */
+	Vector                      __b;
+
+	/** iteration number , also rows of A */
+	scalar                      __iter_n;
+
+	/** cols number of A */
+	scalar                      __iter_m;
+
+	/** rows of __A */
+	Vector                      __Ar;
+
+	/** elements of __b */
+	scalar                      __be;
+
+	/** parameter of Recursive Least Square method */
+	scalar                      __lam;
+
+	/** parameter of Recursive Least Square method */
+	scalar                      __delta;
+
+	/** intermediate variable */
+	Matrix                      __inter_p;
+
+	/** the final result */
+	Vector                      __x;
+
+	//%} end of variables
+
+	// void init();
+
+	RecursiveLeastSquareSolver();
+
+	void doSolve();
+
+	void solvingBegin();
+	void doCompute();
+	scalar doOneIteration();
+	scalar objective() const;
 
 
-template<class Scalar>
-void LeastSquaresSolver<Scalar>::doSolve()
+public:
+
+//	typedef recursiveleastsquare_solver              ObjectCategory;
+	/** constructor and deconstructor */
+	//%{
+	RecursiveLeastSquareSolver(
+		const Problem& s ,
+		const scalar lam = 1 ,
+		const scalar delta = 250);
+
+	//%} end of constructor and deconstructor
+
+	/** setter and getter */
+	//%{
+	/** the final result of proximal solver */
+	const Vector& result() const;
+	//%}
+
+};
+
+
+
+	
+/*		The Least Squares problem class
+ *
+ */
+template<class kernel>
+class LeastSquaresProblem
+	:
+	public VectorProblem<kernel>
 {
-	switch(__type)
+private:
+	typedef typename kernel::scalar 		scalar;
+	typedef typename kernel::Matrix 		Matrix;
+	typedef typename kernel::Vector 		Vector;
+
+	const Matrix& 				__A;
+	const Vector& 				__b;
+
+public:
+
+	typedef kernel							KernelTrait;
+	// typedef leastsquares_problem					ObjectCategory;
+
+	LeastSquaresProblem(
+		const Matrix& A,
+		const Vector& b);
+
+	// void leastMeanSquareSolve();
+	// void leastSquareSolve();
+	// void recursiveLeastSquareSolve();
+
+
+	/** check whether the input is valid */
+	bool isValidInput( const Vector& x ) const;
+
+	/** check whether the problem is a valid problem */
+	bool isValid( ) const;
+
+
+	/** getter and setter */
+	//%{
+	const Matrix& matA() const;
+	const Vector& obB() const;
+	scalar objective( const Vector& x) const;
+	//%}
+};
+
+
+/*********************Implementation of LeastMeanSquareSolver ******************/
+
+
+template<class Problem,class Time>
+void LeastMeanSquareSolver<Problem,Time>::doSolve()
+{
+	this->__iter_num = 0;
+	do
 	{
-	case LMS:
+		this->__estimated_error = this->oneIteration();
+		if(++this->__iter_num>=__iter_n)
+		{
+			this->__terminal_type = this->MaxIteration;
+			break;
+		}
+	}while(this->__estimated_error>this->__thresh);
+	if(this->__estimated_error<=this->__thresh)
+		this->__terminal_type = this->Optimal;
+}
+
+template<class Problem,class Time>
+void LeastMeanSquareSolver<Problem,Time>::doCompute()
+{
+	__A = __p.matA();
+	__b = __p.obB();
+}
+
+template<class Problem,class Time>
+LeastMeanSquareSolver<Problem,Time>::LeastMeanSquareSolver( 
+	const Problem& s , 
+	const scalar mu)
+	:
+	__p(s),
+	__mu(mu)
+{
+	this->doCompute();
+}
+
+template<class Problem,class Time>
+void LeastMeanSquareSolver<Problem,Time>::solvingBegin()
+{
+	__x.resize(__A.cols());
+	__iter_n = __A.rows();
+}
+
+template<class Problem,class Time>
+typename LeastMeanSquareSolver<Problem,Time>::scalar LeastMeanSquareSolver<Problem,Time>::objective() const
+{
+	return __p.objective(__x);
+}
+
+template<class Problem,class Time>
+typename LeastMeanSquareSolver<Problem,Time>::scalar LeastMeanSquareSolver<Problem,Time>::doOneIteration()
+{
+	Vector xp = __x;
+	__Ar = __A.row(this->__iter_num);
+	__be = __b[this->__iter_num];
+	scalar e = __be - __Ar.dot(__x);
+	__x = __x + __mu*e*__Ar;
+	return std::sqrt((xp-__x).squaredNorm());
+}
+
+template<class Problem,class Time>
+const typename LeastMeanSquareSolver<Problem,Time>::Vector& LeastMeanSquareSolver<Problem,Time>::result() const
+{
+	return __x;
+}
+
+
+
+/*********************Implementation of LeastSquareSolver ******************/
+
+template<class Problem,class Time>
+void LeastSquareSolver<Problem,Time>::doSolve()
+{
+	this->__estimated_error = this->oneIteration();
+	if(this->__estimated_error<=this->__thresh)
+		this->__terminal_type = this->Optimal;
+}
+
+template<class Problem,class Time>
+void LeastSquareSolver<Problem,Time>::doCompute()
+{
+	__A = __p.matA();
+	__b = __p.obB();
+}
+
+template<class Problem,class Time>
+LeastSquareSolver<Problem,Time>::LeastSquareSolver( 
+	const Problem& s)
+	:
+	__p(s)
+{
+	this->doCompute();
+}
+
+template<class Problem,class Time>
+void LeastSquareSolver<Problem,Time>::solvingBegin() 
+{
+	__x.resize(__A.cols());
+}
+
+template<class Problem,class Time>
+typename LeastSquareSolver<Problem,Time>::scalar LeastSquareSolver<Problem,Time>::objective() const
+{
+	return __p.objective(__x);
+}
+
+template<class Problem,class Time>
+typename LeastSquareSolver<Problem,Time>::scalar LeastSquareSolver<Problem,Time>::doOneIteration()
+{
+	Vector xp = __x;
+	__x = (__A.transpose()*__A).solve(__A.transpose()*__b);
+	return std::sqrt((xp-__x).squaredNorm());
+}
+
+template<class Problem,class Time>
+const typename LeastSquareSolver<Problem,Time>::Vector& LeastSquareSolver<Problem,Time>::result() const
+{
+	return __x;
+}
+
+
+
+/*********************Implementation of RecursiveLeastSquareSolver ******************/
+
+template<class Problem,class Time>
+void RecursiveLeastSquareSolver<Problem,Time>::doSolve()
+{
+	this->__iter_num = 0;
+	do
 	{
-		leastMeanSquareMethod(
-			__A,
-			__b,
-			__mu,
-			__x);
-	}
-	break;
-	case LS:
-	{
-		leastSquareMethod(
-			__A,
-			__b,
-			__x);
-	}
-	break;
-	case RLS:
-	{
-		recursiveLeastSquareMethod(
-			__A,
-			__b,
-			__x,
-			__lam,
-			__delta);
-	}
-	break;
-	}
+		this->__estimated_error = this->oneIteration();
+		if(++this->__iter_num >= __iter_n)
+		{
+			this->__terminal_type = this->MaxIteration;
+			break;
+		}
+	}while(this->__estimated_error>this->__thresh);
+	if(this->__estimated_error<=this->__thresh)
+		this->__terminal_type = this->Optimal;
 }
 
-template<class Scalar>
-void LeastSquaresSolver<Scalar>::solve(
-	VectorBase<Scalar>& x
-	)
+template<class Problem,class Time>
+void RecursiveLeastSquareSolver<Problem,Time>::doCompute()
 {
-	__x = x;
-	doSolve();
+	__A = __p.matA();
+	__b = __p.obB();
 }
 
-template<class Scalar>
-void LeastSquaresSolver<Scalar>::printInfo()
+template<class Problem,class Time>
+RecursiveLeastSquareSolver<Problem,Time>::RecursiveLeastSquareSolver( 
+	const Problem& s , 
+	const scalar lam ,
+	const scalar delta)
+	:
+	__p(s),
+	__lam(lam),
+	__delta(delta)
 {
-	std::cout<<"The result of LeastSquares solver by ";
-	switch(__type){
-	case LMS:
-	{
-		std::cout<<"Least Mean Square Method";
-	}
-	break;
-	case LS:
-	{
-		std::cout<<"Least Square Method";
-	}
-	break;
-	case RLS:
-	{
-		std::cout<<"Recursive Least Square Method";
-	}
-	break;
-	}
-	std::cout<<":"<<std::endl;
-	std::cout<<__x<<std::endl;
+	this->doCompute();
 }
 
-template<class Scalar>
-void LeastSquaresSolver<Scalar>::leastMeanSquareUpdate(
-	const VectorBase<Scalar>& a,
-	const Scalar b,
-	const Scalar mu,
-	VectorBase<Scalar>& x
-	)
+template<class Problem,class Time>
+void RecursiveLeastSquareSolver<Problem,Time>::solvingBegin() 
 {
-	Scalar e = b - a.dot(x);
-	x = x + mu*e*a;
+	__x.resize(__A.cols());
+	__iter_n = __A.rows();
+	__iter_m = __A.cols();
+	__inter_p = __delta*Matrix::identity(__iter_m,__iter_m);
 }
 
-template<class Scalar>
-void LeastSquaresSolver<Scalar>::leastMeanSquareMethod(
-	const MatrixBase<Scalar>& A,
-	const VectorBase<Scalar>& b,
-	const Scalar mu,
-	VectorBase<Scalar>& x 
-	)
+template<class Problem,class Time>
+typename RecursiveLeastSquareSolver<Problem,Time>::scalar RecursiveLeastSquareSolver<Problem,Time>::objective() const
 {
-	int n = A.rows();
-	for(int i = 0;i < n;i++)
-		leastMeanSquareUpdate(A.row(i),b[i],mu,x);
-
+	return __p.objective(__x);
 }
 
-template<class Scalar>
-void LeastSquaresSolver<Scalar>::leastSquareMethod(
-	const MatrixBase<Scalar>& A,
-	const VectorBase<Scalar>& b,
-	VectorBase<Scalar>& x
-	)
+template<class Problem,class Time>
+typename RecursiveLeastSquareSolver<Problem,Time>::scalar RecursiveLeastSquareSolver<Problem,Time>::doOneIteration()
 {
-	x = (A.transpose()*A).solve(A.transpose()*b);
+	Vector xp = __x;
+	__Ar = __A.row(this->__iter_num);
+	__be = __b[this->__iter_num];
+	Vector pai = __inter_p.transpose()*__Ar;
+	scalar gama = __lam + pai.dot(__Ar);
+	Vector k = pai*(1.0/gama);
+	scalar alpha = __be - __x.dot(__Ar);
+	__x = __x + k*alpha;
+	Matrix pp = k.mulTrans(pai); 
+	__inter_p = (1.0/__lam)*(__inter_p - pp);
+	return std::sqrt((xp-__x).squaredNorm());
 }
 
-template<class Scalar>
-void LeastSquaresSolver<Scalar>::recursiveLeastSquareUpdate(
-	const VectorBase<Scalar>& a,
-	const Scalar b,
-	VectorBase<Scalar>& x,
-	MatrixBase<Scalar>& p,
-	const Scalar lam,
-	const Scalar delta
-	)
+template<class Problem,class Time>
+const typename RecursiveLeastSquareSolver<Problem,Time>::Vector& RecursiveLeastSquareSolver<Problem,Time>::result() const
 {
-	VectorBase<Scalar> pai = p.transpose()*a;
-	Scalar gama = lam + pai.dot(a);
-	VectorBase<Scalar> k = pai*(1.0/gama);
-	Scalar alpha = b - x.dot(a);
-	x = x + k*alpha;
-	MatrixBase<Scalar> pp = k.mulTrans(pai); 
-	p = (1.0/lam)*(p - pp);
+	return __x;
 }
 
-template<class Scalar>
-void LeastSquaresSolver<Scalar>::recursiveLeastSquareMethod(
-	const MatrixBase<Scalar>& A,
-	const VectorBase<Scalar>& b,
-	VectorBase<Scalar>& x,
-	const Scalar lam,
-	const Scalar delta
-	)
+
+
+/***********************Implementation of LeastSquaresProblem************************/
+
+template<class kernel>
+LeastSquaresProblem<kernel>::LeastSquaresProblem(
+	const Matrix& A,
+	const Vector& b)
+	:
+	__A(A),
+	__b(b)
+{  
+}
+
+// template<class kernel>
+// void LeastSquaresProblem<kernel>::leastMeanSquareSolve()
+// {
+// }
+
+// template<class kernel>
+// void LeastSquaresProblem<kernel>::leastSquareSolve()
+// {
+// }
+
+// template<class kernel>
+// void LeastSquaresProblem<kernel>::recursiveLeastSquareSolve()
+// {
+// }
+
+template<class kernel>
+bool LeastSquaresProblem<kernel>::isValid( ) const
 {
-	int n = A.cols();
-	MatrixBase<Scalar> p = delta*MatrixBase<Scalar>::identity(n,n);
-	for(int i = 0;i < n;i++)
-		recursiveLeastSquareUpdate(A.row(i),b[i],x,p,lam,delta);
+	if (__A.rows()!=__b.size())
+		return false;
+	else 
+		return true;
 }
 
-}// End of namespace COPT
+template<class kernel>
+bool LeastSquaresProblem<kernel>::isValidInput( const Vector& x ) const
+{
+	if (__A.cols() != x.size() )
+		return false;
+	else 
+		return true;
+}
+
+template<class kernel>
+const typename kernel::Matrix& LeastSquaresProblem<kernel>::matA() const
+{
+	return __A;
+}
+
+template<class kernel>
+const typename kernel::Vector& LeastSquaresProblem<kernel>::obB() const
+{
+	return __b;
+}
+
+template<class kernel>
+typename kernel::scalar LeastSquaresProblem<kernel>::objective( const Vector& x ) const
+{
+	return (__A*x-__b).squaredNorm();
+}
+}
 
 
 #endif
