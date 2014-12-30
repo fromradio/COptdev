@@ -73,7 +73,7 @@
 #include "Algorithms/omp.hpp"
 #include "Algorithms/ProximalOperator.hpp"
 #include "Algorithms/Lasso.hpp"
-
+#include "Algorithms/NonLinearSquare.hpp"
 
 #include "Problems/LPProblem.hpp"
 #include "Problems/BPProblem.hpp"
