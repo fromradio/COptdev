@@ -6,6 +6,9 @@
 
 namespace COPT
 {
+
+/** type judgetments and definition */
+//%{
 template<class T1>
 struct get_pod_type
 { typedef T1 type;};
@@ -78,25 +81,6 @@ template<class T>
 struct is_size
 { static const bool value = false;};
 
-// template<>
-// struct is_size<size_t>
-// { static const bool value = true;};
-
-// template<>
-// struct is_size<longsize>
-// { static const boll value = true;};
-
-// template<class T>
-// struct integer_type
-// {typedef T type;};
-// template<>
-// struct integer_type<size_t>
-// { typedef int 	type;};
-
-// template<>
-// struct integer_type<longsize>
-// { typedef COPTlong longsize;};
-
 template<class T>
 struct is_index
 { 
@@ -139,17 +123,16 @@ struct is_unsigned_size<unsigned long>
 	static const bool value = true;
 };
 
-
-
-
 template<class T>
 struct is_scalar
 { static const bool value = 
 					is_scalar<T>::value||
 					is_complex<T>::value;
 };
+//%}
 
-
+/** kernel of COPT */
+//%{
 template<class T,class I>
 class Array;
 template<class T,class I>
@@ -158,7 +141,6 @@ template<class T,class I>
 class MatrixBase;
 template<class T,class I>
 class SpMatrixBase;
-
 /*		A trait class describing basic types that might be
  *		used in a numerical solver. A solver should take trait
  *		as template for flexibility.
@@ -179,10 +161,13 @@ public:
 	typedef MatrixBase<T,I>								Matrix;
 	typedef SpMatrixBase<T,I>							SpMatrix;
 };
+//%}
 
 /** tags */
+//%{
 /** base tag for copt object */
 struct copt_object{};
+
 /** objects storing data */
 struct data_object:copt_object{}; 				// the data object
 struct referred_array:data_object{};			// refered array
@@ -214,6 +199,7 @@ struct constraint_object:copt_object{};			// constraint
 struct time_stat_object:copt_object{};			// time statistics object
 struct no_time_stat_tag:time_stat_object{};
 struct solver_time_stat_tag:time_stat_object{};
+
 /** traits of constraints and functions*/
 struct linear_constraint:constraint_object{};
 struct linear_leq_constraint:linear_constraint{};
@@ -221,6 +207,7 @@ struct linear_neq_constraint:linear_constraint{};
 struct linear_eq_constraint:linear_constraint{};
 struct quadratic_constraint_tag:constraint_object{};
 struct non_linear_constraint_tag:constraint_object{};
+//%}
 
 template<class Constraint>
 struct constraint_trait{
@@ -235,7 +222,8 @@ struct log_scalar_function_tag:public scalar_function_tag{};
 struct abs_scalar_function_tag:public scalar_function_tag{};
 
 
-/** force assignment from complex to real */
+
+/** force assignment between complex to real numbers */
 template<class T>
 void ForceAssignment(const T& t1,std::complex<T>& t2)
 {
