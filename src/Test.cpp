@@ -229,7 +229,7 @@ int main(int argc,char* argv[])
 //LM method
 int main(int argc,char* argv[])
 { 
-
+	
 	typedef COPT::VectorFunctionSystem<FT>	Function;
 	Function func(2,2);
 	Vector initial_x(2);

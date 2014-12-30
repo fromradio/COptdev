@@ -93,6 +93,12 @@ bin/ls: obj/ls.o
 obj/ls.o: test/ls.cpp
 	$(CC) $(CFLAGS) -c $< -o $@
 
+nls: bin/nls
+bin/nls: obj/nls.o
+	$(CC) obj/nls.o $(DIR_LIB) -o $@ $(LIBS)
+obj/nls.o: test/nls.cpp
+	$(CC) $(CFLAGS) -c $< -o $@
+
 eigen: bin/eigen
 bin/eigen: obj/eigen.o
 	$(CC) obj/eigen.o $(DIR_LIB) -o $@ $(LIBS)

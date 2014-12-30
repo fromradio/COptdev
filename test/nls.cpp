@@ -11,6 +11,7 @@ typedef COPT::NonLinearSquare<problem,COPT::SolverTimeStatistics>	psolver;
 
 int main(int argc,char* argv[])
 { 
+	
 	typedef COPT::VectorFunctionSystem<FT>	Function;
 	Function func(2,2);
 	Vector initial_x(2);
