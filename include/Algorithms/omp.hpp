@@ -21,17 +21,17 @@ class OMPSolver
 	noncopyable
 {
 private:
-	typedef typename kernel::ScalarType 	Scalar;
-	typedef typename kernel::Size 			Size;
+	typedef typename kernel::scalar 		scalar;
+	typedef typename kernel::index 			index;
 	typedef typename kernel::Vector 		Vector;
 	typedef typename kernel::Matrix 		Matrix;
 
 	/** 		private variables */
 	//%{
 
-	/** the problem is with size m*n */
-	Size 					__m;
-	Size 					__n;
+	/** the problem is with index m*n */
+	index 					__m;
+	index 					__n;
 
 	/** atom or dictionary matrix A */
 	Matrix 					__A;
@@ -46,13 +46,13 @@ private:
 	Vector 			 		__b;
 
 	/** sparsity */
-	Size 					__s;
+	index 					__s;
 
 	/** the result */
 	Vector 					__x;
 
 	/** the indices of using atoms */
-	std::list<Size> 		__used_indices;
+	std::list<index> 		__used_indices;
 
 	/** the vector of residual */
 	Vector 					__residual;
@@ -70,7 +70,7 @@ private:
 	bool 					__is_batch;
 
 	/** threshold */
-	Scalar 					__error;
+	scalar 					__error;
 	//%}
 
 	OMPSolver();
@@ -90,7 +90,7 @@ private:
 		Vector& norms );
 
 	/**		find the next index */
-	static inline Size 	findIndex( 
+	static inline index 	findIndex( 
 		const Matrix& A, 
 		const Vector& residual );
 
@@ -99,7 +99,7 @@ private:
 		const Matrix& A,
 		const Matrix& AT,
 		const Vector& b, 
-		const std::list<Size>& indices, 
+		const std::list<index>& indices, 
 		Vector& coeff ,
 		Vector& residual);
 
@@ -111,7 +111,7 @@ private:
 		const Matrix& AT,
 		const Matrix& ATA,
 		const Vector& b, 
-		const std::list<Size>& indices, 
+		const std::list<index>& indices, 
 		Vector& coeff ,
 		Vector& residual);
 
@@ -136,10 +136,10 @@ public:
 	//%{
 
 	/** set the sparsity */
-	void setSparsity(const Size s);
+	void setSparsity(const index s);
 
 	/** get the sparsity */
-	const Size& sparsity() const;
+	const index& sparsity() const;
 
 	/** get the matrix */
 	const Matrix& atomMatrix() const;
@@ -154,13 +154,13 @@ public:
 	const Vector& finalResidual() const;
 
 	/** get the fitting error */
-	const Scalar& fittingError() const;
+	const scalar& fittingError() const;
 
 	//%}
 
 	/**				solver interface 					*/
 	void solve(const Vector& b);
-	void solve(const Vector& b,const Size s);
+	void solve(const Vector& b,const index s);
 
 };
 
@@ -169,7 +169,7 @@ public:
 template<class kernel>
 bool OMPSolver<kernel>::checkZeroColumn( )
 {
-	for ( Size i = 0 ; i < __n ; ++ i )
+	for ( index i = 0 ; i < __n ; ++ i )
 	{
 		if(IS_ZERO(__A.col(i).squaredNorm()))
 			return true;
@@ -180,8 +180,8 @@ bool OMPSolver<kernel>::checkZeroColumn( )
 template<class kernel>
 void OMPSolver<kernel>::normalizeAtomMatrix( Matrix& A,Vector& norms)
 {
-	norms.resize(A.cols());
-	for ( Size i = 0 ; i < A.cols() ; ++ i )
+	norms.reindex(A.cols());
+	for ( index i = 0 ; i < A.cols() ; ++ i )
 	{
 		norms[i] = A.col(i).normalize();
 	}
@@ -191,13 +191,13 @@ template<class kernel>
 void OMPSolver<kernel>::normalizeAtomMatrix( Matrix& A, Matrix& ATA , Vector& norms )
 {
 	norms.resize(A.cols());
-	for ( Size i = 0 ; i < A.cols() ; ++ i )
+	for ( index i = 0 ; i < A.cols() ; ++ i )
 	{
 		norms[i] = A.col(i).normalize();
 	}
-	for ( Size i = 0 ; i < A.cols() ; ++ i )
+	for ( index i = 0 ; i < A.cols() ; ++ i )
 	{
-		for ( Size j = 0 ; j < A.cols() ; ++ j )
+		for ( index j = 0 ; j < A.cols() ; ++ j )
 		{
 			ATA(i,j) = ATA(i,j)*(1.0/norms[i])*(1.0/norms[j]);
 		}
@@ -205,25 +205,25 @@ void OMPSolver<kernel>::normalizeAtomMatrix( Matrix& A, Matrix& ATA , Vector& no
 }
 
 template<class kernel>
-typename kernel::Size OMPSolver<kernel>::findIndex( const Matrix& A, const Vector& residual )
+typename kernel::index OMPSolver<kernel>::findIndex( const Matrix& A, const Vector& residual )
 {
 	// find the new column for orthogonal matching pursuit (OMP)
 	// make sure that every column is normalized at first
-	Size index = -1;
-	Scalar maximal = -1.0;
-	for ( Size i = 0 ; i < A.cols() ; ++ i )
+	index ind = -1;
+	scalar maximal = -1.0;
+	for ( index i = 0 ; i < A.cols() ; ++ i )
 	{
-		Scalar v = std::abs(A.col(i).dot(residual));
+		scalar v = std::abs(A.col(i).dot(residual));
 		if ( v > maximal ){
-			index = i;
+			ind = i;
 			maximal = v;
 		}
 	}
-	return index;
+	return ind;
 }
 
 template<class kernel>
-void OMPSolver<kernel>::updateCoefficient(const Matrix&A , const Matrix&AT, const Vector& b , const std::list<Size>& indices, Vector& coeff , Vector& residual )
+void OMPSolver<kernel>::updateCoefficient(const Matrix&A , const Matrix&AT, const Vector& b , const std::list<index>& indices, Vector& coeff , Vector& residual )
 {
 	//		 not batch omp
 	Matrix Ab,ATb;
@@ -234,7 +234,7 @@ void OMPSolver<kernel>::updateCoefficient(const Matrix&A , const Matrix&AT, cons
 }
 
 template<class kernel>
-void OMPSolver<kernel>::updateCoefficient(const Matrix&A , const Matrix&AT, const Matrix& ATA , const Vector& b ,const std::list<Size>& indices, Vector& coeff , Vector& residual )
+void OMPSolver<kernel>::updateCoefficient(const Matrix&A , const Matrix&AT, const Matrix& ATA , const Vector& b ,const std::list<index>& indices, Vector& coeff , Vector& residual )
 {
 	// 		batch omp
 	Matrix Ab,ATb,Db;
@@ -252,7 +252,7 @@ void OMPSolver<kernel>::ompSolve(const Vector& b)
 	__residual = b;
 	if (!__is_batch)
 	{
-		for ( Size i = 0 ; i < __s ; ++ i )
+		for ( index i = 0 ; i < __s ; ++ i )
 		{
 			__used_indices.push_back(findIndex(__A,__residual));
 			updateCoefficient(__A,__AT,b,__used_indices,__coeff,__residual);
@@ -262,7 +262,7 @@ void OMPSolver<kernel>::ompSolve(const Vector& b)
 	}
 	else
 	{
-		for ( Size i = 0 ; i < __s ; ++ i )
+		for ( index i = 0 ; i < __s ; ++ i )
 		{
 			__used_indices.push_back(findIndex(__A,__residual));
 			updateCoefficient(__A,__AT,__ATA,b,__used_indices,__coeff,__residual);
@@ -272,8 +272,8 @@ void OMPSolver<kernel>::ompSolve(const Vector& b)
 	}
 	// set __x
 	__x.resize(__n);
-	Size i = 0;
-	for (typename std::list<Size>::iterator iter = __used_indices.begin() ; iter != __used_indices.end() ; ++ iter )
+	index i = 0;
+	for (typename std::list<index>::iterator iter = __used_indices.begin() ; iter != __used_indices.end() ; ++ iter )
 	{
 		__x(*iter) = __coeff(i++)*(1.0/__norms[*iter]);
 	}
@@ -327,13 +327,13 @@ OMPSolver<kernel>::OMPSolver(const Matrix& A,const Matrix& ATA,const bool isnorm
 }
 
 template<class kernel>
-void OMPSolver<kernel>::setSparsity(const Size s)
+void OMPSolver<kernel>::setSparsity(const index s)
 {
 	__s = s;
 }
 
 template<class kernel>
-const typename kernel::Size& OMPSolver<kernel>::sparsity() const
+const typename kernel::index& OMPSolver<kernel>::sparsity() const
 {
 	return __s;
 }
@@ -363,7 +363,7 @@ const typename kernel::Vector& OMPSolver<kernel>::finalResidual() const
 }
 
 template<class kernel>
-const typename kernel::ScalarType& OMPSolver<kernel>::fittingError() const
+const typename kernel::scalar& OMPSolver<kernel>::fittingError() const
 {
 	return __error;
 }
@@ -374,7 +374,7 @@ void OMPSolver<kernel>::solve(const Vector& b){
 }
 
 template<class kernel>
-void OMPSolver<kernel>::solve(const Vector& b,const Size s){
+void OMPSolver<kernel>::solve(const Vector& b,const index s){
 	setSparsity(s);
 	ompSolve(b);
 }

@@ -10,8 +10,10 @@ typedef COPT::LeastMeanSquareSolver<problem,COPT::SolverTimeStatistics>	lmssolve
 typedef COPT::LeastSquareSolver<problem,COPT::SolverTimeStatistics>	lssolver;
 typedef COPT::RecursiveLeastSquareSolver<problem,COPT::SolverTimeStatistics> 	rlssolver;
 
+
 const int m = 180;
 const int n = 360;
+
 int main(int argc,char* argv[])
 {
 	Matrix A;

@@ -14,7 +14,7 @@ class SVD
 private:
 	
 public:
-
+	
 };
 
 }// End of namespace COPT
