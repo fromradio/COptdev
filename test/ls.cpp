@@ -1,10 +1,10 @@
 #include <Header>
 
 typedef double		 					FT;
-typedef COPT::Array<FT> 				Array;
-typedef COPT::VectorBase<FT>			Vector;
-typedef COPT::MatrixBase<FT>	 		Matrix;
-typedef COPT::KernelTrait<FT>			kernel;
+typedef COPT::Array<FT,int> 				Array;
+typedef COPT::VectorBase<FT,int>			Vector;
+typedef COPT::MatrixBase<FT,int>	 		Matrix;
+typedef COPT::KernelTrait<FT,int>			kernel;
 
 
 int main(int argc,char* argv[])
