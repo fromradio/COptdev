@@ -5,13 +5,17 @@
 
 #include <Header>
 #include <Python.h>
+#include <IO>
 #include <PyGenerate.hpp>
 
-typedef double                          FT;
-typedef COPT::Array<FT,int>                 Array;
-typedef COPT::VectorBase<FT,int>            Vector;
-typedef COPT::MatrixBase<FT,int>            Matrix;
-typedef COPT::LeastSquaresSolver<FT>    LeastSquares;
+typedef double 		FT;
+typedef COPT::KernelTrait<FT>		kernel;
+typedef kernel::Matrix 				Matrix;
+typedef kernel::Vector 				Vector;
+typedef COPT::LeastSquaresProblem<kernel>	problem;
+typedef COPT::LeastMeanSquareSolver<problem,COPT::SolverTimeStatistics>	lmssolver;
+typedef COPT::LeastSquareSolver<problem,COPT::SolverTimeStatistics>	lssolver;
+typedef COPT::RecursiveLeastSquareSolver<problem,COPT::SolverTimeStatistics> 	rlssolver;
 
 /*
 		A wrapper of Least Squares methods for Python
@@ -39,10 +43,10 @@ static PyObject* pyLeastMeanSquare(PyObject *self,PyObject *args)
 	Vector x(n);
 
 	// call COPT interface
-	LeastSquares ls(A0,b0,mu);
-	ls.setType(LeastSquares::LMS);
-	ls.solve(x);
-	x = ls.result();
+	problem pro(A0,b0);
+	lmssolver lmssol(pro,mu);
+	lmssol.solve();
+	x = lmssol.result();
 
 	PyObject *list;
 	list = PyList_New(n);
@@ -58,7 +62,7 @@ static PyObject* pyLeastMeanSquare(PyObject *self,PyObject *args)
  *		b:			right hand vector
  *		return value:	the obtained coefficient
  */
-static PyObject* pyLeastSquares(PyObject *self,PyObject *args)
+static PyObject* pyLeastSquare(PyObject *self,PyObject *args)
 {
 
     PyObject *A,*b;
@@ -72,10 +76,10 @@ static PyObject* pyLeastSquares(PyObject *self,PyObject *args)
 	Vector x(n);
 
 	// call COPT interface!
-	LeastSquares ls(A0,b0);
-	ls.setType(LeastSquares::LS);
-	ls.solve(x);
-	x = ls.result();
+	problem pro(A0,b0);
+	lssolver lssol(pro);
+	lssol.solve();
+	x = lssol.result();
 
 	PyObject *list;
 	list = PyList_New(n);
@@ -107,10 +111,10 @@ static PyObject* pyRecursiveLeastSquare(PyObject *self,PyObject *args)
 	Vector x(n);
  
 	// call COPT interface
-	LeastSquares ls(A0,b0,0.01,lam,delta);
-	ls.setType(LeastSquares::RLS);
-	ls.solve(x);
-	x = ls.result();
+	problem pro(A0,b0);
+	rlssolver rlssol(pro,lam,delta);
+	rlssol.solve();
+	x = rlssol.result();
 
 	PyObject *list;
 	list = PyList_New(n);
@@ -122,7 +126,7 @@ static PyObject* pyRecursiveLeastSquare(PyObject *self,PyObject *args)
 static PyMethodDef leastSquaresMethods[]=
 {
     {"lms",pyLeastMeanSquare,METH_VARARGS,"Least Mean Square Method"},
-    {"ls",pyLeastSquares,METH_VARARGS,"Least Square Method"},
+    {"ls",pyLeastSquare,METH_VARARGS,"Least Square Method"},
     {"rls",pyRecursiveLeastSquare,METH_VARARGS,"Recursive Least Square Method"},
     {NULL,NULL,0,NULL}
 };
