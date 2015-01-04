@@ -61,6 +61,7 @@
 #include "Base/NumDifferential.hpp"
 #include "Base/Function.hpp"
 #include "Base/Solver.hpp"
+#include "Base/Problem.hpp"
 #include "FunctionRepository/FuncRepository.hpp"
 
 /** Linear Algorithms */
