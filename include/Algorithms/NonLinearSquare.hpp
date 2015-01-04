@@ -4,7 +4,18 @@
 
 namespace COPT
 {
+/* 	This algorithm is used to solve non-linear least squares problems.
+ *	It is a uncontrained optimization problem. Here, we use Levenberg
+ *	Marquardt Algorithm(LMA) to solve the problem. The LMA interpolates 
+ *	between the Gauss–Newton algorithm (GNA) and the method of
+ *	gradient descent. The LMA is more robust than the GNA. 
+ *	LMA can also be viewed as Gauss–Newton using a trust region approach.
+ */
 
+
+/*		class of non-linear square algorithm
+ *
+ */
 template<class Problem, class Time = NoTimeStatistics>
 class NonLinearSquare
 	:
@@ -31,8 +42,7 @@ private:
 	//	constants
 	scalar 						__tao;
 	scalar						__v;
-	//	iteration number
-	index 						__iter_num;
+	//	iteration
 	index						__maxiteration;
 	/*	A is approximately equal to Hessian	matrix 	*/	
 	Matrix 						__A;	
@@ -72,11 +82,13 @@ public:
 
 };
 
+/***********************Implementation of NonLinearSquare (LM)************************/
+
 template<class Problem,class Time>
 void NonLinearSquare<Problem,Time>::doCompute( )
 {
-	__A = __p.Jacobi(__x).transpose()*(__p.Jacobi(__x));	
-	__g = __p.Jacobi(__x)*(__p.Fvalue(__x));
+	__A = __p.jacobi(__x).transpose()*(__p.jacobi(__x));	
+	__g = __p.jacobi(__x)*(__p.value(__x));
 
 	scalar max = fabs(__A(0,0));
 	for(int i=0; i<__n; i++){
@@ -108,8 +120,8 @@ NonLinearSquare<Problem,Time>::NonLinearSquare(
 template<class Problem,class Time>
 void NonLinearSquare<Problem,Time>::solvingBegin()
 {
-	__m = __p.functiondimension();
-	__n = __p.variabledimension();
+	__m = __p.functionDimension();
+	__n = __p.variableDimension();
 }
 
 template<class Problem,class Time>
@@ -121,10 +133,10 @@ typename NonLinearSquare<Problem,Time>::scalar  NonLinearSquare<Problem,Time>::d
 
 	scalar e = 1e-8;
 	scalar rho;
-	Vector h;
+	Vector h;									
 	Vector x;
 
-	__found = (__g.dot(__g) <= e);
+	__found = (sqrt(__g.dot(__g)) <= e);
 	Matrix B(__A);
 	Vector k(__g);	
 
@@ -139,21 +151,21 @@ typename NonLinearSquare<Problem,Time>::scalar  NonLinearSquare<Problem,Time>::d
 	if ( h.dot(h) < e*(e+__x.dot(__x)) )
 	{
 		__found = true;
-		return h.dot(h);
+		return sqrt(h.dot(h));
 	}
 	else
 	{
 		x = __x + h;
 
 		/*	Judgment flag	rho = (F(__x)-F(x))/L(h,u,g)	*/
-		rho = (__p.Fvalue(__x).dot(__p.Fvalue(__x))/2-__p.Fvalue(x).dot(__p.Fvalue(x))/2)/(0.5*h.dot(__u*h-__g));
+		rho = (__p.value(__x).dot(__p.value(__x))/2-__p.value(x).dot(__p.value(x))/2)/(0.5*h.dot(__u*h-__g));
 
 		if (rho > 0.0)
 		{
 			__x = x;
-			__A = __p.Jacobi(__x).transpose()*(__p.Jacobi(__x));
-			__g = __p.Jacobi(__x).transpose()*(__p.Fvalue(__x));
-			__found = ( __g.dot(__g) <= e );
+			__A = __p.jacobi(__x).transpose()*(__p.jacobi(__x));
+			__g = __p.jacobi(__x).transpose()*(__p.value(__x));
+			__found = ( sqrt(__g.dot(__g)) <= e );
 			scalar uu=1/3;
 			if ( 1-(2*rho-1)*(2*rho-1)*(2*rho-1) > uu )
 			{
@@ -167,18 +179,18 @@ typename NonLinearSquare<Problem,Time>::scalar  NonLinearSquare<Problem,Time>::d
 			__u = __u*__v;
 			__v = 2*__v;
 		}	
-		return __g.dot(__g);		
+		return sqrt(__g.dot(__g));		
 	}
 }
 
 template<class Problem,class Time>
 void NonLinearSquare<Problem,Time>::doSolve()
 {
-	__iter_num = 0;
+	this->__iter_num = 0;
 	do
 	{
 		this->__estimated_error = this->oneIteration();
-		if(++__iter_num >= __maxiteration)
+		if(++this->__iter_num >= __maxiteration)
 		{
 			this->__terminal_type = this->MaxIteration;
 			break;
@@ -207,8 +219,9 @@ const typename NonLinearSquare<Problem,Time>::Vector& NonLinearSquare<Problem,Ti
 }
 
 
-/***********************Implementation of NonLinearSquareProblem************************/
-
+/*		class of non-linear square problem
+ *
+ */
 template<class kernel>
 class NonLinearSquareProblem
 	:
@@ -234,15 +247,16 @@ public:
 
 	bool isValidInput (const Vector& x) const;
 	bool isValid() const;
-	const index& functiondimension() const;
-	const index& variabledimension() const;
+	const index& functionDimension() const;
+	const index& variableDimension() const;
 	const scalar& lambda() const;
-	Vector Fvalue(const Vector& x) const;
-	Matrix Jacobi(const Vector& x) const;
+	Vector value(const Vector& x) const;
+	Matrix jacobi(const Vector& x) const;
 	scalar objective( const Vector& x) const;
 
 };
 
+/***********************Implementation of NonLinearSquareProblem************************/
 
 template<class kernel>
 NonLinearSquareProblem<kernel>::NonLinearSquareProblem(
@@ -271,13 +285,13 @@ bool NonLinearSquareProblem<kernel>::isValid() const
 }
 
 template<class kernel>
-const typename kernel::index& NonLinearSquareProblem<kernel>::functiondimension() const
+const typename kernel::index& NonLinearSquareProblem<kernel>::functionDimension() const
 {
 	return __m;
 }
 
 template<class kernel>
-const typename kernel::index& NonLinearSquareProblem<kernel>::variabledimension() const
+const typename kernel::index& NonLinearSquareProblem<kernel>::variableDimension() const
 {
 	return __n;
 }
@@ -289,25 +303,22 @@ const typename kernel::scalar& NonLinearSquareProblem<kernel>::lambda() const
 }
 
 template<class kernel>
-typename kernel::Vector NonLinearSquareProblem<kernel>::Fvalue(const Vector& x ) const
+typename kernel::Vector NonLinearSquareProblem<kernel>::value(const Vector& x ) const
 {
-	return __vfs.FunctionValue(x);
+	return __vfs.functionValue(x);
 }
 
 template<class kernel>
-typename kernel::Matrix NonLinearSquareProblem<kernel>::Jacobi(const Vector& x ) const
+typename kernel::Matrix NonLinearSquareProblem<kernel>::jacobi(const Vector& x ) const
 {
-	return __vfs.JacobiFun(x);
+	return __vfs.jacobiFunction(x);
 }
 
 template<class kernel>
 typename kernel::scalar NonLinearSquareProblem<kernel>::objective( const Vector& x ) const
 {
-	return __vfs.FunctionValue(x).dot(__vfs.FunctionValue(x));
+	return __vfs.functionValue(x).dot(__vfs.functionValue(x));
 }
-
-
-/***********************Implementation of VectorProblem************************/
 
 
 } // End of namespace COPT
