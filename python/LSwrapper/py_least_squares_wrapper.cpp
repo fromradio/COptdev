@@ -32,9 +32,9 @@ static PyObject* pyLeastMeanSquare(PyObject *self,PyObject *args)
 {
 
     PyObject *A,*b;
-    float mu;
-	if (!PyArg_ParseTuple(args,"OOf",&A,&b,&mu))
-	 	return NULL;
+    float mu = 0.01;
+	if (!PyArg_ParseTuple(args,"OO|f",&A,&b,&mu))
+		return NULL;
 	Matrix A0;
 	Vector b0;
 	PyGenerateMatrix(A,A0);
@@ -100,8 +100,8 @@ static PyObject* pyRecursiveLeastSquare(PyObject *self,PyObject *args)
 {
 
     PyObject *A,*b;
-    float lam,delta;
-	if (!PyArg_ParseTuple(args,"OOff",&A,&b,&lam,&delta))
+    float lam = 1,delta = 250;
+	if (!PyArg_ParseTuple(args,"OO|ff",&A,&b,&lam,&delta))
 	 	return NULL;
 	Matrix A0;
 	Vector b0;
