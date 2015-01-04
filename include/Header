@@ -59,7 +59,6 @@
 #include "Algorithms/Conjugate.hpp"
 #include "Algorithms/LineSearch.hpp"
 #include "Algorithms/BFGS.hpp"
-#include "Algorithms/LeastSquares.hpp"
 #include "Algorithms/AlternatingDirectionMethodOfMultipliers.hpp"
 #include "Algorithms/NonLinearSolver.hpp"
 #include "Algorithms/NonLinearSolverImpl.hpp"
@@ -68,6 +67,7 @@
 #include "Algorithms/ProximalOperator.hpp"
 #include "Algorithms/Lasso.hpp"
 #include "Algorithms/NonLinearSquare.hpp"
+#include "Algorithms/LeastSquares.hpp"
 
 /** Problems */
 #include "Problems/LPProblem.hpp"
