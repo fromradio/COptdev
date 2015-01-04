@@ -1,4 +1,4 @@
-#include <Header>
+#include <Core>
 
 typedef COPT::KernelTrait<std::complex<double>,int> 			kernel;
 typedef kernel::Matrix 							Matrix;

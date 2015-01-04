@@ -1,4 +1,4 @@
-#include <Header>
+#include "Core"
 
 typedef double		 				FT;
 typedef COPT::Array<FT,int> 				Array;

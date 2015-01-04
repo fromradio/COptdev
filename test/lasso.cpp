@@ -1,4 +1,4 @@
-#include <Header>    
+#include "Core"
 #include <IO>
 typedef double 		FT;
 typedef COPT::KernelTrait<FT>		kernel;

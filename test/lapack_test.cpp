@@ -1,4 +1,4 @@
-#include <Header>
+#include "Core"
 #define size 3
 
 typedef COPT::KernelTrait<double> 		kernel;

@@ -2,7 +2,7 @@
 //		Copyright (C) MathU
 
 #include <mpi.h>
-#include <Header>
+#include "Core"
 
 typedef COPT::KernelTrait<double> 		kernel;
 typedef kernel::Vector 					Vector;

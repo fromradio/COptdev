@@ -186,3 +186,4 @@ void NonLinearSolver<VFunc>::printInfo()
 }
 
 } // End of namespace COPT
+#endif

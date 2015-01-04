@@ -17,8 +17,8 @@
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#ifndef HEADER_COPT__
-#define HEADER_COPT__
+#ifndef COPT_CORE__
+#define COPT_CORE__
 
 #define CBLAS 1
 #define USE_UMFPACK
