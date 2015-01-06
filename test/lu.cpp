@@ -1,7 +1,6 @@
 //		Copyright (C) Ruimin Wang, ruimin.wang13@gmail.com
 //		Copyright (C) MathU
-
-#include <Header>
+#include "Core"
 
 
 typedef COPT::KernelTrait<std::complex<double>,int> 			kernel;

@@ -28,13 +28,14 @@ typedef COPT::RecursiveLeastSquareSolver<problem,COPT::SolverTimeStatistics> 	rl
  *		mu:			the scaling factor
  *		return value: the obtained coefficient
  */
-static PyObject* pyLeastMeanSquare(PyObject *self,PyObject *args)
+static PyObject* pyLeastMeanSquare(PyObject *self,PyObject *args,PyObject *kw)
 {
 
     PyObject *A,*b;
-    float mu;
-	if (!PyArg_ParseTuple(args,"OOf",&A,&b,&mu))
-	 	return NULL;
+    static char* kwlist[] = {"A","b","mu",NULL};
+    float mu = 0.01;
+	if (!PyArg_ParseTupleAndKeywords(args,kw,"OO|f",kwlist,&A,&b,&mu))
+		return NULL;
 	Matrix A0;
 	Vector b0;
 	PyGenerateMatrix(A,A0);
@@ -62,11 +63,12 @@ static PyObject* pyLeastMeanSquare(PyObject *self,PyObject *args)
  *		b:			right hand vector
  *		return value:	the obtained coefficient
  */
-static PyObject* pyLeastSquare(PyObject *self,PyObject *args)
+static PyObject* pyLeastSquare(PyObject *self,PyObject *args,PyObject *kw)
 {
 
     PyObject *A,*b;
-	if (!PyArg_ParseTuple(args,"OO",&A,&b))
+    static char* kwlist[] = {"A","b",NULL};
+	if (!PyArg_ParseTupleAndKeywords(args,kw,"OO",kwlist,&A,&b))
 	 	return NULL;
     Matrix A0;
 	Vector b0;
@@ -96,12 +98,13 @@ static PyObject* pyLeastSquare(PyObject *self,PyObject *args)
  *		delta:		the second parameter
  *		return value:	the obtained coefficient
  */
-static PyObject* pyRecursiveLeastSquare(PyObject *self,PyObject *args)
+static PyObject* pyRecursiveLeastSquare(PyObject *self,PyObject *args,PyObject *kw)
 {
 
     PyObject *A,*b;
-    float lam,delta;
-	if (!PyArg_ParseTuple(args,"OOff",&A,&b,&lam,&delta))
+    static char* kwlist[] = {"A","b","lam","delta",NULL};
+    float lam = 1,delta = 250;
+	if (!PyArg_ParseTupleAndKeywords(args,kw,"OO|ff",kwlist,&A,&b,&lam,&delta))
 	 	return NULL;
 	Matrix A0;
 	Vector b0;
@@ -125,9 +128,9 @@ static PyObject* pyRecursiveLeastSquare(PyObject *self,PyObject *args)
 
 static PyMethodDef leastSquaresMethods[]=
 {
-    {"lms",pyLeastMeanSquare,METH_VARARGS,"Least Mean Square Method"},
-    {"ls",pyLeastSquare,METH_VARARGS,"Least Square Method"},
-    {"rls",pyRecursiveLeastSquare,METH_VARARGS,"Recursive Least Square Method"},
+    {"lms",(PyCFunction)pyLeastMeanSquare,METH_VARARGS|METH_KEYWORDS,"Least Mean Square Method"},
+    {"ls",(PyCFunction)pyLeastSquare,METH_VARARGS|METH_KEYWORDS,"Least Square Method"},
+    {"rls",(PyCFunction)pyRecursiveLeastSquare,METH_VARARGS|METH_KEYWORDS,"Recursive Least Square Method"},
     {NULL,NULL,0,NULL}
 };
 
