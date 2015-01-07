@@ -1,7 +1,7 @@
 from distutils.core import setup, Extension
 
 module1 = Extension('copt',
-                    include_dirs = ['../../include','../../../Eigen','../../../libs/SuiteSparse/include','..'],
+                    include_dirs = ['../../include','..'],
                     libraries = ['blas','umfpack','gfortran'],
                     sources = ['py_least_squares_wrapper.cpp'],
                     extra_compile_args=['-std=c++11'])

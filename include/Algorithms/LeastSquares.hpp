@@ -1,7 +1,8 @@
 // This file is part of COPT, a light-weight C++ based optimization open source library
 //
-// Copyright (C) 2015 Ruimin Wang <ruimin.wang13@gmail.com>
+// Copyright (C) 2015 Songtao Guo <guost@mathu.cn>
 // Copyright (C) 2015 MathU
+//			Reviewed by Ruimin Wang <ruimin.wang13@gmail.com>, <wangrm@mathu.cn>
 //
 // This program is free software: you can redistribute it and/or modify
 // it under the terms of the GNU General Public License as published by
@@ -15,6 +16,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
 
 
 #ifndef LEAST_SQUARE_HPP__
@@ -356,7 +358,7 @@ typename LeastMeanSquareSolver<Problem,Time>::scalar LeastMeanSquareSolver<Probl
 	__be = __b[this->__iter_num];
 	scalar e = __be - __Ar.dot(__x);
 	__x = __x + __mu*e*__Ar;
-	return std::sqrt((xp-__x).squaredNorm());
+	return (__A*__x-__b).squaredNorm();
 }
 
 template<class Problem,class Time>
@@ -410,7 +412,7 @@ typename LeastSquareSolver<Problem,Time>::scalar LeastSquareSolver<Problem,Time>
 {
 	Vector xp = __x;
 	__x = (__A.transpose()*__A).solve(__A.transpose()*__b);
-	return std::sqrt((xp-__x).squaredNorm());
+	return (__A*__x-__b).squaredNorm();
 }
 
 template<class Problem,class Time>
@@ -488,7 +490,7 @@ typename RecursiveLeastSquareSolver<Problem,Time>::scalar RecursiveLeastSquareSo
 	__x = __x + k*alpha;
 	Matrix pp = k.mulTrans(pai); 
 	__inter_p = (1.0/__lam)*(__inter_p - pp);
-	return std::sqrt((xp-__x).squaredNorm());
+	return (__A*__x-__b).squaredNorm();
 }
 
 template<class Problem,class Time>
