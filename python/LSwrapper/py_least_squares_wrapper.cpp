@@ -1,9 +1,24 @@
-//		Copyright (C) Songtao Guo
-//		Copyright (C) MathU
-//			Reviewed by Ruimin Wang, ruimin.wang13@gmail.com, wangrm@mathu.cn
+// This file is part of COPT, a light-weight C++ based optimization open source library
+//
+// Copyright (C) 2015 Songtao Guo <guost@mathu.cn>
+// Copyright (C) 2015 MathU
+//			Reviewed by Ruimin Wang <ruimin.wang13@gmail.com>, <wangrm@mathu.cn>
+//
+// This program is free software: you can redistribute it and/or modify
+// it under the terms of the GNU General Public License as published by
+// the Free Software Foundation, either version 3 of the License, or
+// (at your option) any later version.
+//
+// This program is distributed in the hope that it will be useful,
+// but WITHOUT ANY WARRANTY; without even the implied warranty of
+// MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+// GNU General Public License for more details.
+//
+// You should have received a copy of the GNU General Public License
+// along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 
-#include <Header>
+#include <Core>
 #include <Python.h>
 #include <IO>
 #include <PyGenerate.hpp>
@@ -30,7 +45,6 @@ typedef COPT::RecursiveLeastSquareSolver<problem,COPT::SolverTimeStatistics> 	rl
  */
 static PyObject* pyLeastMeanSquare(PyObject *self,PyObject *args,PyObject *kw)
 {
-
     PyObject *A,*b;
     static char* kwlist[] = {"A","b","mu",NULL};
     float mu = 0.01;
