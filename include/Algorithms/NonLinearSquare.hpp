@@ -107,8 +107,8 @@ template<class Problem,class Time>
 void NonLinearSquare<Problem,Time>::doCompute( )
 {
 	__A = __p.jacobi(__x).transpose()*(__p.jacobi(__x));	
-	__g = __p.jacobi(__x)*(__p.value(__x));
-
+	__g = __p.jacobi(__x).transpose()*(__p.value(__x));
+	
 	scalar max = fabs(__A(0,0));
 	for(int i=0; i<__n; i++){
 		if(fabs(__A(i,i))>max)
@@ -133,6 +133,8 @@ NonLinearSquare<Problem,Time>::NonLinearSquare(
     	__maxiteration(iternum)
 {
 
+	__m = __p.functionDimension();
+	__n = __p.variableDimension();
 	this->doCompute();
 }
 
@@ -239,8 +241,9 @@ const typename NonLinearSquare<Problem,Time>::Vector& NonLinearSquare<Problem,Ti
 
 
 /*		class of non-linear square problem
- *
- */
+ *		min 0.5*|f(x)|^2 	There are no contrains
+ *		f(x) = ( f1(x1, ... , xn) , ... , fm(x1, ... , xn) ) is a non-linear functin
+  */
 template<class kernel>
 class NonLinearSquareProblem
 	:
@@ -255,20 +258,14 @@ private:
 	VectorFunctionSystem<scalar>		__vfs;
 	index 					__m;
 	index 					__n;
-	scalar					__lambda;
 
 public:
-	NonLinearSquareProblem(
-		const VectorFunctionSystem<scalar>& vfs,
-		const index m,
-		const index n,
-		const scalar lambda = 0.5);
+	NonLinearSquareProblem( const VectorFunctionSystem<scalar>& vfs );
 
 	bool isValidInput (const Vector& x) const;
 	bool isValid() const;
 	const index& functionDimension() const;
 	const index& variableDimension() const;
-	const scalar& lambda() const;
 	Vector value(const Vector& x) const;
 	Matrix jacobi(const Vector& x) const;
 	scalar objective( const Vector& x) const;
@@ -279,16 +276,12 @@ public:
 
 template<class kernel>
 NonLinearSquareProblem<kernel>::NonLinearSquareProblem(
-	const VectorFunctionSystem<scalar>& vfs,
-	const index m,
-	const index n,
-	const scalar lambda)
+	const VectorFunctionSystem<scalar>& vfs)
 	:
-	__vfs(vfs),
-	__m(m),
-	__n(n),
-	__lambda(lambda)
+	__vfs(vfs)
 {  
+	__m = __vfs.functionDimension();
+	__n = __vfs.variableDimension();
 }
 
 template<class kernel>
@@ -316,12 +309,6 @@ const typename kernel::index& NonLinearSquareProblem<kernel>::variableDimension(
 }
 
 template<class kernel>
-const typename kernel::scalar& NonLinearSquareProblem<kernel>::lambda() const
-{
-	return __lambda;
-}
-
-template<class kernel>
 typename kernel::Vector NonLinearSquareProblem<kernel>::value(const Vector& x ) const
 {
 	return __vfs.functionValue(x);
@@ -336,7 +323,7 @@ typename kernel::Matrix NonLinearSquareProblem<kernel>::jacobi(const Vector& x )
 template<class kernel>
 typename kernel::scalar NonLinearSquareProblem<kernel>::objective( const Vector& x ) const
 {
-	return __vfs.functionValue(x).dot(__vfs.functionValue(x));
+	return 0.5*__vfs.functionValue(x).dot(__vfs.functionValue(x));
 }
 
 
