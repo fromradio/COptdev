@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 #ifndef ARITH_OPERATION_HPP__
 #define ARITH_OPERATION_HPP__
 
@@ -65,6 +66,13 @@ typename Vector::podscalar norm(const Vector& vec, int l, const vector_object&)
 		}
 		break;
 	}
+}
+
+/** compute a general norm of a vector */
+template<class T>
+typename Vector::podscalar norm(const Vector &vec, typename Vector::podscalar l, const vector_object&)
+{
+	
 }
 
 }
