@@ -64,14 +64,14 @@ public:
 		Construct the vector with specific length
 			if data is NULL, a zero vector is constructed
 	*/
-	VectorBase( const index size , scalar* data = nullptr );
+	VectorBase(const index size, scalar* data = nullptr);
 
 	/** Copy assignment */
-	VectorBase ( const VectorBase& vec );
+	VectorBase (const VectorBase& vec);
 
-	VectorBase( const index size , const referred_array& tag , scalar* data ,const index inter = 1);
+	VectorBase(const index size, const referred_array& tag, scalar* data, const index inter = 1);
 
-	VectorBase( const index size , const referred_array& tag , const scalar* data ,const index inter = 1);
+	VectorBase(const index size ,const referred_array& tag, const scalar* data, const index inter = 1);
 
 	/** API with vector in standard library */
 	VectorBase(const std::vector<scalar>& vec);
@@ -81,11 +81,11 @@ public:
 	//%}
 
 	/** copy operation */
-	VectorBase& operator= (const VectorBase& vec );
+	VectorBase& operator=(const VectorBase& vec );
 
 	/** Matlab-like element assignment */
-	scalar& operator() (const index i );
-	const scalar& operator() (const index i )const ;
+	scalar& operator()(const index i );
+	const scalar& operator()(const index i )const ;
 
 	/** overload operations*/
 	//%{
@@ -137,7 +137,7 @@ public:
 	VectorBase operator* (scalar s);
 
 
-	friend VectorBase operator* (scalar s,const VectorBase& vec){
+	friend VectorBase operator* (scalar s, const VectorBase& vec){
 		VectorBase result;
 		result.setArray(vec.size(),const_cast<scalar*>(vec.dataPtr()),vec.interval());
 		result.scale(s);
@@ -154,7 +154,7 @@ public:
 	VectorBase operator- () const;
 
 	/** overload of output stream */
-	friend std::ostream& operator<<(std::ostream& os,const VectorBase& vec){
+	friend std::ostream& operator<<(std::ostream& os, const VectorBase& vec){
 		if ( vec.size() == 0 )
 		{
 			os<<"[ ]";
@@ -175,14 +175,14 @@ public:
 	 *			/param size:		the size of the VectorBase
 	 *			/param i:			the index of non-zero element
 	 */
-	static VectorBase vecE(index size,index i);
+	static VectorBase vecE(index size, index i);
 
 	/*			Generate e VectorBase = [0,0,...,s,0,...]
 	 *			/param size:		the size of the VectorBase
 	 *			/param i:			the index of non-zero element
 	 *			/param s:			the value of non-zero element
 	 */
-	static VectorBase vecE(index size,index i,const scalar s);
+	static VectorBase vecE(index size, index i, const scalar s);
 	//%}
 
 	/** transpose operations */
@@ -207,13 +207,13 @@ public:
 	/** combination operations */
 	//%{
 	/** combination of two vectors */
-	void combine( const VectorBase& v1, const VectorBase& v2);
+	void combine(const VectorBase& v1, const VectorBase& v2);
 	/** combination of two vectors taking output as parameter */
-	static inline void stCombine( const VectorBase& v1, const VectorBase& v2, VectorBase& v);
+	static inline void stCombine(const VectorBase& v1, const VectorBase& v2, VectorBase& v);
 	//%}
 
 	/** generate a random vector */
-	static inline VectorBase random( const index i );
+	static inline VectorBase random(const index i);
 
 };
 
