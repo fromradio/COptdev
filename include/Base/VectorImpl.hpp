@@ -396,6 +396,34 @@ VectorBase<scalar,index> VectorBase<scalar,index>::block(const std::set<index>& 
 }
 
 template<class scalar,class index>
+VectorBase<scalar,index> VectorBase<scalar,index>::block(const std::vector<index>& indices) const
+{
+	VectorBase<scalar,index> result(indices.size());
+	for ( index i = 0 ; i < indices.size() ; ++ i ){
+		if (indices[i] >= this->size())
+		{
+			throw COException("Index out of range in Vector blocking!");
+		}
+		result[i] = this->operator[](indices[i]);
+	}
+	return result;
+}
+
+template<class scalar,class index>
+template<class InputIterator>
+VectorBase<scalar,index> VectorBase<scalar,index>::block(const index bs, InputIterator begin, InputIterator end)const
+{
+	VectorBase result(bs);
+	index i = 0;
+	for ( auto s = begin ; s != end ; ++ s )
+	{
+		result[i] = this->operator[](*s);
+		++ i;
+	}
+	return result;
+}
+
+template<class scalar,class index>
 void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec,const std::set<index>& indices)
 {
 	if( *indices.rbegin() >= vec.size() )
@@ -411,20 +439,6 @@ void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec,const std::
 }
 
 template<class scalar,class index>
-VectorBase<scalar,index> VectorBase<scalar,index>::block(const std::vector<index>& indices) const
-{
-	VectorBase<scalar,index> result(indices.size());
-	for ( index i = 0 ; i < indices.size() ; ++ i ){
-		if (indices[i] >= this->size())
-		{
-			throw COException("Index out of range in Vector blocking!");
-		}
-		result[i] = this->operator[](indices[i]);
-	}
-	return result;
-}
-
-template<class scalar,class index>
 void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec,const std::vector<index>& indices)
 {
 	this->resize(indices.size());
@@ -434,6 +448,19 @@ void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec,const std::
 			throw COException("Index out of range in Vector blocking!");
 		}
 		this->operator[](i)=vec[indices[i]];
+	}
+}
+
+template<class scalar,class index>
+template<class InputIterator>
+void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec, const index bs, InputIterator begin, InputIterator end)
+{
+	this->resize(bs);
+	index i = 0;
+	for ( auto iter = begin ; iter != end ; ++ iter )
+	{
+		this->operator[](i) = vec[*iter];
+		++i;
 	}
 }
 

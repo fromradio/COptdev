@@ -195,9 +195,13 @@ public:
 	/** blocking operations */
 	//%{
 	VectorBase block(const std::set<index>& indices)const;
-	void blockFromVector(const VectorBase& vec,const std::set<index>& indices);
 	VectorBase block(const std::vector<index>& indices) const;
-	void blockFromVector(const VectorBase& vec,const std::vector<index>& indices);
+	template<class InputIterator>
+	VectorBase block(const index bs, InputIterator begin, InputIterator end)const;
+	void blockFromVector(const VectorBase& vec, const std::set<index>& indices);
+	void blockFromVector(const VectorBase& vec, const std::vector<index>& indices);
+	template<class InputIterator>
+	void blockFromVector(const VectorBase& vec, const index bs, InputIterator begin, InputIterator end);
 	//%}
 
 	/** combination operations */
