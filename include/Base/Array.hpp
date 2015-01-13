@@ -52,6 +52,7 @@ public:
 
 
 private:
+
 	/** private variables */
 	//%{
 	/** the total size of the array */
@@ -63,23 +64,22 @@ private:
 	/** whether the array is referred */
 	bool							__referred;
 	//%}
-
-
-	/* 				 protected functions
-	 */
 	
 public:
 
+	/** constructors and deconstructor */
+	//%{
+	/** default constructor */
 	Array()
 		:
 		__size(0),
 		__inter(1),
-		__data_ptr(NULL),
+		__data_ptr(nullptr),
 		__referred(false)
 	{
 	}
 
-	Array ( const index size, const scalar* data = NULL, const index inter = 1 )
+	Array ( const index size, const scalar* data = nullptr, const index inter = 1 )
 		:
 		__size(size),
 		__inter(1),
@@ -121,29 +121,21 @@ public:
 	}
 
 
-	/*
-	 *		Access to data pointer for modification or other operations
-	 *
-	 */
+	/**	Access to data pointer for modification or other operations */
 	scalar* dataPtr(){
 	 	return __data_ptr;
 	}
 	const scalar* dataPtr() const{
 		return __data_ptr;
 	}
-	/*
-	 *			Copy two arrays
-	 *
-	 */
+
+	/**	Copy two arrays */
 	void copy( const Array& arr ) {
 		resize(arr.size(),arr.interval());
 		blas::copt_blas_copy(__size,arr.dataPtr(),1,__data_ptr,arr.interval());
 	}
 
-	/*
-	 *			swap two arrays
-	 *
-	 */
+	/**	swap two arrays */
 	void swap ( Array& arr ) {
 		if(arr.size()!=size())
 			throw COException("the size of two arrays must be the same if anyone wants to swap them!");
@@ -231,10 +223,7 @@ public:
 		return is_scalar<scalar>::value;
 	}
 
-	/*
-	 *
-	 *
-	 */
+	/** data access*/
 	scalar& operator[] ( index i ){
 		if ( i < 0 ){
 			// index less than zero
@@ -250,8 +239,6 @@ public:
 	const scalar& operator[] ( index i ) const {
 		return const_cast<Array&>(*this).operator[](i);
 	}
-
-	
 
 	/** copy assignment */
 	Array& operator=(const Array& arr )
