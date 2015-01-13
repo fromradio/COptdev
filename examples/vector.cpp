@@ -49,6 +49,12 @@ int main(int argc,char *argv[])
 	/** the result of dot operation should be 10.81 */
 	std::cout<<"(v1,v2)="<<v1.dot(v2)<<std::endl;
 
+	/** computation of l2 norm of v1 */
+	/** result should be 7.52662 */
+	std::cout<<"l2 norm of v1 is "<<v1.norm()<<std::endl;
+	/** result shoudl be 5*/
+	std::cout<<"l0 norm of v1 is "<<COPT::norm(v1,0)<<std::endl;
+
 	/** vector blocking of v1 with indices 0 and 2 */
 	ind inds[]{0,2};
 	/** the result should be [1.0,5.0] */

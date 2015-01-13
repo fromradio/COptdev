@@ -122,7 +122,11 @@ public:
 	 */
 	podscalar squaredNorm() const;
 
+	/** l1 norm */
 	podscalar absNorm() const;
+
+	/** l2 norm */
+	auto norm() const->podscalar;
 
 	/** normalize current vector and previous norm is returned*/
 	podscalar normalize();

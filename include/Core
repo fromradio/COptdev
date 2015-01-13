@@ -58,6 +58,7 @@
 #include "Base/VectorImpl.hpp"
 #include "Base/Matrix.hpp"
 #include "Base/MatrixImpl.hpp"
+#include "Base/ArithOperation.hpp"
 #include "Base/NumDifferential.hpp"
 #include "Base/Function.hpp"
 #include "Base/Solver.hpp"

@@ -253,6 +253,13 @@ typename VectorBase<scalar,index>::podscalar VectorBase<scalar,index>::squaredNo
 }
 
 template<class scalar,class index>
+auto VectorBase<scalar,index>::norm()const->podscalar
+{
+	podscalar norm = blas::copt_blas_nrm2(this->size(),this->dataPtr(),this->interval());
+	return norm;
+}
+
+template<class scalar,class index>
 typename VectorBase<scalar,index>::podscalar VectorBase<scalar,index>::absNorm() const
 {
 	podscalar result = 0;
