@@ -54,6 +54,7 @@
 #include "Base/LapackWrapper.hpp"
 #include "Base/UMFPackWrapper.hpp"
 #include "Base/Array.hpp"
+#include "Base/ArrayImpl.hpp"
 #include "Base/Vector.hpp"
 #include "Base/VectorImpl.hpp"
 #include "Base/Matrix.hpp"

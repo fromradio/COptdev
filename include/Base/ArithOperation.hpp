@@ -69,7 +69,7 @@ typename Vector::podscalar norm(const Vector& vec, int l, const vector_object&)
 }
 
 /** compute a general norm of a vector */
-template<class T>
+template<class Vector>
 typename Vector::podscalar norm(const Vector &vec, typename Vector::podscalar l, const vector_object&)
 {
 	
