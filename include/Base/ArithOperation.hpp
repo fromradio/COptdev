@@ -23,6 +23,14 @@
 namespace COPT
 {
 
+/** check the dimension of two vectors */
+template<class Vector>
+void checkDimension(const Vector &v1, const Vector &v2)
+{
+	if(v1.size()!=v2.size())
+		throw COException("COPT error: The size of two vectors are not consistent!");
+}
+
 /** compute the norm */
 template<class T>
 typename T::podscalar norm(const T& t,int l)
@@ -73,6 +81,14 @@ template<class Vector>
 typename Vector::podscalar norm(const Vector &vec, typename Vector::podscalar l, const vector_object&)
 {
 	
+}
+
+/** compute the distance between two vectors */
+template<class Vector>
+typename Vector::podscalar distance(const Vector &v1, const Vector &v2)
+{
+	checkDimension(v1,v2);
+	return (v1-v2).norm();
 }
 
 }
