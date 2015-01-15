@@ -52,6 +52,7 @@ public:
 
 
 private:
+
 	/** private variables */
 	//%{
 	/** the total size of the array */
@@ -63,215 +64,85 @@ private:
 	/** whether the array is referred */
 	bool							__referred;
 	//%}
-
-
-	/* 				 protected functions
-	 */
 	
 public:
 
-	Array()
-		:
-		__size(0),
-		__inter(1),
-		__data_ptr(NULL),
-		__referred(false)
-	{
-	}
+	/** constructors and deconstructor */
+	//%{
+	/** default constructor */
+	Array();
+	/** constructor for a standard array. */
+	Array (const index size, const scalar *data = nullptr, const index inter = 1);
+	/** constructor for a referred array. */
+	Array(const index size, const referred_array&, scalar* data, const index inter = 1);
+	/** copy constructor */
+	Array(const Array& arr);
+	/** deconstructor */
+	virtual ~Array();
+	//%}
 
-	Array ( const index size, const scalar* data = NULL, const index inter = 1 )
-		:
-		__size(size),
-		__inter(1),
-		__data_ptr(new scalar[size]),
-		__referred(false)
-	{
-		if ( data ){
-			blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
-		}
-		else{
-			for ( index i = 0 ; i < __size ; ++ i )
-				__data_ptr[i] = static_cast<scalar>(0.0);
-		}
-	}
+	/** clear the array */
+	void clear();
 
-	Array( const index size , const referred_array& , scalar* data ,const index inter = 1)
-		:
-		__size(size),
-		__inter(inter),
-		__data_ptr(data),
-		__referred(true)
-	{
-	}
+	/**	Access to data pointer for modification or other operations */
+	scalar* dataPtr();
+	const scalar* dataPtr() const;
 
-	Array( const Array& arr )
-	{
-		if(arr.isReferred())
-			setReferredArray(arr.size(),arr.dataPtr(),arr.interval());
-		else
-			setArray(arr);
-	}
+	/**	copy from another array, 
+	  * unlike copy constructor, the array will not be a reffered one
+	   */
+	void copy(const Array& arr);
 
-	virtual ~Array()
-	{
-		if (__referred)
-			__data_ptr = NULL;
-		else
-			SAFE_DELETE_ARRAY(__data_ptr);
-	}
+	/**	swap two arrays */
+	void swap (Array& arr);
 
-
-	/*
-	 *		Access to data pointer for modification or other operations
-	 *
-	 */
-	scalar* dataPtr(){
-	 	return __data_ptr;
-	}
-	const scalar* dataPtr() const{
-		return __data_ptr;
-	}
-	/*
-	 *			Copy two arrays
-	 *
-	 */
-	void copy( const Array& arr ) {
-		resize(arr.size(),arr.interval());
-		blas::copt_blas_copy(__size,arr.dataPtr(),1,__data_ptr,arr.interval());
-	}
-
-	/*
-	 *			swap two arrays
-	 *
-	 */
-	void swap ( Array& arr ) {
-		if(arr.size()!=size())
-			throw COException("the size of two arrays must be the same if anyone wants to swap them!");
-		else
-			blas::copt_blas_swap(__size,const_cast<scalar*>(arr.dataPtr()),1,__data_ptr,1);
-	}
 
 	/** getter and setter */
 	//%{
-
 	/** the size of the array */ 
-	const index& size() const{return __size;}
-
+	const index& size() const;
 	/** whether the array is referred */
-	bool isReferred() const{return __referred;}
-
+	bool isReferred() const;
 	/** the interval of the array */
-	index interval() const{return __inter;}
-
+	index interval() const;
 	//%}
 	
-	/*
-	 *			resize the array to specific size
+	/**		resize the array to specific size
 	 *
 	 */
-	void resize( const index size , const index inter = 1){
-		if(__referred)
-			throw COException("referred array is not allowed to be resized!");
-		else{
-			if(__size != size || __inter != inter ){
-				__size = size;
-				__inter = inter;
-				SAFE_DELETE_ARRAY(__data_ptr);
-				__data_ptr = new scalar[__size*__inter];
-				for ( index i = 0 ; i < __size ; ++ i )
-					__data_ptr[i*__inter] = static_cast<scalar>(0.0);
-			}
-			else{
-				for ( index i = 0 ; i < __size ; ++ i )
-					__data_ptr[i*__inter] = static_cast<scalar>(0.0);
-			}
-		}
-	}
+	void resize(const index size, const index inter = 1);
 
-	void reset(index size){resize(size,__inter);}
+	/** reset the array even if the array is a referred array */
+	void reset(const index size, const index inter=1);
 
-	void setArray(const index size,const scalar* data,const index inter = 1)
-	{
-		if ( __referred )
-			throw COException("referred array is not allowed to be reset ");
-		else{
-			resize(size,inter);
-			blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
-		}
-	}
+	/** set the array with given size and data */
+	void setArray(const index size, const scalar* data, const index inter = 1);
 
-	void setArray(const Array& arr)
-	{
-		if ( __referred )
-			throw COException("referred array is not allowed to be reset ");
-		else{
-			resize(arr.size(),arr.interval());
-			blas::copt_blas_copy(__size,arr.dataPtr(),arr.interval(),__data_ptr,__inter);
-		}
-	}
+	/** set the array with given array */
+	void setArray(const Array& arr);
 
 	/** set a referred array */
 	void setReferredArray(
 		const index size,
 		scalar* data,
-		const index inter = 1)
-	{
-		__referred = true;
-		__size = size;
-		__data_ptr = data;
-		__inter = inter;
-	}
+		const index inter = 1);
 
 
-	/*			Judge whether the array is valid
-	 *			The array is valid if and only if the template is valid scalar type:
-	 *			'float', 'double', 'std::complex<float>' or 'std::complex<double>'
+	/*	Judge whether the array is valid
+	 *	The array is valid if and only if the template is valid scalar type:
+	 *	'float', 'double', 'std::complex<float>' or 'std::complex<double>'
 	 */
-	bool 			isValid() const{
-		return is_scalar<scalar>::value;
-	}
+	bool isValid() const;
 
-	/*
-	 *
-	 *
-	 */
-	scalar& operator[] ( index i ){
-		if ( i < 0 ){
-			// index less than zero
-			throw COException("Vector error, index less than zero.");
-		}
-		else if ( i >= __size ){
-			// out of range
-			throw COException("Vector error, index larger than the length.");
-		}
-		else
-			return __data_ptr[i*__inter];
-	}
-	const scalar& operator[] ( index i ) const {
-		return const_cast<Array&>(*this).operator[](i);
-	}
-
-	
+	/** data access*/
+	scalar& operator[] (index i);
+	const scalar& operator[] (index i)const;
 
 	/** copy assignment */
-	Array& operator=(const Array& arr )
-	{
-		if (arr.isReferred())
-		{
-			__referred = true;
-			__data_ptr = arr.dataPtr();
-			__size = arr.size();
-			__inter = arr.interval();
-		}
-		else{
-			__referred = false;
-			copy(arr);
-		}
-		return *this;
-	}
+	Array& operator=(const Array& arr);
 
-	/**			overloaded stream */
-	friend std::ostream& operator<<(std::ostream& os,const Array& arr){
+	/** overloaded stream */
+	friend std::ostream& operator<<(std::ostream& os, const Array& arr){
 		os<<"[ ";
 		for ( index i = 0 ; i< arr.size()-1 ; ++ i ){
 			os<<arr[i]<<" , ";

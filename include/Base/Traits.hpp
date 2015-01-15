@@ -20,6 +20,10 @@
 #ifndef COPT_TRAITS_HPP__
 #define COPT_TRAITS_HPP__
 
+/*		In this file, we introduce several traits that are used in COPT.
+ *		
+ *
+ */
 namespace COPT
 {
 

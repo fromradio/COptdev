@@ -77,7 +77,7 @@ public:
 	/** default constructor */
 	MatrixBase();
 
-	MatrixBase(const index m, const index n, const scalar* data=NULL);
+	MatrixBase(const index m, const index n, const scalar *data=NULL);
 
 	/** Copy assignment */
 	MatrixBase(const MatrixBase& mat);
@@ -97,39 +97,39 @@ public:
 	const index& 		cols() const;
 
 	/**	matlab-like element getter */
-	scalar& operator() ( const index i , const index j);
+	scalar& operator() (const index i, const index j);
 
-	const scalar& operator() ( const index i, const index j) const;
+	const scalar& operator() (const index i, const index j) const;
 
 	/** get the element using Arr */
-	const scalar& data( const index i ) const;
+	const scalar& data(const index i) const;
 
 	/**	obtain the i-th row */
-	Vector row( const index num );
-	const Vector row( const index num ) const;
+	Vector row(const index num);
+	const Vector row(const index num) const;
 	/**	obtain the i-th column */
-	Vector col( const index num );
-	const Vector col( const index num ) const;
+	Vector col(const index num);
+	const Vector col(const index num) const;
 
 
 	/** set element using Arr */
 
-	void set ( const index i , const scalar value );
+	void set (const index i, const scalar value);
 
 
 	/** resize the matrix */
-	void resize ( index m , index n );
+	void resize (index m, index n);
 
 	/** set the matrix to be symmetric */
-	void setSymmetricFlag( bool sym );
+	void setSymmetricFlag(bool sym);
 	bool isSymmetric() const;
 
 	/** set the matrix to be transpose mode */
-	void setTransposeFlag( bool sym );
+	void setTransposeFlag(bool sym);
 	bool isTranspose() const;
 
 	/** Copy operation */
-	MatrixBase& operator= ( const MatrixBase& mat );
+	MatrixBase& operator= (const MatrixBase& mat);
 
 	/*
 		Mathematical operations
@@ -143,14 +143,14 @@ public:
 	MatrixBase operator- (const MatrixBase& mat);
 
 	/** matrix multiplications */
-	VectorBase<scalar,index> operator* ( const VectorBase<scalar,index>& vec ) const;
+	VectorBase<scalar,index> operator* (const VectorBase<scalar,index>& vec) const;
 
 	/** matrix and matrix multiplication */
-	MatrixBase operator* ( const MatrixBase& mat ) const;
+	MatrixBase operator* (const MatrixBase& mat) const;
 
 
 	// multiplication between a scalar and a matrix
-	friend MatrixBase operator* (const scalar s,const MatrixBase& mat)
+	friend MatrixBase operator* (const scalar s, const MatrixBase& mat)
 	{
 		MatrixBase result(mat.rows(),mat.cols());
 		for ( index i = 0 ; i < mat.rows() ; ++ i )
@@ -160,7 +160,7 @@ public:
 	}
 
 	// multiplication between a scalar and a matrix
-	friend MatrixBase operator* (const MatrixBase& mat,const scalar s)
+	friend MatrixBase operator* (const MatrixBase& mat, const scalar s)
 	{
 		return s*mat;
 	}
@@ -169,13 +169,13 @@ public:
 	MatrixBase transpose() const;
 
 	/** transpose muliplication */
-	Vector transMulti( const Vector& vec ) const;
+	Vector transMulti(const Vector& vec) const;
 
 	MatrixBase transMulti(const MatrixBase& mat) const;
 
 	/*				overload of ostream
 	 */
-	friend std::ostream& operator<<(std::ostream& os,const MatrixBase& mat)
+	friend std::ostream& operator<<(std::ostream& os, const MatrixBase& mat)
 	{
 		for ( index i = 0 ; i < mat.rows() ; ++ i ){
 			for ( index j = 0 ; j < mat.cols() ; ++ j )
@@ -188,7 +188,7 @@ public:
 	/*				solve linear system
 	 *
 	 */
-	 Vector lapackSolve( const Vector& vec ){
+	 Vector lapackSolve(const Vector& vec){
 		if (__rows != __cols )
 			throw COException("Solving Error: the matrix is not square!");
 		if (__rows != vec.size() )
@@ -224,12 +224,12 @@ public:
 // 		Eigen::Matrix<scalar,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
 // 		return VectorBase<scalar,index>(result);
 // 	}
-	Vector solve( const Vector& vec ){
+	Vector solve(const Vector& vec){
 		return lapackSolve(vec);
 	}
 
 // #ifdef USE_LAPACK
-	Vector leastSquareSolve( const Vector& vec){
+	Vector leastSquareSolve(const Vector& vec){
 		if( __cols != vec.size() )
 			throw COException("least square error: the size is not consistent!");
 		scalar *a = new scalar[__rows*__cols];
@@ -252,7 +252,7 @@ public:
 	/*			Special MatrixBase
 	 *
 	 */
-	static MatrixBase identity(index m,index n){
+	static MatrixBase identity(index m, index n){
 		MatrixBase result(m,n);
 		// std::cout<<result<<std::endl;
 		index min = std::min(m,n);
@@ -261,7 +261,7 @@ public:
 		return result;
 	}
 
-	static MatrixBase identity(index m,index n,const scalar s);
+	static MatrixBase identity(index m, index n, const scalar s);
 
 	/** Blocking methods */
 	//%{
@@ -347,8 +347,8 @@ public:
 	//%}
 
 	/** set a random matrix */
-	void setRandom( const index rows, const index cols);
-	static inline MatrixBase random( const index rows, const index cols);
+	void setRandom(const index rows, const index cols);
+	static inline MatrixBase random(const index rows, const index cols);
 	/** compute A^TA of a given matrix */
 	void mtm(MatrixBase& mat) const;
 
@@ -509,7 +509,7 @@ public:
 		const scalar*				vals);
 
 	SpMatrixBase(
-		const SpMatrixBase& );
+		const SpMatrixBase&);
 
 	/** deconstructor */
 	~SpMatrixBase();
@@ -625,9 +625,9 @@ public:
 
 /** Sparse matrix related operator */
 template<class scalar,class index>
-SpMatrixBase<scalar,index> operator* (const scalar s,const SpMatrixBase<scalar,index>& mat);
+SpMatrixBase<scalar,index> operator* (const scalar s, const SpMatrixBase<scalar,index>& mat);
 template<class scalar,class index,class T>
-SpMatrixBase<scalar,index> operator* (const T s,const SpMatrixBase<scalar,index>& mat);
+SpMatrixBase<scalar,index> operator* (const T s, const SpMatrixBase<scalar,index>& mat);
 
 
 }// End of namespace COPT

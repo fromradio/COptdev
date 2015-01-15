@@ -159,45 +159,31 @@ public:
 	{}
 	~VectorFunctionSystem(){}
 
+	const int functionDimension() const
+	{
+		return __m;
+	}
+
+	const int variableDimension() const
+	{
+		return __n;
+	}
+
 	Vector functionValue(const Vector& vec) const
 	{
 		Vector f(__m);
-	//	1st
-	//	f[0] = vec[0]*vec[0];
-	//	f[1] = vec[1]*vec[1];
-	//	2nd
-	//	f[0] = (vec[0]-50)*(vec[0]-50) + (vec[1]-10)*(vec[1]-20);
-	//	f[1] = (100*(vec[1]-vec[0]*vec[0])*(vec[1]-vec[0]*vec[0])+(1-vec[0])*(1-vec[0]));
-	//	3rd
-		f[0] = vec[0] + 10*vec[1]; 
-		f[1] = sqrt(5)*(vec[2]-vec[3]);
-		f[2] = (vec[1] - 2*vec[2]) * (vec[1] - 2*vec[2]);
-		f[3] = sqrt(10) * (vec[0]-vec[3]) * (vec[0]-vec[3]);
+		for(int i=0; i < __m; i++)
+			f[i] = 2 + 2*(i+1) - exp((i+1)*vec[0]) -exp((i+1)*vec[1]);
 		return f;
 	}
 
 	Matrix jacobiFunction(const Vector& vec) const
 	{
 		Matrix J(__m, __n);
-	//	1st
-	//	J(0, 0) = 2*vec[0];
-	//	J(0, 1) = 0;
-	//	J(1, 0) = 0;
-	//	J(1, 1) = 2*vec[1];
-	//	2nd
-	//	J(0, 0) = 2*vec[0]-100;
-	//	J(0, 1) = 2*vec[1]-30;
-	//	J(1, 0) = 400*vec[0]*vec[0]*vec[0]-400*vec[0]*vec[1]+2*vec[0]-2;
-	//	J(1, 1) = 200*vec[1]-200*vec[0]*vec[0];
-	//	3rd
-		J(0, 0) = 1;
-		J(0, 1) = 10;
-		J(1, 2) = sqrt(5);
-		J(1, 3) = -sqrt(5);
-		J(2, 1) = 2*(vec[1] - 2*vec[2]);
-		J(2, 2) = -4*(vec[1] - 2*vec[2]);
-		J(3, 0) = 2*sqrt(10)*(vec[0]-vec[3]);
-		J(3, 3) = -2*sqrt(10)*(vec[0]-vec[3]);
+		for(int i=0; i < __m; i++)
+			for(int j=0; j < __n; j++)
+				J(i, j) = -(i+1)*exp((i+1)*vec[j]);
+
 		return J;
 
 	}	
