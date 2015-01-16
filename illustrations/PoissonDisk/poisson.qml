@@ -30,8 +30,8 @@ Rectangle {
 
 	Rectangle{
 		id: cc
-		width: 10
-		height: 10
+		width: 0
+		height: 0
 		x: 20
 		y: 20
 		color: "green"
@@ -39,14 +39,14 @@ Rectangle {
 		MouseArea {id: mm; anchors.fill: parent}
 
 		states: State {
-             name: "cc"; when: mm.pressed == true
-             PropertyChanges { target: cc; x: 40; rotation: 180; color: "red" }
+             name: "cc"; when: mouseArea.pressed == true
+             PropertyChanges { target: cc; rotation: 180;x: 15;y: 15;height: 10;width: 10; color: "red" }
          }
 
          transitions: Transition {
              from: ""; to: "cc"; reversible: true
              ParallelAnimation {
-                 NumberAnimation { properties: "x,rotation"; duration: 500; easing.type: Easing.InOutQuad }
+                 NumberAnimation { properties: "x,y,rotation,height,width"; duration: 500; easing.type: Easing.InOutQuad }
                  ColorAnimation { duration: 500 }
              }
          }
