@@ -1,6 +1,5 @@
 #include "PoissonDisk.h"
 #include <iostream>
-
 #include <fstream>
 
 void poissonRandomSampling(ind dim, scalar r, Vector &sample)

@@ -13,6 +13,11 @@ const double pi = 3.1415926535897;
 
 void poissonRandomSampling(ind dim, scalar r, Vector &sample);
 
+/**		Poisson Disk produces a poisson sampling
+ *
+ *
+ *
+ */
 class PoissonDisk
 {
 	
