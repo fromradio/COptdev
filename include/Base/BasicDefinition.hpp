@@ -32,6 +32,7 @@ typedef __int64 		COPTlong;
 #else
 typedef long 			COPTlong;
 #endif
+
 typedef unsigned long 	longsize;
 
 /** the string that is used */
@@ -86,7 +87,7 @@ protected:
 
 
 /** random engine */
-std::mt19937 copt_rand_eng(time(NULL));
+static std::mt19937 copt_rand_eng(time(NULL));
 
 /** the boolean operations on scalar types */
 template<class T>

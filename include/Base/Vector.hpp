@@ -126,7 +126,7 @@ public:
 	podscalar absNorm() const;
 
 	/** l2 norm */
-	auto norm() const->podscalar;
+	podscalar norm() const;
 
 	/** normalize current vector and previous norm is returned*/
 	podscalar normalize();
