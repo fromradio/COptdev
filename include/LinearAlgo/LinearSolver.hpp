@@ -164,10 +164,7 @@ template<class Matrix> class QR;
 template<class Matrix> class Cholesky;
 template<class Matrix> class EigenSolver;
 
-void setLinearSolver()
-{
 
-}
 
 }
 #endif

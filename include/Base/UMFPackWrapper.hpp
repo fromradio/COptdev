@@ -155,13 +155,13 @@ inline COPTlong umfpack_solve(
 // }
 
 /** default umfpack control */
-void umfpack_defaults(
+inline void umfpack_defaults(
 	double Control[UMFPACK_CONTROL], double, int)
 {
 	umfpack_di_defaults(Control);
 }
 
-void umfpack_defaults(
+inline void umfpack_defaults(
 	double Control[UMFPACK_CONTROL],double, COPTlong)
 {
 	umfpack_dl_defaults(Control);

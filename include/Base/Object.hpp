@@ -64,31 +64,33 @@ public:
 	virtual ~COPTObject(){}
 
 	/** return the introduction about the COPT object */
-	const ostring& intro() const;
+	const ostring& intro() const{return __intro;}
 
 	/** the type of the object */
-	const ostring& type() const;
+	const ostring& type() const{return __type;}
 
 	/*			a clear function 
 	 *			some classes of COPT might contain some pointer stuff which
 	 *			has to be released when it is necessary.
 	 */
-	virtual void clear();
+	virtual void clear(){}
 };
 
-const ostring& COPTObject::intro() const
-{
-	return __intro;
-}
+// const ostring& COPTObject::intro() const
+// {
+// 	return __intro;
+// }
 
-const ostring& COPTObject::type() const
-{
-	return __type;
-}
+// const ostring& COPTObject::type() const
+// {
+// 	return __type;
+// }
 
-void COPTObject::clear()
-{
-}
+// void COPTObject::clear()
+// {
+// }
 
-}// End of namespace COPT
-#endif // OBJECT_HPP__
+} // End of namespace COPT
+
+#endif 
+// OBJECT_HPP__

@@ -26,14 +26,14 @@
 namespace COPT
 {
 
-int block_size( const char* name,const char* opts,int n1,int n2, int n3,int n4)
+inline int block_size( const char* name,const char* opts,int n1,int n2, int n3,int n4)
 {
 	int ispec = 1;
 	return ilaenv_(&ispec,const_cast<char*>(name),const_cast<char*>(opts),&n1,&n2,&n3,&n4);
 }
 
 template<class index,class real>
-int copt_lapack_gesv( index *n, index *nrhs, real *a,
+inline int copt_lapack_gesv( index *n, index *nrhs, real *a,
 	index *lda, index *ipiv, real *b,
 	index *ldb,
 	index *info)
@@ -42,7 +42,7 @@ int copt_lapack_gesv( index *n, index *nrhs, real *a,
 	return -1;
 }
 template<>
-int copt_lapack_gesv(int *n, int *nrhs, float *a,
+inline int copt_lapack_gesv(int *n, int *nrhs, float *a,
 	int *lda, int *ipiv, float *b,
 	int *ldb,
 	int* info)
@@ -51,7 +51,7 @@ int copt_lapack_gesv(int *n, int *nrhs, float *a,
 }
 
 template<>
-int copt_lapack_gesv(int *n, int *nrhs,	 double *a,
+inline int copt_lapack_gesv(int *n, int *nrhs,	 double *a,
 	int *lda, int *ipiv, double *b,
 	int *ldb,
 	int *info)
@@ -60,7 +60,7 @@ int copt_lapack_gesv(int *n, int *nrhs,	 double *a,
 }
 
 template<class index,class scalar>
-int copt_lapack_gelss(index m, index n, index nrhs,
+inline int copt_lapack_gelss(index m, index n, index nrhs,
 	scalar* a, index lda, scalar* b,
 	index ldb, scalar* s, scalar rcond,
 	index* rank,
@@ -70,7 +70,7 @@ int copt_lapack_gelss(index m, index n, index nrhs,
 }
 
 template<>
-int copt_lapack_gelss(int m, int n, int nrhs,
+inline int copt_lapack_gelss(int m, int n, int nrhs,
 	float *a, int lda, float *b,
 	int ldb, float *s, float rcond,
 	int* rank,
@@ -84,7 +84,7 @@ int copt_lapack_gelss(int m, int n, int nrhs,
 }
 
 template<>
-int copt_lapack_gelss(int m,int n,int nrhs,
+inline int copt_lapack_gelss(int m,int n,int nrhs,
 	double *a, int lda, double *b,
 	int ldb, double* s,double rcond,
 	int* rank,
@@ -98,7 +98,7 @@ int copt_lapack_gelss(int m,int n,int nrhs,
 }
 
 template<class index,class scalar>
-int copt_lapack_gels(char trans, index m, index n,
+inline int copt_lapack_gels(char trans, index m, index n,
 	index nrhs, scalar *a, index lda,
 	scalar* b, index ldb,
 	index *info)
@@ -107,7 +107,7 @@ int copt_lapack_gels(char trans, index m, index n,
 }
 
 template<>
-int copt_lapack_gels(char trans,int m, int n,
+inline int copt_lapack_gels(char trans,int m, int n,
 	int nrhs, float *a, int lda,
 	float *b, int ldb,
 	int *info)
@@ -121,7 +121,7 @@ int copt_lapack_gels(char trans,int m, int n,
 }
 
 template<>
-int copt_lapack_gels(char trans, int m, int n,
+inline int copt_lapack_gels(char trans, int m, int n,
 	int nrhs, double *a, int lda,
 	double *b, int ldb,
 	int *info)
@@ -136,13 +136,13 @@ int copt_lapack_gels(char trans, int m, int n,
 
 /** symmetric matrix to tridiagonal matrix */
 template<class index ,class scalar>
-int copt_lapack_sytrd(char uplo , index n , scalar* a , index lda , scalar *d , scalar *e , scalar *tau ,  index *info )
+inline int copt_lapack_sytrd(char uplo , index n , scalar* a , index lda , scalar *d , scalar *e , scalar *tau ,  index *info )
 {
 	throw COException("Unknown type for lapack wrapper!");
 }
 
 template<class index, class scalar>
-int copt_lapack_sytrd(char uplo, index n, std::complex<scalar>* a, int lda,
+inline int copt_lapack_sytrd(char uplo, index n, std::complex<scalar>* a, int lda,
 					scalar *d, scalar *e, std::complex<scalar>* tau, 
 					index *info )
 {
@@ -150,7 +150,7 @@ int copt_lapack_sytrd(char uplo, index n, std::complex<scalar>* a, int lda,
 }
 
 template<>
-int copt_lapack_sytrd(char uplo , int n , float* a , int lda , float *d ,float *e , float *tau ,  int *info )
+inline int copt_lapack_sytrd(char uplo , int n , float* a , int lda , float *d ,float *e , float *tau ,  int *info )
 {
 	/** compute the lwork first */
 	float *work = new float[1];
@@ -165,7 +165,7 @@ int copt_lapack_sytrd(char uplo , int n , float* a , int lda , float *d ,float *
 }
 
 template<>
-int copt_lapack_sytrd(char uplo , int n , double *a , int lda , double *d , double *e , double *tau , int *info )
+inline int copt_lapack_sytrd(char uplo , int n , double *a , int lda , double *d , double *e , double *tau , int *info )
 {
 	/** compute the lwork first */
 	double *work = new double[1];
@@ -180,7 +180,7 @@ int copt_lapack_sytrd(char uplo , int n , double *a , int lda , double *d , doub
 }
 
 template<class index,class scalar>
-int copt_lapack_hetrd(char uplo, int n, scalar *a, int lda,
+inline int copt_lapack_hetrd(char uplo, int n, scalar *a, int lda,
 				scalar *d, scalar *e, scalar *tau,
 				index *info )
 {
@@ -188,7 +188,7 @@ int copt_lapack_hetrd(char uplo, int n, scalar *a, int lda,
 }
 
 template<class index,class scalar>
-int copt_lapack_hetrd(char uplo, int n, std::complex<scalar>* a, int lda, 
+inline int copt_lapack_hetrd(char uplo, int n, std::complex<scalar>* a, int lda, 
 				scalar *d, scalar *e, std::complex<scalar>* tau,
 				index *info )
 {
@@ -196,7 +196,7 @@ int copt_lapack_hetrd(char uplo, int n, std::complex<scalar>* a, int lda,
 }
 
 template<>
-int copt_lapack_hetrd(char uplo, int n, std::complex<float> *a, int lda,
+inline int copt_lapack_hetrd(char uplo, int n, std::complex<float> *a, int lda,
 				float *d, float *e, std::complex<float> *tau,
 				int *info )
 {
@@ -212,7 +212,7 @@ int copt_lapack_hetrd(char uplo, int n, std::complex<float> *a, int lda,
 }
 
 template<>
-int copt_lapack_hetrd(char uplo, int n, std::complex<double> *a, int lda,
+inline int copt_lapack_hetrd(char uplo, int n, std::complex<double> *a, int lda,
 				double *d, double *e, std::complex<double> *tau,
 				int *info )
 {
@@ -229,26 +229,26 @@ int copt_lapack_hetrd(char uplo, int n, std::complex<double> *a, int lda,
 
 /** stebz */
 template<class index,class scalar>
-int copt_lapack_stebz(char range,char order,index n,scalar vl,scalar vu,index il,index iu,scalar abstol, scalar* d, scalar *e , index *m , index *nsplit , scalar *w , index *iblock , index *isplit , scalar *work , index *iwork , index *info )
+inline int copt_lapack_stebz(char range,char order,index n,scalar vl,scalar vu,index il,index iu,scalar abstol, scalar* d, scalar *e , index *m , index *nsplit , scalar *w , index *iblock , index *isplit , scalar *work , index *iwork , index *info )
 {
 	throw COException("Unknown type for lapack wrapper!");
 }
 
 template<>
-int copt_lapack_stebz(char range,char order,int n , float vl , float vu , int il , int iu , float abstol , float *d , float * e , int *m , int* nsplit , float *w , int* iblock , int* isplit , float* work, int* iwork , int* info)
+inline int copt_lapack_stebz(char range,char order,int n , float vl , float vu , int il , int iu , float abstol , float *d , float * e , int *m , int* nsplit , float *w , int* iblock , int* isplit , float* work, int* iwork , int* info)
 {
 	return sstebz_(&range,&order,&n,&vl,&vu,&il,&iu,&abstol,d,e,m,nsplit,w,iblock,isplit,work,iwork,info);
 }
 
 template<>
-int copt_lapack_stebz(char range , char order , int n , double vl , double vu , int il , int iu , double abstol , double *d , double *e , int *m , int *nsplit , double *w , int *iblock , int *isplit , double *work , int *iwork , int *info )
+inline int copt_lapack_stebz(char range , char order , int n , double vl , double vu , int il , int iu , double abstol , double *d , double *e , int *m , int *nsplit , double *w , int *iblock , int *isplit , double *work , int *iwork , int *info )
 {
 	return dstebz_(&range,&order,&n,&vl,&vu,&il,&iu,&abstol,d,e,m,nsplit,w,iblock,isplit,work,iwork,info);
 }
 
 /** LU factorization */
 template<class index,class scalar>
-int copt_lapack_getrf( index m , index n , scalar *a,
+inline int copt_lapack_getrf( index m , index n , scalar *a,
 				index lda , index *ipiv,
 				index *info )
 {
@@ -256,7 +256,7 @@ int copt_lapack_getrf( index m , index n , scalar *a,
 }
 
 template<>
-int copt_lapack_getrf( int m , int n , float *a,
+inline int copt_lapack_getrf( int m , int n , float *a,
 				int lda , int *ipiv ,
 				int *info )
 {
@@ -264,7 +264,7 @@ int copt_lapack_getrf( int m , int n , float *a,
 }
 
 template<>
-int copt_lapack_getrf( int m , int n , double *a,
+inline int copt_lapack_getrf( int m , int n , double *a,
 				int lda , int *ipiv ,
 				int *info )
 {
@@ -272,7 +272,7 @@ int copt_lapack_getrf( int m , int n , double *a,
 }
 
 template<>
-int copt_lapack_getrf( int m, int n, std::complex<float> *a,
+inline int copt_lapack_getrf( int m, int n, std::complex<float> *a,
 				int lda, int *ipiv,
 				int *info )
 {
@@ -280,7 +280,7 @@ int copt_lapack_getrf( int m, int n, std::complex<float> *a,
 }
 
 template<>
-int copt_lapack_getrf( int m, int n, std::complex<double> *a,
+inline int copt_lapack_getrf( int m, int n, std::complex<double> *a,
 				int lda, int *ipiv,
 				int *info)
 {
@@ -289,7 +289,7 @@ int copt_lapack_getrf( int m, int n, std::complex<double> *a,
 
 /** LU solving */
 template<class index,class scalar>
-int copt_lapack_getrs( char trans , index n , index nrhs,
+inline int copt_lapack_getrs( char trans , index n , index nrhs,
 				scalar *a, index lda , index * ipiv,
 				scalar *b, index ldb,
 				index *info)
@@ -298,7 +298,7 @@ int copt_lapack_getrs( char trans , index n , index nrhs,
 }
 
 template<>
-int copt_lapack_getrs( char trans , int n , int nrhs,
+inline int copt_lapack_getrs( char trans , int n , int nrhs,
 				float *a , int lda , int *ipiv,
 				float *b , int ldb ,
 				int *info)
@@ -307,7 +307,7 @@ int copt_lapack_getrs( char trans , int n , int nrhs,
 }
 
 template<>
-int copt_lapack_getrs( char trans , int n , int nrhs,
+inline int copt_lapack_getrs( char trans , int n , int nrhs,
 				double *a , int lda , int *ipiv,
 				double *b , int ldb ,
 				int *info)
@@ -316,7 +316,7 @@ int copt_lapack_getrs( char trans , int n , int nrhs,
 }
 
 template<>
-int copt_lapack_getrs( char trans, int n, int nrhs,
+inline int copt_lapack_getrs( char trans, int n, int nrhs,
 				std::complex<float> *a, int lda, int *ipiv,
 				std::complex<float> *b, int ldb,
 				int *info )
@@ -325,7 +325,7 @@ int copt_lapack_getrs( char trans, int n, int nrhs,
 }
 
 template<>
-int copt_lapack_getrs( char trans, int n, int nrhs,
+inline int copt_lapack_getrs( char trans, int n, int nrhs,
 				std::complex<double> *a, int lda, int *ipiv,
 				std::complex<double> *b, int ldb,
 				int *info )
@@ -335,14 +335,14 @@ int copt_lapack_getrs( char trans, int n, int nrhs,
 
 /** LU inverse */
 template<class index,class scalar>
-int copt_lapack_getri( index n , scalar *a , index lda ,
+inline int copt_lapack_getri( index n , scalar *a , index lda ,
 				index *ipiv , index *info )
 {
 	throw COException("Unkown type for lapack wrapper!");
 }
 
 template<>
-int copt_lapack_getri( int n , float *a , int lda ,
+inline int copt_lapack_getri( int n , float *a , int lda ,
 				int *ipiv , int *info )
 {
 	float *work = new float[1];
@@ -357,7 +357,7 @@ int copt_lapack_getri( int n , float *a , int lda ,
 }
 
 template<>
-int copt_lapack_getri( int n , double *a , int lda , 
+inline int copt_lapack_getri( int n , double *a , int lda , 
 				int *ipiv , int *info )
 {
 	double *work = new double[1];
@@ -372,7 +372,7 @@ int copt_lapack_getri( int n , double *a , int lda ,
 }
 
 template<>
-int copt_lapack_getri( int n, std::complex<float> *a, int lda,
+inline int copt_lapack_getri( int n, std::complex<float> *a, int lda,
 				int *ipiv, int *info )
 {
 	std::complex<float> *work = new std::complex<float>[1];
@@ -387,7 +387,7 @@ int copt_lapack_getri( int n, std::complex<float> *a, int lda,
 }
 
 template<>
-int copt_lapack_getri( int n, std::complex<double> *a ,int lda,
+inline int copt_lapack_getri( int n, std::complex<double> *a ,int lda,
 				int *ipiv, int *info )
 {
 	std::complex<double> *work = new std::complex<double>[1];
@@ -403,7 +403,7 @@ int copt_lapack_getri( int n, std::complex<double> *a ,int lda,
 
 /** Cholesky factorization */
 template<class index,class scalar>
-int copt_lapack_potrf( char uplo , index n , scalar * a,
+inline int copt_lapack_potrf( char uplo , index n , scalar * a,
 				index lda ,
 				index *info )
 {
@@ -411,7 +411,7 @@ int copt_lapack_potrf( char uplo , index n , scalar * a,
 }
 
 template<>
-int copt_lapack_potrf( char uplo , int n , float *a ,
+inline int copt_lapack_potrf( char uplo , int n , float *a ,
 				int lda,
 				int *info )
 {
@@ -419,7 +419,7 @@ int copt_lapack_potrf( char uplo , int n , float *a ,
 }
 
 template<>
-int copt_lapack_potrf( char uplo , int n , double *a ,
+inline int copt_lapack_potrf( char uplo , int n , double *a ,
 				int lda,
 				int *info )
 {
@@ -427,7 +427,7 @@ int copt_lapack_potrf( char uplo , int n , double *a ,
 }
 
 template<>
-int copt_lapack_potrf( char uplo, int n, std::complex<float> *a,
+inline int copt_lapack_potrf( char uplo, int n, std::complex<float> *a,
 				int lda,
 				int *info)
 {
@@ -435,7 +435,7 @@ int copt_lapack_potrf( char uplo, int n, std::complex<float> *a,
 }
 
 template<>
-int copt_lapack_potrf( char uplo, int n, std::complex<double> *a,
+inline int copt_lapack_potrf( char uplo, int n, std::complex<double> *a,
 				int lda,
 				int *info)
 {
@@ -444,7 +444,7 @@ int copt_lapack_potrf( char uplo, int n, std::complex<double> *a,
 
 /** Cholesky solving */
 template<class index,class scalar>
-int copt_lapack_potrs(char uplo , index n , index nrhs,
+inline int copt_lapack_potrs(char uplo , index n , index nrhs,
 				scalar *a , index lda , scalar *b,
 				index ldb,
 				index *info )
@@ -453,7 +453,7 @@ int copt_lapack_potrs(char uplo , index n , index nrhs,
 }
 
 template<>
-int copt_lapack_potrs(char uplo , int n , int nrhs,
+inline int copt_lapack_potrs(char uplo , int n , int nrhs,
 				float *a , int lda , float *b,
 				int ldb,
 				int *info )
@@ -462,7 +462,7 @@ int copt_lapack_potrs(char uplo , int n , int nrhs,
 }
 
 template<>
-int copt_lapack_potrs(char uplo , int n , int nrhs,
+inline int copt_lapack_potrs(char uplo , int n , int nrhs,
 				double *a , int lda , double *b,
 				int ldb,
 				int *info)
@@ -471,7 +471,7 @@ int copt_lapack_potrs(char uplo , int n , int nrhs,
 }
 
 template<>
-int copt_lapack_potrs( char uplo, int n, int nrhs,
+inline int copt_lapack_potrs( char uplo, int n, int nrhs,
 				std::complex<float> *a, int lda, std::complex<float> *b,
 				int ldb,
 				int *info)
@@ -480,7 +480,7 @@ int copt_lapack_potrs( char uplo, int n, int nrhs,
 }
 
 template<>
-int copt_lapack_potrs( char uplo, int n, int nrhs,
+inline int copt_lapack_potrs( char uplo, int n, int nrhs,
 				std::complex<double> *a, int lda, std::complex<double> *b,
 				int ldb,
 				int *info )
@@ -490,7 +490,7 @@ int copt_lapack_potrs( char uplo, int n, int nrhs,
 
 /** Cholesky inverse */
 template<class index,class scalar>
-int copt_lapack_potri( char uplo , index n , scalar *a,
+inline int copt_lapack_potri( char uplo , index n , scalar *a,
 				int lda,
 				int *info)
 {
@@ -498,7 +498,7 @@ int copt_lapack_potri( char uplo , index n , scalar *a,
 }
 
 template<>
-int copt_lapack_potri( char uplo , int n , float *a,
+inline int copt_lapack_potri( char uplo , int n , float *a,
 				int lda,
 				int *info)
 {
@@ -506,7 +506,7 @@ int copt_lapack_potri( char uplo , int n , float *a,
 }
 
 template<>
-int copt_lapack_potri( char uplo , int n , double *a,
+inline int copt_lapack_potri( char uplo , int n , double *a,
 				int lda,
 				int *info)
 {
@@ -514,7 +514,7 @@ int copt_lapack_potri( char uplo , int n , double *a,
 }
 
 template<>
-int copt_lapack_potri( char uplo, int n, std::complex<float> *a,
+inline int copt_lapack_potri( char uplo, int n, std::complex<float> *a,
 				int lda,
 				int *info )
 {
@@ -522,7 +522,7 @@ int copt_lapack_potri( char uplo, int n, std::complex<float> *a,
 }
 
 template<>
-int copt_lapack_potri( char uplo, int n, std::complex<double> *a,
+inline int copt_lapack_potri( char uplo, int n, std::complex<double> *a,
 				int lda,
 				int *info )
 {
@@ -531,7 +531,7 @@ int copt_lapack_potri( char uplo, int n, std::complex<double> *a,
 
 /** qr factorization */
 template<class index,class scalar>
-int copt_lapack_geqrf( index m , index n , scalar *a,
+inline int copt_lapack_geqrf( index m , index n , scalar *a,
 				index lda , scalar *tau,
 				index *info)
 {
@@ -539,7 +539,7 @@ int copt_lapack_geqrf( index m , index n , scalar *a,
 }
 
 template<>
-int copt_lapack_geqrf( int m , int n , float *a,
+inline int copt_lapack_geqrf( int m , int n , float *a,
 				int lda , float *tau,
 				int *info)
 {
@@ -555,7 +555,7 @@ int copt_lapack_geqrf( int m , int n , float *a,
 }
 
 template<>
-int copt_lapack_geqrf( int m , int n , double *a,
+inline int copt_lapack_geqrf( int m , int n , double *a,
 				int lda , double *tau ,
 				int *info )
 {
@@ -571,7 +571,7 @@ int copt_lapack_geqrf( int m , int n , double *a,
 }
 
 template<>
-int copt_lapack_geqrf( int m , int n , std::complex<float> *a,
+inline int copt_lapack_geqrf( int m , int n , std::complex<float> *a,
 				int lda , std::complex<float> *tau,
 				int *info )
 {
@@ -587,7 +587,7 @@ int copt_lapack_geqrf( int m , int n , std::complex<float> *a,
 }
 
 template<>
-int copt_lapack_geqrf( int m , int n , std::complex<double> *a,
+inline int copt_lapack_geqrf( int m , int n , std::complex<double> *a,
 				int lda , std::complex<double>* tau,
 				int *info)
 {
@@ -604,7 +604,7 @@ int copt_lapack_geqrf( int m , int n , std::complex<double> *a,
 
 /** compute Q'*B */
 template<class index , class scalar>
-int copt_lapack_ormqr(char side,char trans,index m , index n,
+inline int copt_lapack_ormqr(char side,char trans,index m , index n,
 				index k,scalar *a , index lda , scalar *tau , scalar *c , index ldc,
 				index *info)
 {
@@ -612,7 +612,7 @@ int copt_lapack_ormqr(char side,char trans,index m , index n,
 }
 
 template<>
-int copt_lapack_ormqr(char side,char trans,int m,int n,
+inline int copt_lapack_ormqr(char side,char trans,int m,int n,
 				int k,float *a,int lda,float *tau,float *c,int ldc,
 				int *info)
 {
@@ -628,7 +628,7 @@ int copt_lapack_ormqr(char side,char trans,int m,int n,
 }
 
 template<>
-int copt_lapack_ormqr(char side,char trans,int m,int n,
+inline int copt_lapack_ormqr(char side,char trans,int m,int n,
 				int k, double *a, int lda , double *tau, double *c, int ldc,
 				int *info)
 {
@@ -644,7 +644,7 @@ int copt_lapack_ormqr(char side,char trans,int m,int n,
 }
 
 template<>
-int copt_lapack_ormqr( char side,char trans, int m, int n,
+inline int copt_lapack_ormqr( char side,char trans, int m, int n,
 				int k, std::complex<float> *a, int lda, std::complex<float> *tau,
 				std::complex<float> *c, int ldc,
 				int *info)
@@ -660,7 +660,7 @@ int copt_lapack_ormqr( char side,char trans, int m, int n,
 }
 
 template<>
-int copt_lapack_ormqr( char side, char trans, int m, int n,
+inline int copt_lapack_ormqr( char side, char trans, int m, int n,
 				int k, std::complex<double> *a, int lda, std::complex<double> *tau,
 				std::complex<double> *c, int ldc,
 				int *info )
@@ -678,7 +678,7 @@ int copt_lapack_ormqr( char side, char trans, int m, int n,
 /** strsm */
 
 // template<class index,class scalar>
-// int copt_lapack_trsm(char side,char uplo,char transa,char diag,
+// inline int copt_lapack_trsm(char side,char uplo,char transa,char diag,
 // 				index m , index n , scalar alpha, scalar *a, index lda , scalar *b,
 // 				index ldb )
 // {
@@ -686,7 +686,7 @@ int copt_lapack_ormqr( char side, char trans, int m, int n,
 // }
 
 // template<>
-int copt_lapack_trsm(char side,char uplo, char transa, char diag,
+inline int copt_lapack_trsm(char side,char uplo, char transa, char diag,
 				int m, int n, float alpha, float *a, int lda, float *b,
 				int ldb )
 {
@@ -694,21 +694,21 @@ int copt_lapack_trsm(char side,char uplo, char transa, char diag,
 }
 
 // template<>
-int copt_lapack_trsm(char side,char uplo,char transa,char diag,
+inline int copt_lapack_trsm(char side,char uplo,char transa,char diag,
 				int m, int n, double alpha, double *a, int lda, double *b,
 				int ldb )
 {
 	return dtrsm_(&side,&uplo,&transa,&diag,&m,&n,&alpha,a,&lda,b,&ldb);
 }
 
-int copt_lapack_trsm(char side,char uplo, char transa, char diag,
+inline int copt_lapack_trsm(char side,char uplo, char transa, char diag,
 				int m, int n, std::complex<float> alpha, std::complex<float> *a, int lda,
 				std::complex<float> *b, int ldb )
 {
 	return ctrsm_(&side,&uplo,&transa,&diag,&m,&n,&alpha,a,&lda,b,&ldb);
 }
 
-int copt_lapack_trsm(char side, char uplo, char transa, char diag,
+inline int copt_lapack_trsm(char side, char uplo, char transa, char diag,
 				int m, int n, std::complex<double> alpha, std::complex<double> *a, int lda,
 				std::complex<double> *b, int ldb )
 {
@@ -717,7 +717,7 @@ int copt_lapack_trsm(char side, char uplo, char transa, char diag,
 
 /** solve QR problem */
 template<class index,class scalar>
-int copt_lapack_geqrs( index m , index n , index nrhs , 
+inline int copt_lapack_geqrs( index m , index n , index nrhs , 
 				scalar *a , index lda , scalar *tau, scalar *b, index ldb,
 				index *info)
 {
@@ -725,7 +725,7 @@ int copt_lapack_geqrs( index m , index n , index nrhs ,
 }
 
 template<>
-int copt_lapack_geqrs(int m , int n , int nrhs ,
+inline int copt_lapack_geqrs(int m , int n , int nrhs ,
 				float *a , int lda , float *tau , float *b , int ldb,
 				int *info )
 {
@@ -736,7 +736,7 @@ int copt_lapack_geqrs(int m , int n , int nrhs ,
 }
 
 template<>
-int copt_lapack_geqrs(int m, int n, int nrhs,
+inline int copt_lapack_geqrs(int m, int n, int nrhs,
 				double *a, int lda , double *tau, double *b , int ldb,
 				int *info)
 {
@@ -747,7 +747,7 @@ int copt_lapack_geqrs(int m, int n, int nrhs,
 }
 
 template<>
-int copt_lapack_geqrs(int m, int n, int nrhs,
+inline int copt_lapack_geqrs(int m, int n, int nrhs,
 				std::complex<float> *a, int lda, std::complex<float> *tau,
 				std::complex<float> *b, int ldb,
 				int *info )
@@ -759,7 +759,7 @@ int copt_lapack_geqrs(int m, int n, int nrhs,
 }
 
 template<>
-int copt_lapack_geqrs(int m, int n,int nrhs,
+inline int copt_lapack_geqrs(int m, int n,int nrhs,
 				std::complex<double> *a, int lda, std::complex<double> *tau,
 				std::complex<double> *b, int ldb,
 				int *info )

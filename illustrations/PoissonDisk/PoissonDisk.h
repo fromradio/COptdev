@@ -1,7 +1,6 @@
 #ifndef POISSON_DISK_H__
 #define POISSON_DISK_H__
 
-#include <QWidget>
 #include "../../include/Core"
 #include <vector>
 
@@ -15,10 +14,8 @@ const double pi = 3.1415926535897;
 void poissonRandomSampling(ind dim, scalar r, Vector &sample);
 
 class PoissonDisk
-	:
-	QObject
 {
-	Q_OBJECT
+	
 private:
 
 	struct Pt{
@@ -49,6 +46,7 @@ private:
 	Vector 						__grid_num;
 
 	PoissonDisk();
+
 public:
 
 	
@@ -67,11 +65,13 @@ public:
 
 	bool checkPoint(const Vector &c);
 
-	void checkTraverse(ind level,const std::vector<ind>& lc, const Vector& c, std::vector<ind> &v, bool& found);
+	void checkTraverse(ind level, const std::vector<ind>& lc, const Vector& c, std::vector<ind> &v, bool& found);
 
 	void generate();
 
 	void output(const std::string& str);
+
+	const std::list<Pt>& points()const;
 
 };
 

@@ -1,4 +1,5 @@
 #include "PoissonDisk.h"
+#include <iostream>
 
 #include <fstream>
 
@@ -54,6 +55,10 @@ void PoissonDisk::constructGrid()
 		
 	}
 	__m.resize(gridsize,-1);
+	for ( int i = 0 ;i < gridsize; ++i)
+	{
+		__m[i]=-1;
+	}
 }
 
 ind PoissonDisk::getIndex(const Vector &c)
@@ -181,9 +186,14 @@ void PoissonDisk::checkTraverse(ind level, const std::vector<ind>& lc, const Vec
 
 void PoissonDisk::generate()
 {
+	__active_set.clear();
+	__pts.clear();
+	std::cout<<"1"<<std::endl;
 	constructGrid();
+	std::cout<<"2"<<std::endl;
 	// initialize a point
 	initialize();
+	std::cout<<"3"<<std::endl;
 	__num = 1;
 
 	while(!__active_set.empty())
@@ -204,4 +214,9 @@ void PoissonDisk::output(const std::string& str)
 		}
 		fout<<std::endl;
 	}
+}
+
+const std::list<PoissonDisk::Pt>& PoissonDisk::points()const
+{
+	return __pts;
 }
