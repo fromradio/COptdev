@@ -11,15 +11,45 @@ Rectangle {
 		y: 30
 		anchors.horizontalCenter: page.horizontalCenter
 		font.pointSize: 24; font.bold: true
+
+		 MouseArea { id: mouseArea; anchors.fill: parent }
+
+         states: State {
+             name: "down"; when: mouseArea.pressed == true
+             PropertyChanges { target: helloText; y: 160; rotation: 180; color: "red" }
+         }
+
+         transitions: Transition {
+             from: ""; to: "down"; reversible: true
+             ParallelAnimation {
+                 NumberAnimation { properties: "y,rotation"; duration: 500; easing.type: Easing.InOutQuad }
+                 ColorAnimation { duration: 500 }
+             }
+         }
 	}
 
 	Rectangle{
-		width: 5
-		height: 5
+		id: cc
+		width: 10
+		height: 10
 		x: 20
 		y: 20
 		color: "green"
 		radius: width*0.5
+		MouseArea {id: mm; anchors.fill: parent}
+
+		states: State {
+             name: "cc"; when: mm.pressed == true
+             PropertyChanges { target: cc; x: 40; rotation: 180; color: "red" }
+         }
+
+         transitions: Transition {
+             from: ""; to: "cc"; reversible: true
+             ParallelAnimation {
+                 NumberAnimation { properties: "x,rotation"; duration: 500; easing.type: Easing.InOutQuad }
+                 ColorAnimation { duration: 500 }
+             }
+         }
 	}
 
 	Grid {
