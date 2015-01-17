@@ -40,7 +40,7 @@ Rectangle {
 
 		states: State {
              name: "cc"; when: mouseArea.pressed == true
-             PropertyChanges { target: cc; rotation: 180;x: 15;y: 15;height: 10;width: 10; color: "red" }
+             PropertyChanges { target: cc; rotation: 180; x: 15; y: 15; height: 10; width: 10; color: "red" }
          }
 
          transitions: Transition {
