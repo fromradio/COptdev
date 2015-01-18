@@ -35,6 +35,8 @@ typedef long 			COPTlong;
 
 typedef unsigned long 	longsize;
 
+const int Dynamic = -1;
+
 /** the string that is used */
 typedef std::string 			ostring;
 

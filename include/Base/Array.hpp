@@ -33,9 +33,11 @@ class DataObject: public COPTObject
 /*		class Array describes a base class for basic dense data types used in COPT
  *		like vector and matrix. The array can be referred to another array or independent 
  *		array. 
+ *		If dim is given as a non-negative value, the array is initialized with a specific 
+ * 		dimension. And the array is not able to be modified in this case. 
  */
 
-template<class T,class I>
+template<class T,class I,int SizeAtCompileTime = Dynamic>
 class Array
 	:
 	public DataObject
