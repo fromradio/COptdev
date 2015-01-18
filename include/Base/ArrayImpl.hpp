@@ -16,6 +16,7 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 #ifndef ARRAY_IMPL_HPP__
 #define ARRAY_IMPL_HPP__
 
@@ -26,6 +27,8 @@ namespace COPT
 
 template<class scalar,class index,int SizeAtCompileTime>
 Array<scalar,index,SizeAtCompileTime>::Array()
+	:
+	__referred(false)
 {
 	// for dynamic array a zero-dimensional, non-referred array is constructed
 	if(SizeAtCompileTime == Dynamic)
@@ -33,7 +36,6 @@ Array<scalar,index,SizeAtCompileTime>::Array()
 		__size = 0;
 		__inter = 1;
 		__data_ptr = nullptr;
-		__referred = false;
 	}
 	// for non-dynamic array, a zero-constant array is created
 	else
@@ -42,16 +44,19 @@ Array<scalar,index,SizeAtCompileTime>::Array()
 		__inter = 1;
 		this->resize(__size,__inter);
 	}
+	__is_dynamic = (SizeAtCompileTime==Dynamic)?true:false;
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
 Array<scalar,index,SizeAtCompileTime>::Array(const index size, const scalar* data, const index inter)
 	:
 	__size(size),
-	__inter(1),
+	__inter(inter),
 	__data_ptr(new scalar[size]),
 	__referred(false)
 {
+	if(SizeAtCompileTime!=Dynamic)
+		throw COException("Size specified constructor only works for dynamic array");
 	if ( data ){
 		blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
 	}
@@ -59,6 +64,26 @@ Array<scalar,index,SizeAtCompileTime>::Array(const index size, const scalar* dat
 		for ( index i = 0 ; i < __size ; ++ i )
 			__data_ptr[i] = static_cast<scalar>(0.0);
 	}
+	__is_dynamic = (SizeAtCompileTime==Dynamic)?true:false;
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
+Array<scalar,index,SizeAtCompileTime>::Array(const scalar* data, const index inter)
+	:
+	__size(SizeAtCompileTime),
+	__inter(inter),
+	__data_ptr(new scalar[size]),
+	__referred(false)
+{
+	if(SizeAtCompileTime==Dynamic)
+		throw COException("Wrong constructor for dynamic array. You should try to use size specified constructor or give the dimension of the array");
+	if(data)
+		blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
+	else{
+		for (index i = 0; i < __size; ++ i)
+			__data_ptr[i] = static_cast<scalar>(0.0);
+	}
+	__is_dynamic = (SizeAtCompileTime==Dynamic)?true:false;
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
@@ -69,6 +94,22 @@ Array<scalar,index,SizeAtCompileTime>::Array(const index size, const referred_ar
 	__data_ptr(data),
 	__referred(true)
 {
+	if(SizeAtCompileTime!=Dynamic)
+		throw COException("Size specified constructor only works for dynamic array");
+	__is_dynamic = (SizeAtCompileTime==Dynamic)?true:false;
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
+Array<scalar,index,SizeAtCompileTime>::Array(const referred_array&, scalar *data, const index inter)
+	:
+	__size(SizeAtCompileTime),
+	__inter(inter),
+	__data_ptr(data),
+	__referred(true)
+{
+	if(SizeAtCompileTime==Dynamic)
+		throw COException("Wrong constructor for dynamic array. You should try to use size specified constructor or give the dimension of the array");
+	__is_dynamic = (SizeAtCompileTime==Dynamic)?true:false;
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
@@ -78,6 +119,7 @@ Array<scalar,index,SizeAtCompileTime>::Array(const Array& arr)
 		setReferredArray(arr.size(),arr.dataPtr(),arr.interval());
 	else
 		setArray(arr);
+	__is_dynamic = (SizeAtCompileTime==Dynamic)?true:false;
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
@@ -147,6 +189,12 @@ template<class scalar,class index,int SizeAtCompileTime>
 bool Array<scalar,index,SizeAtCompileTime>::isReferred() const
 {
 	return __referred;
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
+bool Array<scalar,index,SizeAtCompileTime>::isDynamic() const
+{
+	return __is_dynamic;
 }
 
 template<class scalar,class index,int SizeAtCompileTime>

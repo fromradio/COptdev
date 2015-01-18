@@ -65,6 +65,8 @@ private:
 	scalar*							__data_ptr;
 	/** whether the array is referred */
 	bool							__referred;
+	/** whether the array is dynamic array */
+	bool 							__is_dynamic;
 	//%}
 	
 public:
@@ -75,8 +77,12 @@ public:
 	Array();
 	/** constructor for a standard array. */
 	Array (const index size, const scalar *data = nullptr, const index inter = 1);
+	/** constructor for a non-dynamic array. */
+	Array (const scalar *data=nullptr, const index inter = 1);
 	/** constructor for a referred array. */
 	Array(const index size, const referred_array&, scalar* data, const index inter = 1);
+	/** constructor for a non-dynamic, referred array */
+	Array(const referred_array&, scalar *data, const index inter = 1);
 	/** copy constructor */
 	Array(const Array& arr);
 	/** deconstructor */
@@ -105,6 +111,8 @@ public:
 	const index& size() const;
 	/** whether the array is referred */
 	bool isReferred() const;
+	/** whether the array is dynamic */
+	bool isDynamic() const;
 	/** the interval of the array */
 	index interval() const;
 	//%}
