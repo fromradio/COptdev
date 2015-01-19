@@ -32,26 +32,26 @@ namespace COPT
 template <class FT,class I>
 class MatrixBase;
 
-template <class FT,class I = int>
+template <class FT,class I = int,int SizeAtCompileTime=Dynamic>
 class VectorBase 
 	: 
 	public Array<FT,I>
 {
 public:
 	/** 	scalar type 	*/
-	typedef 				FT						scalar;
+	typedef FT										scalar;
 	/** 	the pod type of scalar */
 	typedef typename get_pod_type<scalar>::type 	podscalar;
 	/** 	size type 		*/
-	typedef 				I 						index;
+	typedef I 										index;
 	/**		define the category 	*/
-	typedef 				vector_object 			ObjectCategory;
+	typedef vector_object 							ObjectCategory;
 	/**		define the kernel 		*/
-	typedef 				KernelTrait<FT,index>	Kernel;
+	typedef KernelTrait<FT,index>					Kernel;
 
 private:
 	/**		definitions used in implementation */
-	typedef 				Array<FT,index>			Arr;
+	typedef COPT::Array<FT,index,SizeAtCompileTime>	Array;
 public:
 
 	
@@ -64,7 +64,10 @@ public:
 		Construct the vector with specific length
 			if data is NULL, a zero vector is constructed
 	*/
-	VectorBase(const index size, scalar* data = nullptr);
+	VectorBase(const index size, const scalar *data = nullptr, const index inter = 1);
+
+	/** constructor for size-specified vector */
+	VectorBase(const scalar *data,const index inter = 1);
 
 	/** Copy assignment */
 	VectorBase (const VectorBase& vec);
@@ -90,27 +93,33 @@ public:
 	/** overload operations*/
 	//%{
 	/** operator< */
-	bool operator< (const VectorBase& vec)const;
+	template<int S>
+	bool operator< (const VectorBase<scalar,index,S>& vec)const;
 	bool operator< (const scalar s)const;
 
 	/** operator<= */
-	bool operator<=(const VectorBase& vec)const;
+	template<int S>
+	bool operator<=(const VectorBase<scalar,index,S>& vec)const;
 	bool operator<=(const scalar s)const;
 
 	/** operator> */
-	bool operator> (const VectorBase& vec)const;
+	template<int S>
+	bool operator> (const VectorBase<scalar,index,S>& vec)const;
 	bool operator> (const scalar s)const;
 
 	/** operator>= */
-	bool operator>=(const VectorBase& vec)const;
+	template<int S>
+	bool operator>=(const VectorBase<scalar,index,S>& vec)const;
 	bool operator>=(const scalar s)const;
 
 	/** operator== */
-	bool operator==(const VectorBase& vec)const;
+	template<int S>
+	bool operator==(const VectorBase<scalar,index,S>& vec)const;
 	bool operator==(const scalar s)const;
 
 	/** operator!= */
-	bool operator!=(const VectorBase& vec)const;
+	template<int S>
+	bool operator!=(const VectorBase<scalar,index,S>& vec)const;
 	bool operator!=(const scalar s)const;
 	//%}
 
@@ -132,7 +141,8 @@ public:
 	podscalar normalize();
 	
 	/** dot operation */
-	scalar dot(const VectorBase& vec) const;
+	template<int S>
+	scalar dot(const VectorBase<scalar,index,S>& vec) const;
 
 	/** scale with a special length */
 	void scale(scalar s);
@@ -149,10 +159,12 @@ public:
 	}
 
 	/** summation operation */
-	VectorBase operator+ (const VectorBase& vec) const;
+	template<int S>
+	VectorBase operator+ (const VectorBase<scalar,index,S> &vec) const;
 
 	/** subtraction operation */
-	VectorBase operator- (const VectorBase& vec) const;
+	template<int S>
+	VectorBase operator- (const VectorBase<scalar,index,S> &vec) const;
 
 	/** */
 	VectorBase operator- () const;

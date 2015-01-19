@@ -155,7 +155,7 @@ struct is_scalar
 //%{
 template<class T,class I,int SizeAtCompileTime>
 class Array;
-template<class T,class I>
+template<class T,class I,int SizeAtCompileTime>
 class VectorBase;
 template<class T,class I>
 class MatrixBase;
@@ -177,7 +177,7 @@ public:
 	static const bool valid  = is_scalar<T>::value&&is_index<I>::value;
 
 	typedef COPT::Array<T,I,Dynamic> 					Array;
-	typedef VectorBase<T,I>								Vector;
+	typedef VectorBase<T,I,Dynamic>						Vector;
 	typedef MatrixBase<T,I>								Matrix;
 	typedef SpMatrixBase<T,I>							SpMatrix;
 };

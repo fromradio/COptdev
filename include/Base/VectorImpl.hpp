@@ -24,24 +24,31 @@
 namespace COPT
 {
 
-template<class scalar,class index>
-VectorBase<scalar,index>::VectorBase()
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime>::VectorBase()
 	:
-	Array<scalar,index>()
+	Array()
 {
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index>::VectorBase( const index size , scalar *data )
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime>::VectorBase(const index size, const scalar *data, const index inter )
 	:
-	Arr(size,data)
+	Array(size,data,inter)
 {
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index>::VectorBase( const VectorBase& vec )
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime>::VectorBase(const scalar *data, const index inter)
 	:
-	Arr()
+	Array(data,inter)
+{
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime>::VectorBase( const VectorBase& vec )
+	:
+	Array()
 {
 	if (vec.isReferred())
 	{
@@ -54,37 +61,37 @@ VectorBase<scalar,index>::VectorBase( const VectorBase& vec )
 	}
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index>::VectorBase( const index size, const referred_array& tag, scalar *data, const index inter )
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime>::VectorBase( const index size, const referred_array& tag, scalar *data, const index inter )
 	:
-	Arr(size,tag,data,inter)
+	Array(size,tag,data,inter)
 {
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index>::VectorBase( const index size , const referred_array& tag , const scalar* data ,const index inter )
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime>::VectorBase( const index size , const referred_array& tag , const scalar* data ,const index inter )
 	:
-	Arr(size,tag,const_cast<scalar*>(data),inter)
+	Array(size,tag,const_cast<scalar*>(data),inter)
 {
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index>::VectorBase(const std::vector<scalar>& vec)
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime>::VectorBase(const std::vector<scalar>& vec)
 	:
-	Arr()
+	Array()
 {
 	this->resize(vec.size(),1);
 	for ( index i = 0 ; i < this->size() ; ++ i )
 		this->operator[](i) = vec[i];
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index>::~VectorBase()
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime>::~VectorBase()
 {
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index>& VectorBase<scalar,index>::operator= ( const VectorBase& vec )
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime>& VectorBase<scalar,index,SizeAtCompileTime>::operator= ( const VectorBase& vec )
 {
 	if (vec.isReferred()){
 		this->setReferredArray(vec.size(),const_cast<scalar*>(vec.dataPtr()),vec.interval());
@@ -95,20 +102,21 @@ VectorBase<scalar,index>& VectorBase<scalar,index>::operator= ( const VectorBase
 	return *this;
 }
 
-template<class scalar,class index>
-scalar& VectorBase<scalar,index>::operator() ( const index i )
+template<class scalar,class index,int SizeAtCompileTime>
+scalar& VectorBase<scalar,index,SizeAtCompileTime>::operator() ( const index i )
 {
 	return this->operator[](i);
 }
 
-template<class scalar,class index>
-const scalar& VectorBase<scalar,index>::operator() (const index i ) const
+template<class scalar,class index,int SizeAtCompileTime>
+const scalar& VectorBase<scalar,index,SizeAtCompileTime>::operator() (const index i ) const
 {
 	return this->operator[](i);
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator<(const VectorBase<scalar,index>& vec)const
+template<class scalar,class index,int SizeAtCompileTime>
+template<int S>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator<(const VectorBase<scalar,index,S>& vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
@@ -119,8 +127,8 @@ bool VectorBase<scalar,index>::operator<(const VectorBase<scalar,index>& vec)con
 	return true;
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator<(const scalar s)const
+template<class scalar,class index,int SizeAtCompileTime>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator<(const scalar s)const
 {
 	for ( index i = 0 ; i < this->size() ; ++ i )
 	{
@@ -130,8 +138,9 @@ bool VectorBase<scalar,index>::operator<(const scalar s)const
 	return true;
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator<=(const VectorBase<scalar,index>& vec)const
+template<class scalar,class index,int SizeAtCompileTime>
+template<int S>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator<=(const VectorBase<scalar,index,S>& vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
@@ -142,8 +151,8 @@ bool VectorBase<scalar,index>::operator<=(const VectorBase<scalar,index>& vec)co
 	return true;
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator<=(const scalar s)const
+template<class scalar,class index,int SizeAtCompileTime>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator<=(const scalar s)const
 {
 	for ( index i = 0 ; i < this->size() ; ++ i )
 	{
@@ -153,8 +162,9 @@ bool VectorBase<scalar,index>::operator<=(const scalar s)const
 	return true;
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator>(const VectorBase<scalar,index>& vec)const
+template<class scalar,class index,int SizeAtCompileTime>
+template<int S>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator>(const VectorBase<scalar,index,S> &vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
@@ -165,8 +175,8 @@ bool VectorBase<scalar,index>::operator>(const VectorBase<scalar,index>& vec)con
 	return true;
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator>(const scalar s)const
+template<class scalar,class index,int SizeAtCompileTime>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator>(const scalar s)const
 {
 	for ( index i = 0 ; i < this->size() ; ++ i )
 	{
@@ -176,8 +186,9 @@ bool VectorBase<scalar,index>::operator>(const scalar s)const
 	return true;
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator>=(const VectorBase<scalar,index>& vec)const
+template<class scalar,class index,int SizeAtCompileTime>
+template<int S>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator>=(const VectorBase<scalar,index,S>& vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
@@ -188,8 +199,8 @@ bool VectorBase<scalar,index>::operator>=(const VectorBase<scalar,index>& vec)co
 	return true;
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator>=(const scalar s)const
+template<class scalar,class index,int SizeAtCompileTime>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator>=(const scalar s)const
 {
 	for ( index i = 0 ; i < this->size() ; ++ i )
 	{
@@ -199,8 +210,9 @@ bool VectorBase<scalar,index>::operator>=(const scalar s)const
 	return true;
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator==(const VectorBase<scalar,index>& vec)const
+template<class scalar,class index,int SizeAtCompileTime>
+template<int S>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator==(const VectorBase<scalar,index,S>& vec)const
 {
 	if (this->size() != vec.size() )
 		return false;
@@ -211,8 +223,8 @@ bool VectorBase<scalar,index>::operator==(const VectorBase<scalar,index>& vec)co
 	return true;
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator==(const scalar s)const
+template<class scalar,class index,int SizeAtCompileTime>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator==(const scalar s)const
 {
 	for ( index i = 0 ; i < this->size() ; ++ i )
 	{
@@ -222,8 +234,9 @@ bool VectorBase<scalar,index>::operator==(const scalar s)const
 	return true;
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator!=(const VectorBase<scalar,index>& vec)const
+template<class scalar,class index,int SizeAtCompileTime>
+template<int S>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator!=(const VectorBase<scalar,index,S>& vec)const
 {
 	if ( this->size() != vec.size() )
 		return true;
@@ -234,8 +247,8 @@ bool VectorBase<scalar,index>::operator!=(const VectorBase<scalar,index>& vec)co
 	return false;
 }
 
-template<class scalar,class index>
-bool VectorBase<scalar,index>::operator!=(const scalar s)const
+template<class scalar,class index,int SizeAtCompileTime>
+bool VectorBase<scalar,index,SizeAtCompileTime>::operator!=(const scalar s)const
 {
 	for ( index i = 0 ; i < this->size() ; ++ i )
 	{
@@ -245,22 +258,22 @@ bool VectorBase<scalar,index>::operator!=(const scalar s)const
 	return false;
 }
 
-template<class scalar,class index>
-typename VectorBase<scalar,index>::podscalar VectorBase<scalar,index>::squaredNorm() const
+template<class scalar,class index,int SizeAtCompileTime>
+typename VectorBase<scalar,index,SizeAtCompileTime>::podscalar VectorBase<scalar,index,SizeAtCompileTime>::squaredNorm() const
 {
 	podscalar norm = blas::copt_blas_nrm2(this->size(),this->dataPtr(),this->interval());
 	return norm*norm;
 }
 
-template<class scalar,class index>
-typename VectorBase<scalar,index>::podscalar VectorBase<scalar,index>::norm()const
+template<class scalar,class index,int SizeAtCompileTime>
+typename VectorBase<scalar,index,SizeAtCompileTime>::podscalar VectorBase<scalar,index,SizeAtCompileTime>::norm()const
 {
 	podscalar norm = blas::copt_blas_nrm2(this->size(),this->dataPtr(),this->interval());
 	return norm;
 }
 
-template<class scalar,class index>
-typename VectorBase<scalar,index>::podscalar VectorBase<scalar,index>::absNorm() const
+template<class scalar,class index,int SizeAtCompileTime>
+typename VectorBase<scalar,index,SizeAtCompileTime>::podscalar VectorBase<scalar,index,SizeAtCompileTime>::absNorm() const
 {
 	podscalar result = 0;
 	for (index i = 0 ; i < this->size() ; ++ i )
@@ -270,16 +283,17 @@ typename VectorBase<scalar,index>::podscalar VectorBase<scalar,index>::absNorm()
 	return result;
 }
 
-template<class scalar,class index>
-typename VectorBase<scalar,index>::podscalar VectorBase<scalar,index>::normalize()
+template<class scalar,class index,int SizeAtCompileTime>
+typename VectorBase<scalar,index,SizeAtCompileTime>::podscalar VectorBase<scalar,index,SizeAtCompileTime>::normalize()
 {
 	podscalar norm = std::sqrt(squaredNorm());
 	scale(1.0/norm);
 	return norm;
 }
 
-template<class scalar,class index>
-typename VectorBase<scalar,index>::scalar VectorBase<scalar,index>::dot(const VectorBase& vec) const
+template<class scalar,class index,int SizeAtCompileTime>
+template<int S>
+typename VectorBase<scalar,index,SizeAtCompileTime>::scalar VectorBase<scalar,index,SizeAtCompileTime>::dot(const VectorBase<scalar,index,S> &vec) const
 {
 	if(this->size()!=vec.size()) 
 	{
@@ -292,81 +306,83 @@ typename VectorBase<scalar,index>::scalar VectorBase<scalar,index>::dot(const Ve
 	}
 }
 
-template<class scalar,class index>
-void VectorBase<scalar,index>::scale(scalar s)
+template<class scalar,class index,int SizeAtCompileTime>
+void VectorBase<scalar,index,SizeAtCompileTime>::scale(scalar s)
 {
 	blas::copt_blas_scal(this->size(),s,this->dataPtr(),this->interval());
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> VectorBase<scalar,index>::operator* (scalar s)
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::operator* (scalar s)
 {
-	VectorBase result;
+	VectorBase<scalar,index,Dynamic> result;
 	result.setArray(this->size(),this->dataPtr(),this->interval());
 	result.scale(s);
 	return result;
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> VectorBase<scalar,index>::operator+ (const VectorBase& vec) const
+template<class scalar,class index,int SizeAtCompileTime>
+template<int S>
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::operator+ (const VectorBase<scalar,index,S> &vec) const
 {
 	if(this->size()!=vec.size())
 	{
 		std::cerr<<"one size is "<<this->size()<<" another size is "<<vec.size()<<std::endl;
 		throw COException("VectorBase summation error: the length of two VectorBases do not equal to each other");
 	}
-	VectorBase result(this->size());
+	VectorBase<scalar,index,Dynamic> result(this->size());
 	for ( index i = 0 ; i < this->size() ; ++ i ){
 		result[i] = this->operator[](i)+vec[i];
 	}
 	return result;
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> VectorBase<scalar,index>::operator- (const VectorBase& vec) const
+template<class scalar,class index,int SizeAtCompileTime>
+template<int S>
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::operator- (const VectorBase<scalar,index,S> &vec) const
 {
 	if(this->size()!=vec.size()) 
 	{
 		std::cerr<<"one size is "<<this->size()<<" another size is "<<vec.size()<<std::endl;
 		throw COException("VectorBase summation error: the length of two VectorBases do not equal to each other");
 	}
-	VectorBase result(this->size());
+	VectorBase<scalar,index,Dynamic> result(this->size());
 	for ( index i = 0 ; i < this->size() ; ++ i ){
 		result[i] = this->operator[](i)-vec[i];
 	}
 	return result;
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> VectorBase<scalar,index>::operator- () const
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::operator- () const
 {
-	VectorBase result(this->size());
+	VectorBase<scalar,index,Dynamic> result(this->size());
 	for ( index i = 0 ; i < this->size() ; ++ i ){
 		result[i] = -this->operator[](i);
 	}
 	return result;
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> VectorBase<scalar,index>::vecE(index size, index i )
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::vecE(index size, index i )
 {
 	if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
-	VectorBase vec(size);
+	VectorBase<scalar,index,Dynamic> vec(size);
 	vec[i] = 1.0;
 	return vec;
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> VectorBase<scalar,index>::vecE(index size,index i,const scalar s)
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::vecE(index size,index i,const scalar s)
 {
 	if ( i < 0 || i >= size ) throw COException("Index error: out of range!");
-	VectorBase vec(size);
+	VectorBase<scalar,index,Dynamic> vec(size);
 	vec[i] = s;
 	return vec;
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index> VectorBase<scalar,index>::mulTrans(const VectorBase<scalar,index>& vec) const
+template<class scalar,class index,int SizeAtCompileTime>
+MatrixBase<scalar,index> VectorBase<scalar,index,SizeAtCompileTime>::mulTrans(const VectorBase<scalar,index,SizeAtCompileTime>& vec) const
 {
 	index 					m = this->size();
 	index 					n = vec.size();
@@ -380,20 +396,20 @@ MatrixBase<scalar,index> VectorBase<scalar,index>::mulTrans(const VectorBase<sca
 
 /*			the transpose of a matrix multiplies a vector
  */
-template<class scalar,class index>
-VectorBase<scalar,index> VectorBase<scalar,index>::transMul(const MatrixBase<scalar,index>& mat) const
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::transMul(const MatrixBase<scalar,index>& mat) const
 {
 	return mat.transpose()*(*this);
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> VectorBase<scalar,index>::block(const std::set<index>& indices) const
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::block(const std::set<index>& indices) const
 {
 	if( *indices.rbegin() >= this->size() )
 	{
 		throw COException("Index out of range in Vector blocking!");
 	}
-	VectorBase<scalar,index> result(indices.size());
+	VectorBase<scalar,index,SizeAtCompileTime> result(indices.size());
 	index i = 0;
 	for ( const auto& s : indices ){
 		result[i] = this->operator[](s);
@@ -402,10 +418,10 @@ VectorBase<scalar,index> VectorBase<scalar,index>::block(const std::set<index>& 
 	return result;
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> VectorBase<scalar,index>::block(const std::vector<index>& indices) const
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::block(const std::vector<index>& indices) const
 {
-	VectorBase<scalar,index> result(indices.size());
+	VectorBase<scalar,index,SizeAtCompileTime> result(indices.size());
 	for ( index i = 0 ; i < indices.size() ; ++ i ){
 		if (indices[i] >= this->size())
 		{
@@ -416,11 +432,11 @@ VectorBase<scalar,index> VectorBase<scalar,index>::block(const std::vector<index
 	return result;
 }
 
-template<class scalar,class index>
+template<class scalar,class index,int SizeAtCompileTime>
 template<class InputIterator>
-VectorBase<scalar,index> VectorBase<scalar,index>::block(const index bs, InputIterator begin, InputIterator end)const
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::block(const index bs, InputIterator begin, InputIterator end)const
 {
-	VectorBase result(bs);
+	VectorBase<scalar,index,Dynamic> result(bs);
 	index i = 0;
 	for ( auto s = begin ; s != end ; ++ s )
 	{
@@ -430,8 +446,8 @@ VectorBase<scalar,index> VectorBase<scalar,index>::block(const index bs, InputIt
 	return result;
 }
 
-template<class scalar,class index>
-void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec,const std::set<index>& indices)
+template<class scalar,class index,int SizeAtCompileTime>
+void VectorBase<scalar,index,SizeAtCompileTime>::blockFromVector(const VectorBase& vec,const std::set<index>& indices)
 {
 	if( *indices.rbegin() >= vec.size() )
 	{
@@ -445,8 +461,8 @@ void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec,const std::
 	}
 }
 
-template<class scalar,class index>
-void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec,const std::vector<index>& indices)
+template<class scalar,class index,int SizeAtCompileTime>
+void VectorBase<scalar,index,SizeAtCompileTime>::blockFromVector(const VectorBase& vec,const std::vector<index>& indices)
 {
 	this->resize(indices.size());
 	for ( index i = 0 ; i < indices.size() ; ++ i ){
@@ -458,9 +474,9 @@ void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec,const std::
 	}
 }
 
-template<class scalar,class index>
+template<class scalar,class index,int SizeAtCompileTime>
 template<class InputIterator>
-void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec, const index bs, InputIterator begin, InputIterator end)
+void VectorBase<scalar,index,SizeAtCompileTime>::blockFromVector(const VectorBase& vec, const index bs, InputIterator begin, InputIterator end)
 {
 	this->resize(bs);
 	index i = 0;
@@ -471,14 +487,14 @@ void VectorBase<scalar,index>::blockFromVector(const VectorBase& vec, const inde
 	}
 }
 
-template<class scalar,class index>
-void VectorBase<scalar,index>::combine(const VectorBase& v1,const VectorBase& v2)
+template<class scalar,class index,int SizeAtCompileTime>
+void VectorBase<scalar,index,SizeAtCompileTime>::combine(const VectorBase& v1,const VectorBase& v2)
 {
 	VectorBase::stCombine(v1,v2,*this);
 }
 
-template<class scalar,class index>
-void VectorBase<scalar,index>::stCombine(const VectorBase& v1,const VectorBase& v2,VectorBase& v)
+template<class scalar,class index,int SizeAtCompileTime>
+void VectorBase<scalar,index,SizeAtCompileTime>::stCombine(const VectorBase& v1,const VectorBase& v2,VectorBase& v)
 {
 	v.resize(v1.size()+v2.size());
 	index n = v1.size();
@@ -488,11 +504,11 @@ void VectorBase<scalar,index>::stCombine(const VectorBase& v1,const VectorBase& 
 		v[i+n] = v2[i];
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> VectorBase<scalar,index>::random( const index s )
+template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::random( const index s )
 {
 	std::uniform_real_distribution<typename get_pod_type<scalar>::type> unif(0.0,1.0);
-	VectorBase result(s);
+	VectorBase<scalar,index,Dynamic> result(s);
 	for ( int i = 0 ; i < s; ++ i )
 	{
 		if(is_real<scalar>::value)

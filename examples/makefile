@@ -14,7 +14,7 @@ obj/array.o: array.cpp ../include/Base/Array.hpp ../include/Base/ArrayImpl.hpp
 	$(CXX) $(CXXFLAGS) $(I) -c $< -o $@
 
 vector: bin/vector
-
+	
 bin/vector: obj/vector.o
 	$(CXX) obj/vector.o -L$(DIR_LIB) -o $@ $(LIB)
 obj/vector.o: vector.cpp 
