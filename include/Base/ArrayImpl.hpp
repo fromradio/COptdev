@@ -274,7 +274,8 @@ void Array<scalar,index,SizeAtCompileTime>::setArray(const index size, const sca
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
-void Array<scalar,index,SizeAtCompileTime>::setArray(const Array &arr)
+template<int Size>
+void Array<scalar,index,SizeAtCompileTime>::setFromArray(const Array<scalar,index,Size> &arr)
 {
 	if(SizeAtCompileTime!=Dynamic)
 		throw COException("Size specified array is not able to be resized");

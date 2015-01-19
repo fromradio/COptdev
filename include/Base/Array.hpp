@@ -76,11 +76,11 @@ public:
 	/** constructors and deconstructor */
 	//%{
 	/** default constructor */
-	explicit Array();
+	Array();
 	/** constructor for a standard array. */
 	Array (const index size, const scalar *data = nullptr, const index inter = 1);
 	/** constructor for a non-dynamic array. */
-	explicit Array (const scalar *data, const index inter = 1);
+	Array (const scalar *data, const index inter = 1);
 	/** constructor for a referred array. */
 	Array(const index size, const referred_array&, scalar* data, const index inter = 1);
 	/** constructor for a non-dynamic, referred array */
@@ -136,7 +136,8 @@ public:
 	void setArray(const scalar *data);
 
 	/** set the array with given array */
-	void setArray(const Array& arr);
+	template<int Size>
+	void setFromArray(const Array<scalar,index,Size> &arr);
 
 	/** set a referred array */
 	void setReferredArray(
