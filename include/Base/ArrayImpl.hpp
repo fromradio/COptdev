@@ -42,7 +42,9 @@ Array<scalar,index,SizeAtCompileTime>::Array()
 	{
 		__size = SizeAtCompileTime;
 		__inter = 1;
-		this->resize(__size,__inter);
+		__data_ptr = new scalar[__size*__inter];
+		for(index i=0; i<__size; ++i)
+			__data_ptr[i]=0.0;
 	}
 	__is_dynamic = (SizeAtCompileTime==Dynamic)?true:false;
 }
@@ -52,7 +54,7 @@ Array<scalar,index,SizeAtCompileTime>::Array(const index size, const scalar* dat
 	:
 	__size(size),
 	__inter(inter),
-	__data_ptr(new scalar[size]),
+	__data_ptr(new scalar[size*inter]),
 	__referred(false)
 {
 	if(SizeAtCompileTime!=Dynamic)
@@ -72,11 +74,12 @@ Array<scalar,index,SizeAtCompileTime>::Array(const scalar* data, const index int
 	:
 	__size(SizeAtCompileTime),
 	__inter(inter),
-	__data_ptr(new scalar[size]),
+	__data_ptr(nullptr),
 	__referred(false)
 {
 	if(SizeAtCompileTime==Dynamic)
 		throw COException("Wrong constructor for dynamic array. You should try to use size specified constructor or give the dimension of the array");
+	__data_ptr = new scalar[__inter*__size];
 	if(data)
 		blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
 	else{
@@ -208,6 +211,8 @@ void Array<scalar,index,SizeAtCompileTime>::resize(const index size, const index
 {
 	if(__referred)
 		throw COException("referred array is not allowed to be resized!");
+	else if(SizeAtCompileTime!=Dynamic)
+		throw COException("Size specified array is not able to be resized");
 	else
 	{
 		if(__size != size || __inter != inter ){
@@ -229,6 +234,8 @@ void Array<scalar,index,SizeAtCompileTime>::resize(const index size, const index
 template<class scalar,class index,int SizeAtCompileTime>
 void Array<scalar,index,SizeAtCompileTime>::reset(const index size,const index inter)
 {
+	if(SizeAtCompileTime!=Dynamic)
+		throw COException("Size specified array is not able to be resized");
 	if(this->isReferred())
 	{
 		clear();
@@ -256,6 +263,8 @@ void Array<scalar,index,SizeAtCompileTime>::reset(const index size,const index i
 template<class scalar,class index,int SizeAtCompileTime>
 void Array<scalar,index,SizeAtCompileTime>::setArray(const index size, const scalar *data, const index inter)
 {
+	if(SizeAtCompileTime!=Dynamic)
+		throw COException("Size specified array is not able to be resized");
 	if (__referred)
 		throw COException("referred array is not allowed to be reset ");
 	else{
@@ -267,6 +276,8 @@ void Array<scalar,index,SizeAtCompileTime>::setArray(const index size, const sca
 template<class scalar,class index,int SizeAtCompileTime>
 void Array<scalar,index,SizeAtCompileTime>::setArray(const Array &arr)
 {
+	if(SizeAtCompileTime!=Dynamic)
+		throw COException("Size specified array is not able to be resized");
 	if ( __referred )
 		throw COException("referred array is not allowed to be reset ");
 	else{
@@ -276,10 +287,30 @@ void Array<scalar,index,SizeAtCompileTime>::setArray(const Array &arr)
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
+void Array<scalar,index,SizeAtCompileTime>::setArray(const scalar *data)
+{
+	blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
 void Array<scalar,index,SizeAtCompileTime>::setReferredArray(const index size, scalar* data, const index inter)
 {
+	if(SizeAtCompileTime!=Dynamic)
+		throw COException("Size specified array is not able to be resized");
 	__referred = true;
 	__size = size;
+	if(!__referred)
+		SAFE_DELETE_ARRAY(__data_ptr);
+	__data_ptr = data;
+	__inter = inter;
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
+void Array<scalar,index,SizeAtCompileTime>::setReferredArray(scalar *data, const index inter)
+{
+	if(!__referred)
+		SAFE_DELETE_ARRAY(__data_ptr);
+	__referred = true;
 	__data_ptr = data;
 	__inter = inter;
 }

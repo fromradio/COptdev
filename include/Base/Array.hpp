@@ -51,6 +51,8 @@ public:
 	typedef 				array_object 		ObjectCategory;
 	/** 	define the kernel trait 		*/
 	typedef 				KernelTrait<T,I>	Kernel;
+	/** 	the iterator 					*/
+	typedef scalar* 							iterator;
 
 
 private:
@@ -74,11 +76,11 @@ public:
 	/** constructors and deconstructor */
 	//%{
 	/** default constructor */
-	Array();
+	explicit Array();
 	/** constructor for a standard array. */
 	Array (const index size, const scalar *data = nullptr, const index inter = 1);
 	/** constructor for a non-dynamic array. */
-	Array (const scalar *data=nullptr, const index inter = 1);
+	explicit Array (const scalar *data, const index inter = 1);
 	/** constructor for a referred array. */
 	Array(const index size, const referred_array&, scalar* data, const index inter = 1);
 	/** constructor for a non-dynamic, referred array */
@@ -125,8 +127,13 @@ public:
 	/** reset the array even if the array is a referred array */
 	void reset(const index size, const index inter=1);
 
+	/** reset the non-dynamic array */
+
 	/** set the array with given size and data */
 	void setArray(const index size, const scalar* data, const index inter = 1);
+
+	/** set the array with given data if the size is specified at compile time */
+	void setArray(const scalar *data);
 
 	/** set the array with given array */
 	void setArray(const Array& arr);
@@ -136,6 +143,9 @@ public:
 		const index size,
 		scalar* data,
 		const index inter = 1);
+
+	/** set a referred, size-specified array */
+	void setReferredArray( scalar *data, const index inter = 1);
 
 
 	/*	Judge whether the array is valid
