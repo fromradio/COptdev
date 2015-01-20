@@ -91,6 +91,18 @@ VectorBase<scalar,index,SizeAtCompileTime>::~VectorBase()
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
+index VectorBase<scalar,index,SizeAtCompileTime>::dimension() const
+{
+	return this->size();
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
+void VectorBase<scalar,index,SizeAtCompileTime>::resize(const index size, const index inter)
+{
+	this->reset(size,inter);
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
 VectorBase<scalar,index,SizeAtCompileTime>& VectorBase<scalar,index,SizeAtCompileTime>::operator= ( const VectorBase& vec )
 {
 	if (vec.isReferred()){
@@ -382,11 +394,11 @@ VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompile
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
-MatrixBase<scalar,index> VectorBase<scalar,index,SizeAtCompileTime>::mulTrans(const VectorBase<scalar,index,SizeAtCompileTime>& vec) const
+MatrixBase<scalar,index,Dynamic,Dynamic> VectorBase<scalar,index,SizeAtCompileTime>::mulTrans(const VectorBase<scalar,index,SizeAtCompileTime>& vec) const
 {
 	index 					m = this->size();
 	index 					n = vec.size();
-	MatrixBase<scalar,index> 	result(m,n);
+	DMatrix 	result(m,n);
 	for ( index i = 0 ; i < m ; ++ i )
 		for ( index j = 0 ; j < n ; ++ j )
 			result(i,j) = this->operator[](i)*vec[j];
@@ -397,7 +409,7 @@ MatrixBase<scalar,index> VectorBase<scalar,index,SizeAtCompileTime>::mulTrans(co
 /*			the transpose of a matrix multiplies a vector
  */
 template<class scalar,class index,int SizeAtCompileTime>
-VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::transMul(const MatrixBase<scalar,index>& mat) const
+VectorBase<scalar,index,SizeAtCompileTime> VectorBase<scalar,index,SizeAtCompileTime>::transMul(const DMatrix& mat) const
 {
 	return mat.transpose()*(*this);
 }

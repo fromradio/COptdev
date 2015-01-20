@@ -37,6 +37,14 @@ template<class T2>
 struct get_pod_type<std::complex<T2> >
 { typedef T2 type;};
 
+template<class T1,class T2>
+struct is_same
+{ static const bool value = false;};
+
+template<class T>
+struct is_same<T,T>
+{ static const bool value = true;};
+
 template<class T1>
 struct is_float
 { static const bool value = false;};
@@ -157,7 +165,7 @@ template<class T,class I,int SizeAtCompileTime>
 class Array;
 template<class T,class I,int SizeAtCompileTime>
 class VectorBase;
-template<class T,class I>
+template<class T,class I,int RowAtCompileTime,int ColAtCompileTime>
 class MatrixBase;
 template<class T,class I>
 class SpMatrixBase;
@@ -178,7 +186,7 @@ public:
 
 	typedef COPT::Array<T,I,Dynamic> 					Array;
 	typedef VectorBase<T,I,Dynamic>						Vector;
-	typedef MatrixBase<T,I>								Matrix;
+	typedef MatrixBase<T,I,Dynamic,Dynamic>				Matrix;
 	typedef SpMatrixBase<T,I>							SpMatrix;
 };
 //%}

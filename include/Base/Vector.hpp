@@ -29,7 +29,7 @@
 namespace COPT
 {
 // declaration
-template <class FT,class I>
+template <class FT,class I,int RowAtCompileTime,int ColAtCompileTime>
 class MatrixBase;
 
 template <class FT,class I = int,int SizeAtCompileTime=Dynamic>
@@ -52,6 +52,8 @@ public:
 private:
 	/**		definitions used in implementation */
 	typedef COPT::Array<FT,index,SizeAtCompileTime>	Array;
+
+	typedef COPT::MatrixBase<FT,index,Dynamic,Dynamic> 	DMatrix;
 public:
 
 	
@@ -82,6 +84,12 @@ public:
 	/** Deconstructor */
 	~VectorBase();
 	//%}
+
+	/** get the dimension */
+	index dimension() const;
+
+	/** resize the Vector */
+	void resize(const index size, const index inter=1);
 
 	/** copy operation */
 	VectorBase& operator=(const VectorBase& vec );
@@ -202,11 +210,11 @@ public:
 	//%}
 
 	/** transpose operations */
-	MatrixBase<scalar,index> mulTrans(const VectorBase& vec) const;
+	DMatrix mulTrans(const VectorBase& vec) const;
 
 	/*			the transpose of the vector multiplies a matrix
 	 */
-	VectorBase transMul(const MatrixBase<scalar,index>& mat) const;
+	VectorBase transMul(const DMatrix& mat) const;
 
 	/** blocking operations */
 	//%{
