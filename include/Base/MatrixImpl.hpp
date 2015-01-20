@@ -27,11 +27,17 @@ template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::MatrixBase()
 	:
 	Array(),
-	__rows(0),
-	__cols(0),
+	__rows((RowAtCompileTime==Dynamic)?0:RowAtCompileTime),
+	__cols((ColAtCompileTime==Dynamic)?0:ColAtCompileTime),
 	__sym(false),
-	__trans(false)
+	__trans(false),
+	__is_row_dynamic((RowAtCompileTime==Dynamic)?true:false),
+	__is_col_dynamic((ColAtCompileTime==Dynamic)?true:false)
 {
+	if(RowAtCompileTime!=Dynamic)
+		__lda = RowAtCompileTime+1;
+	else
+		__lda = 0;
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
@@ -40,12 +46,48 @@ MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::MatrixBase(
 	index n,
 	const scalar* data)
 	:
-	Array(m*n,data),
+	Array((m+1)*n,data),
 	__rows(m),
 	__cols(n),
 	__sym(false),
+	__trans(false),
+	__lda(m+1),
+	__is_row_dynamic(false),
+	__is_col_dynamic(false)
+{
+	assert(RowAtCompileTime==Dynamic);
+	assert(ColAtCompileTime==Dynamic);
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::MatrixBase(
+	const index m,
+	const scalar *data)
+	:
+	Array(),
+	__sym(false),
 	__trans(false)
 {
+	if(RowAtCompileTime!=Dynamic&&ColAtCompileTime!=Dynamic)
+		throw COException("Matrix constructing error: One dimension constructor for Matrix requires Row number of column number is fixed at compile time");
+	if(RowAtCompileTime==Dynamic)
+	{
+		__rows = m;
+		__cols = ColAtCompileTime;
+		this->setArray((m+1)*ColAtCompileTime,data);
+		__is_row_dynamic = false;
+		__is_col_dynamic = true;
+		__lda = m+1;
+	}
+	else
+	{
+		__rows = RowAtCompileTime;
+		__cols = m;
+		this->setArray((RowAtCompileTime+1)*m,data);
+		__is_row_dynamic = true;
+		__is_col_dynamic = false;
+		__lda = RowAtCompileTime+1;
+	}
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
@@ -86,7 +128,7 @@ const index& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::cols() 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 bool MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::isColumnDynamic() const
 {
-	return __is_column_dynamic;
+	return __is_col_dynamic;
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
@@ -99,16 +141,16 @@ typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::scalar& Mat
 	else if (__sym)
 	{
 		if ( i <= j )
-			return this->operator[](j*__rows+i);
+			return this->operator[](j*__lda+i);
 		else
-			return this->operator[](i*__rows+j);
+			return this->operator[](i*__lda+j);
 	}
 	else if(__trans)
 	{
-		return this->operator[](i*__cols+j);
+		return this->operator[](i*__lda+j);
 	}
 	else{
-		return this->operator[](j*__rows+i);
+		return this->operator[](j*__lda+i);
 	}
 }
 
@@ -123,17 +165,18 @@ void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::set(const index
 {
 	if ( i < 0 )
 		throw COException("MatrixBase error: index is less that zero!");
-	else if ( i >= __rows*__cols )
+	else if ( i >= this->size() )
 		throw COException("MatrixBase error: index is out of range!");
 	else
 		this->operator[](i) = value;
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-const typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::scalar& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::data ( const index i ) const{
+const typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::scalar& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::data ( const index i ) const
+{
 	if ( i < 0 )
 		throw COException("MatrixBase error: index is less that zero!");
-	else if ( i >= __rows*__cols )
+	else if ( i >= this->size() )
 		throw COException("MatrixBase error: index is out of range!");
 	else
 		return this->operator[](i);
@@ -180,6 +223,12 @@ const VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCom
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+index MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::lda() const
+{
+	return __lda;
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::setSymmetricFlag( bool sym )
 {
 	__sym = sym;
@@ -203,51 +252,107 @@ bool MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::isTranspose() c
 	return __trans;
 }
 
-
-
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::resize(index m,index n)
 {
-	__rows = m;
-	__cols = n;
-	this->reset(m*n);
+	if(__is_row_dynamic&&__is_col_dynamic)
+	{
+		__rows = m;
+		__cols = n;
+		if( __trans )
+		{
+			__lda = __cols+1;
+			this->reset(__rows*__lda);
+		}
+		else
+		{
+			__lda = __rows+1;
+			this->reset(__lda*__cols);
+		}
+	}
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator=(const MatrixBase& mat)
+template<class Mat>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::binaryCheck(const Mat&mat)
 {
-	if(__rows != mat.rows() || __cols != mat.cols() )
+	if(!is_same<typename MatrixBase::scalar,typename Mat::scalar>::value||!is_same<typename MatrixBase::index,typename Mat::index>::value)
+		throw COException("Matrix binary check failed: the scalar type or the index type of two matrices is not the same! Please check it");
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+template<class Mat>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator=(const Mat& mat)
+{
+	binaryCheck(mat);
+	// if this matrix is a pure dynamic matrix
+	if(__is_row_dynamic&&__is_col_dynamic)
 	{
 		__rows = mat.rows();
 		__cols = mat.cols();
-		this->reset(__rows*__cols);
+		this->setArray(mat.size(),mat.dataPtr());
 	}
-	blas::copt_blas_copy(__rows*__cols,mat.dataPtr(),1,this->dataPtr(),1);
+	// the column number is dynamic, row number is fixed
+	else if(__is_col_dynamic)
+	{
+		if(__rows!=mat.rows())
+			throw COException("Copy operator error: The matrix's row number is fixed and the row number of the input matrix is not the same!");
+		else{
+			__cols = mat.cols();
+			this->setArray(mat.size(),mat.dataPtr());
+		}
+	}
+	// the row number is dynamic, column number is fixed
+	else if(__is_row_dynamic)
+	{
+		if(__cols!=mat.cols())
+			throw COException("Copy operator error: The matrix's column number is fixed at compile time and the column number of the input matrix is not the same!");
+		else
+		{
+			__rows = mat.rows();
+			this->setArray(mat.size(),mat.dataPtr());
+		}
+	}
+	// both row and column number are fixed
+	else
+	{
+		if(__rows!=mat.rows()||__cols!=mat.cols())
+			throw COException("Copy operator error: The matrix's size is fixed at compile time and the row number or column number of the input matrix is not the same!");
+		else
+		{
+			this->setArray(mat.size(),mat.dataPtr());
+		}
+	}
+	__lda = mat.lda();
 	__trans = mat.isTranspose();
 	__sym = mat.isSymmetric();
 	return *this;
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator+(const MatrixBase& mat )
+template<class Mat>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator+(const Mat& mat )
 {
+	binaryCheck(mat);
 	if ( __rows != mat.rows() || __cols != mat.cols() )
 	{
 		throw COException("MatrixBase summation error: the size of two matrices are not consistent!");
 	}
-	MatrixBase result(*this);
+	DMatrix result(*this);
 	blas::copt_blas_axpy(this->size(),1.0,mat.dataPtr(),1,result.dataPtr(),1);
 	return result;
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator-(const MatrixBase& mat )
+template<class Mat>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator-(const Mat& mat )
 {
+	binaryCheck(mat);
 	if ( __rows != mat.rows() || __cols != mat.cols() )
 	{
 		throw COException("MatrixBase summation error: the size of two matrices are not consistent!");
 	}
-	MatrixBase result(*this);
+	DMatrix result(*this);
 	blas::copt_blas_axpy(this->size(),-1.0,mat.dataPtr(),1,result.dataPtr(),1);
 	return result;
 }
@@ -275,8 +380,10 @@ VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTi
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator*(const MatrixBase& mat )const
+template<class Mat>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator*(const Mat& mat )const
 {
+	binaryCheck(mat);
 	if ( __cols != mat.rows() )
 		throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
 	MatrixBase result(__rows,mat.cols());
@@ -289,11 +396,9 @@ MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,ind
 	}
 	else if( __trans )
 	{
-		std::cout<<"right"<<std::endl;
 		if( is_real<scalar>::value )
 			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
 		else if ( is_complex<scalar>::value ){
-			std::cout<<"here"<<std::endl;
 			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
 		}
 	}
@@ -529,7 +634,8 @@ void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::rowBlockFromMat
 	}
 }
 
-template<class scalar, class index> template<class InputIterator>
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime> 
+template<class InputIterator>
 void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::rowBlockFromMatrix(
 	const MatrixBase& mat,
 	const InputIterator& rowbegin,

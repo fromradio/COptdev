@@ -35,7 +35,7 @@ namespace COPT
 template<class FT,class I = int,int RowAtCompileTime=Dynamic,int ColAtCompileTime=Dynamic>
 class MatrixBase
 	:
-	public Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime+1)>
+	public Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>
 {
 public:
 
@@ -54,7 +54,9 @@ private:
 	
 	/** definition used in implementation */
 	typedef 			VectorBase<FT,index>			Vector;
-	typedef 			COPT::Array<FT,index>			Array;
+	typedef 			Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime+1)>			
+														Array;
+	typedef MatrixBase<FT,I,Dynamic,Dynamic> 			DMatrix; // dynamic matrix
 
 	/**			private variables			*/
 	//%{
@@ -66,7 +68,7 @@ private:
 	bool					__sym;
 	/** whether the matrix is transpose */
 	bool 					__trans;
-	/** lda */
+	/** lda. in current version lda = __rows+1 */
 	index 					__lda;
 	/** is row number dynamic */
 	bool 					__is_row_dynamic;
@@ -79,12 +81,12 @@ public:
 	//%{
 	/** default constructor */
 	MatrixBase();
-
-	MatrixBase(const index m, const index n, const scalar *data=NULL);
-
+	/** construct a matrix with input dimension m*n */
+	MatrixBase(const index m, const index n, const scalar *data=nullptr);
+	/** constructor for Matrix with row number of column number specified */
+	MatrixBase(const index m, const scalar *data=nullptr);
 	/** Copy assignment */
 	MatrixBase(const MatrixBase& mat);
-
 	/** deconstructor */
 	~MatrixBase();
 	//%} end of constructor and deconstructor
@@ -100,10 +102,11 @@ public:
 	/** get the number of columns */
 	const index& 		cols() const;
 	bool isColumnDynamic() const;
+	/** lda of the matrix */
+	index lda() const;
 
-	/**	matlab-like element getter */
+	/**	matlab-like (i,j) element getter */
 	scalar& operator() (const index i, const index j);
-
 	const scalar& operator() (const index i, const index j) const;
 
 	/** get the element using Arr */
@@ -116,11 +119,8 @@ public:
 	Vector col(const index num);
 	const Vector col(const index num) const;
 
-
 	/** set element using Arr */
-
 	void set (const index i, const scalar value);
-
 
 	/** resize the matrix */
 	void resize (index m, index n);
@@ -133,26 +133,29 @@ public:
 	void setTransposeFlag(bool sym);
 	bool isTranspose() const;
 
+	/** basic check for two matrices */
+	template<class Mat>
+	void binaryCheck(const Mat& mat);
+
 	/** Copy operation */
-	MatrixBase& operator= (const MatrixBase& mat);
+	template<class Mat>
+	MatrixBase& operator= (const Mat& mat);
 
-	/*
-		Mathematical operations
-	*/
-
+	/** Mathematical operations */
 	/** summation */
-	MatrixBase operator+ (const MatrixBase& mat);
+	template<class Mat>
+	DMatrix operator+ (const Mat& mat);
 
-	// subtraction
-	// need to be tested
-	MatrixBase operator- (const MatrixBase& mat);
+	/** subtraction */
+	template<class Mat>
+	DMatrix operator- (const Mat& mat);
 
 	/** matrix multiplications */
 	VectorBase<scalar,index> operator* (const VectorBase<scalar,index>& vec) const;
 
 	/** matrix and matrix multiplication */
-	MatrixBase operator* (const MatrixBase& mat) const;
-
+	template<class Mat>
+	DMatrix operator* (const Mat& mat) const;
 
 	// multiplication between a scalar and a matrix
 	friend MatrixBase operator* (const scalar s, const MatrixBase& mat)
@@ -303,7 +306,6 @@ public:
 		const MatrixBase& mat,
 		const InputIterator& rowbegin,
 		const InputIterator& rowend);
-
 	//%}
 
 	/** combining methods */
