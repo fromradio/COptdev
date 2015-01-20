@@ -32,10 +32,10 @@ namespace COPT
  *		the matrix is assumed not to be transpose or symmetric
  *		but symmetric and transpose flag is designed
  */
-template<class FT,class I = int>
+template<class FT,class I = int,int RowAtCompileTime=Dynamic,int ColAtCompileTime=Dynamic>
 class MatrixBase
 	:
-	public Array<FT,I>
+	public Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime+1)>
 {
 public:
 
@@ -51,26 +51,29 @@ public:
 	typedef 			KernelTrait<FT,index>		Kernel;
 
 private:
+	
 	/** definition used in implementation */
 	typedef 			VectorBase<FT,index>			Vector;
-	typedef 			Array<FT,index>					Arr;
+	typedef 			COPT::Array<FT,index>			Array;
 
 	/**			private variables			*/
 	//%{
-
 	/** the size of rows */
 	index					__rows;
-
 	/** the size of columns */
 	index 					__cols;
-
 	/** whether the matrix is symmetric */
 	bool					__sym;
-
 	/** whether the matrix is transpose */
 	bool 					__trans;
-
+	/** lda */
+	index 					__lda;
+	/** is row number dynamic */
+	bool 					__is_row_dynamic;
+	/** is column number dynamic */
+	bool 					__is_col_dynamic;
 	//%}
+
 public:
 	/** constructor and deconstructor */
 	//%{
@@ -92,9 +95,11 @@ public:
 	//%{
 	/** get the number of rows */
 	const index&		rows() const;
-
+	/** is the row number dynamic */
+	bool isRowDynamic() const;
 	/** get the number of columns */
 	const index& 		cols() const;
+	bool isColumnDynamic() const;
 
 	/**	matlab-like element getter */
 	scalar& operator() (const index i, const index j);
@@ -205,30 +210,10 @@ public:
 		return v;
 	}
 	
-// #ifdef EIGEN
-// 	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec){
-// 		// currently we use eigen to solve it
-// 		Eigen::Matrix<scalar,Eigen::Dynamic,Eigen::Dynamic> matrix(__rows,__cols);
-// 		for ( index i = 0 ; i < __rows ; ++ i )
-// 		{
-// 			for ( index j = 0 ;  j < __cols ; ++ j )
-// 			{
-// 				matrix(i,j) = this->operator()(i,j);
-// 			}
-// 		}
-// 		Eigen::Matrix<scalar,Eigen::Dynamic,1> vector(vec.size());
-// 		for ( index i = 0 ; i < vec.size() ; ++ i )
-// 		{
-// 			vector(i) = vec[i];
-// 		}
-// 		Eigen::Matrix<scalar,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
-// 		return VectorBase<scalar,index>(result);
-// 	}
 	Vector solve(const Vector& vec){
 		return lapackSolve(vec);
 	}
 
-// #ifdef USE_LAPACK
 	Vector leastSquareSolve(const Vector& vec){
 		if( __cols != vec.size() )
 			throw COException("least square error: the size is not consistent!");
@@ -245,7 +230,6 @@ public:
 		delete[]b;
 		return result;
 	}
-// #endif
 	
 
 
@@ -361,273 +345,6 @@ public:
 };// End of class MatrixBase
 
 
-/*
- *		class Triplet for sparse matrix assignment
- */
-template<class Scalar,class I>
-struct TripletBase
-{
-
-public:
-	typedef Scalar 								scalar;
-	typedef I 									index;
-	typedef KernelTrait<Scalar,I>				kernel;
-	typedef typename kernel::size 				size;
-private:
-	/** private variables */
-	//%{
-
-	/** row index */
-	index				__r;
-
-	/** column index */
-	index 				__c;
-
-	/** value */
-	Scalar 				__v;
-
-	//%}
-
-	/** private constructors */
-	//%{
-	TripletBase();
-	//%}
-
-public:
-
-	/** constructor and deconstructor */
-	//%{
-
-	/** the only constructor */
-	TripletBase(
-		const index r,
-		const index c,
-		const Scalar v);
-
-	~TripletBase();
-	//%}
-
-	/** getter (no other setter is allowed) */
-	//%{
-
-	/** row index */
-	const index& rowIndex() const;
-
-	/** column index */
-	const index& columnIndex() const;
-
-	/** value */
-	const scalar& value() const;
-	//%}
-};
-
-/*		compare two triplets according to row index
- *
- */
-template<class Triplet>
-struct rowComparison
-{
-	bool operator()(const Triplet& t1,const Triplet& t2);
-};
-
-/*		compare two triplets accordSize to column index
- *
- */
-template<class Triplet>
-struct columnComparison
-{
-	bool operator()(const Triplet& t1,const Triplet& t2);
-};
-
-/*		Sparse matrix class
- *		the sparse matrix is designed for solve sparse linear systems
- */
-
-template<class SpMatrix>
-class UMFLinearSolver;
-
-template<class T,class I>
-class SpMatrixBase
-{
-public:
-	typedef 	T 						scalar;
-	typedef  	I 	 					index;
-	typedef 	TripletBase<T,I>		Triplet;
-	typedef 	sp_matrix_object 		ObjectCategory;
-	typedef 	KernelTrait<T,I>		kernel;
-private:
-
-	typedef 	VectorBase<T,I>			Vector;
-	/** private variables */
-	//%{
-
-	/** the number of rows */
-	index 				__rows;
-
-	/** the number of columns */
-	index 				__cols;
-
-	/** the number of elements */
-	index 				__elesize;
-
-	/** the col poSizeers */
-	index*				__colptr;
-
-	/** the indices of the rows */
-	index*				__rowind;
-
-	/** the values */
-	scalar*		 		__vals;
-
-	/** static zero */
-	static const scalar __zero;
-
-	//%}
-
-	/** private functions */
-	//%{
-
-	/** judge the rationality */
-	void judgeRationality();
-
-	//%}
-
-public:
-
-	/** constructor and deconstructor */
-	//%{
-
-	/** default constructor */
-	SpMatrixBase();
-
-	SpMatrixBase(
-		const index 				rows,
-		const index 				cols,
-		const index 				elesize,
-		const index*			 	colptr,
-		const index*				rowind,
-		const scalar*				vals);
-
-	SpMatrixBase(
-		const SpMatrixBase&);
-
-	/** deconstructor */
-	~SpMatrixBase();
-	//*}
-
-	/** getter and setter */
-	//%{
-
-	/** traditional setter of sparse matrix*/
-	void setSparseMatrix(
-		const index 					rows,
-		const index 					cols,
-		const index 					elesize,
-		const index*			 		colptr,
-		const index*			 		rowind,
-		const scalar*			 		vals);
-
-	/** overload of operator = */
-	SpMatrixBase& operator = (const SpMatrixBase& );
-
-	/** set from triplets */
-	void setFromTriplets(
-		const index rows,
-		const index cols,
-		std::vector<Triplet>& triplets);
-
-	/** set from triplet iterator */
-	template<class InputIterator>
-	void setFromTriplets(
-		const index rows,
-		const index cols,
-		const InputIterator& begin,
-		const InputIterator& end);
-
-	/** fast setting from triplets iterator (like mtx file) */
-	template<class InputIterator>
-	void fastSetFromTriplets(
-		const index rows,
-		const index cols,
-		const InputIterator& begin,
-		const InputIterator& end);
-
-	/** clear the data */
-	void clear();
-
-	/** get the row number */
-	const index& rows() const;
-
-	/** get the column number */
-	const index& cols() const;
-
-	/** get the element size */
-	const index& elementSize() const;
-
-	/** get the column poSizeer */
-	const index* columnPointer() const; 
-
-	/** get the row indices */
-	const index* rowIndex() const;
-
-	/** get the values */
-	const scalar* values() const;
-
-	/** scale with a scalar s */
-	void scale(const scalar s);
-
-	/** negative sign of the matrix */
-	void neg();
-
-	//%}
-
-	/** element access */
-	//%{
-
-	/** only const access is allowed */
-	const scalar& operator()(
-		const index i,
-		const index j) const;
-
-	//%}
-
-	/** operations */
-	//%{
-
-	/** summation */
-	SpMatrixBase operator+(const SpMatrixBase& mat) const;
-
-	/** subtraction */
-	SpMatrixBase operator-(const SpMatrixBase& mat) const;
-
-	/** negative sign */
-	SpMatrixBase operator-() const;
-
-	/** multiplication with another sparse matrix */
-	SpMatrixBase operator*(const SpMatrixBase& mat) const;
-
-	/** multiplication with vector */
-	Vector operator*(const Vector& vec) const;
-
-	/** multiplication with scalar */
-	SpMatrixBase operator*(const scalar s) const;
-
-	/** transform to a dense matrix */
-	MatrixBase<scalar,index> toDenseMatrix() const;
-
-	/** solve a linear system */
-	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec);
-
-	//%}
-
-}; // end of class SpMatrixBase
-
-
-/** Sparse matrix related operator */
-template<class scalar,class index>
-SpMatrixBase<scalar,index> operator* (const scalar s, const SpMatrixBase<scalar,index>& mat);
-template<class scalar,class index,class T>
-SpMatrixBase<scalar,index> operator* (const T s, const SpMatrixBase<scalar,index>& mat);
 
 
 }// End of namespace COPT

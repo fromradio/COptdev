@@ -16,16 +16,17 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+
 #ifndef MATRIX_IMPL_HPP__
 #define MATRIX_IMPL_HPP__
 
 namespace COPT
 {
 
-template<class scalar,class index>
-MatrixBase<scalar,index>::MatrixBase()
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::MatrixBase()
 	:
-	Arr(),
+	Array(),
 	__rows(0),
 	__cols(0),
 	__sym(false),
@@ -33,13 +34,13 @@ MatrixBase<scalar,index>::MatrixBase()
 {
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index>::MatrixBase(
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::MatrixBase(
 	index m,
 	index n,
 	const scalar* data)
 	:
-	Arr(m*n,data),
+	Array(m*n,data),
 	__rows(m),
 	__cols(n),
 	__sym(false),
@@ -47,11 +48,11 @@ MatrixBase<scalar,index>::MatrixBase(
 {
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index>::MatrixBase(
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::MatrixBase(
 	const MatrixBase& mat)
 	:
-	Arr(mat.rows()*mat.cols(),mat.dataPtr()),
+	Array(mat.rows()*mat.cols(),mat.dataPtr()),
 	__rows(mat.rows()),
 	__cols(mat.cols()),
 	__sym(mat.isSymmetric()),
@@ -59,25 +60,37 @@ MatrixBase<scalar,index>::MatrixBase(
 {
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index>::~MatrixBase()
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::~MatrixBase()
 {
 }
 
-template<class scalar,class index>
-const index& MatrixBase<scalar,index>::rows() const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+const index& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::rows() const
 {
 	return __rows;
 }
 
-template<class scalar,class index>
-const index& MatrixBase<scalar,index>::cols() const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+bool MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::isRowDynamic() const
+{
+	return __is_row_dynamic;
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+const index& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::cols() const
 {
 	return __cols;
 }
 
-template<class scalar,class index>
-typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::operator() (const index i,const index j)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+bool MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::isColumnDynamic() const
+{
+	return __is_column_dynamic;
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::scalar& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator() (const index i,const index j)
 {
 	if(i<0||j<0)
 		throw COException("MatrixBase error: index is less than zero!");
@@ -99,14 +112,14 @@ typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::operator() 
 	}
 }
 
-template<class scalar,class index>
-const typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::operator() ( const index i , const index j ) const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+const typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::scalar& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator() ( const index i , const index j ) const
 {
 	return const_cast<MatrixBase&>(*this).operator()(i,j);
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::set(const index i , const scalar value)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::set(const index i , const scalar value)
 {
 	if ( i < 0 )
 		throw COException("MatrixBase error: index is less that zero!");
@@ -116,8 +129,8 @@ void MatrixBase<scalar,index>::set(const index i , const scalar value)
 		this->operator[](i) = value;
 }
 
-template<class scalar,class index>
-const typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::data ( const index i ) const{
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+const typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::scalar& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::data ( const index i ) const{
 	if ( i < 0 )
 		throw COException("MatrixBase error: index is less that zero!");
 	else if ( i >= __rows*__cols )
@@ -126,8 +139,8 @@ const typename MatrixBase<scalar,index>::scalar& MatrixBase<scalar,index>::data 
 		return this->operator[](i);
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num){
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::row(const index num){
 	if ( num >= __rows || num < 0 )
 		throw COException("MatrixBase error: row index out of range when getting a row of the matrix!");
 	else if(__trans)
@@ -136,8 +149,8 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num){
 		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
 }
 
-template<class scalar,class index>
-const VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num )const {
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+const VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::row(const index num )const {
 	if ( num >= __rows || num < 0 )
 		throw COException("MatrixBase error: row index out of range when getting a row of the matrix!");
 	else if(__trans)
@@ -146,8 +159,8 @@ const VectorBase<scalar,index> MatrixBase<scalar,index>::row(const index num )co
 		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> MatrixBase<scalar,index>::col(const index num){
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::col(const index num){
 	if ( num >= __cols || num < 0 )
 		throw COException("MatrixBase error: col index out of range when getting a column of the matrix!");
 	else if(__trans)
@@ -156,8 +169,8 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::col(const index num){
 		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 }
 
-template<class scalar,class index>
-const VectorBase<scalar,index> MatrixBase<scalar,index>::col(const index num) const{
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+const VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::col(const index num) const{
 	if ( num >= __cols || num < 0 )
 		throw COException("MatrixBase error: col index out of range when getting a column of the matrix!");
 	else if(__trans)
@@ -166,42 +179,42 @@ const VectorBase<scalar,index> MatrixBase<scalar,index>::col(const index num) co
 		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::setSymmetricFlag( bool sym )
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::setSymmetricFlag( bool sym )
 {
 	__sym = sym;
 }
 
-template<class scalar,class index>
-bool MatrixBase<scalar,index>::isSymmetric() const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+bool MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::isSymmetric() const
 {
 	return __sym;
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::setTransposeFlag( bool trans )
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::setTransposeFlag( bool trans )
 {
 	__trans = trans;
 }
 
-template<class scalar,class index>
-bool MatrixBase<scalar,index>::isTranspose() const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+bool MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::isTranspose() const
 {
 	return __trans;
 }
 
 
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::resize(index m,index n)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::resize(index m,index n)
 {
 	__rows = m;
 	__cols = n;
 	this->reset(m*n);
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index>& MatrixBase<scalar,index>::operator=(const MatrixBase& mat)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator=(const MatrixBase& mat)
 {
 	if(__rows != mat.rows() || __cols != mat.cols() )
 	{
@@ -215,8 +228,8 @@ MatrixBase<scalar,index>& MatrixBase<scalar,index>::operator=(const MatrixBase& 
 	return *this;
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index> MatrixBase<scalar,index>::operator+(const MatrixBase& mat )
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator+(const MatrixBase& mat )
 {
 	if ( __rows != mat.rows() || __cols != mat.cols() )
 	{
@@ -227,8 +240,8 @@ MatrixBase<scalar,index> MatrixBase<scalar,index>::operator+(const MatrixBase& m
 	return result;
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index> MatrixBase<scalar,index>::operator-(const MatrixBase& mat )
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator-(const MatrixBase& mat )
 {
 	if ( __rows != mat.rows() || __cols != mat.cols() )
 	{
@@ -239,8 +252,8 @@ MatrixBase<scalar,index> MatrixBase<scalar,index>::operator-(const MatrixBase& m
 	return result;
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> MatrixBase<scalar,index>::operator*(const VectorBase<scalar,index>& vec )const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator*(const VectorBase<scalar,index>& vec )const
 {
 	if ( __cols != vec.size() )
 		throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
@@ -261,8 +274,8 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::operator*(const VectorBase<sc
 	return result;
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index> MatrixBase<scalar,index>::operator*(const MatrixBase& mat )const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator*(const MatrixBase& mat )const
 {
 	if ( __cols != mat.rows() )
 		throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
@@ -296,16 +309,16 @@ MatrixBase<scalar,index> MatrixBase<scalar,index>::operator*(const MatrixBase& m
 	return result;
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index> MatrixBase<scalar,index>::transpose() const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::transpose() const
 {
 	MatrixBase result(__cols,__rows,this->dataPtr());
 	result.setTransposeFlag(true);
 	return result;
 }
 
-template<class scalar,class index>
-VectorBase<scalar,index> MatrixBase<scalar,index>::transMulti( const Vector& vec ) const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::transMulti( const Vector& vec ) const
 {
 	if(__rows != vec.size() )
 		throw COException("transpose multiplication error: the size of vector and matrix is not consistent!");
@@ -317,8 +330,8 @@ VectorBase<scalar,index> MatrixBase<scalar,index>::transMulti( const Vector& vec
 	return result;
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index> MatrixBase<scalar,index>::transMulti(const MatrixBase& mat ) const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::transMulti(const MatrixBase& mat ) const
 {
 	if(__rows != mat.rows() )
 		throw COException("transpose multiplication error: the size of two matrices are not consistent!");
@@ -335,8 +348,8 @@ MatrixBase<scalar,index> MatrixBase<scalar,index>::transMulti(const MatrixBase& 
 	return result;
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index> MatrixBase<scalar,index>::identity(
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::identity(
 	index m,
 	index n,
 	const scalar s)
@@ -349,8 +362,8 @@ MatrixBase<scalar,index> MatrixBase<scalar,index>::identity(
 }
 
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::blockFromMatrix(const MatrixBase& mat,const std::set<index>& rownums,const std::set<index>& colnums)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::blockFromMatrix(const MatrixBase& mat,const std::set<index>& rownums,const std::set<index>& colnums)
 {
 	if (*rownums.rbegin()>=mat.rows()||*colnums.rbegin()>=mat.cols()){
 		std::cerr<<*rownums.rbegin()<<' '<<*colnums.rbegin()<<std::endl;
@@ -372,8 +385,8 @@ void MatrixBase<scalar,index>::blockFromMatrix(const MatrixBase& mat,const std::
 	}
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::columnBlockFromMatrix(const MatrixBase& mat,const std::set<index>& colnums)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::columnBlockFromMatrix(const MatrixBase& mat,const std::set<index>& colnums)
 {
 	if(*colnums.rbegin()>=mat.cols()){
 		throw COException("Index out of range in matrix blocking!");
@@ -392,8 +405,8 @@ void MatrixBase<scalar,index>::columnBlockFromMatrix(const MatrixBase& mat,const
 	}
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::rowBlockFromMatrix(const MatrixBase& mat,const std::set<index>& rownums)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::rowBlockFromMatrix(const MatrixBase& mat,const std::set<index>& rownums)
 {
 	if(*rownums.rbegin()>=mat.rows()){
 		throw COException("Index out of range in matrix blocking!");
@@ -412,8 +425,8 @@ void MatrixBase<scalar,index>::rowBlockFromMatrix(const MatrixBase& mat,const st
 	}
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::blockFromMatrix(const MatrixBase& mat,const std::vector<index>& rownums,const std::vector<index>& colnums)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::blockFromMatrix(const MatrixBase& mat,const std::vector<index>& rownums,const std::vector<index>& colnums)
 {
 	this->resize(rownums.size(),colnums.size());
 	for ( index r = 0 ; r < rownums.size() ; ++ r )
@@ -429,8 +442,8 @@ void MatrixBase<scalar,index>::blockFromMatrix(const MatrixBase& mat,const std::
 	}
 }
 
-template<class scalar,class index> template<class InputIterator>
-void MatrixBase<scalar,index>::blockFromMatrix(
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime> template<class InputIterator>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::blockFromMatrix(
 	const MatrixBase& mat,
 	const InputIterator& rowbegin,
 	const InputIterator& rowend,
@@ -461,8 +474,8 @@ void MatrixBase<scalar,index>::blockFromMatrix(
 	}
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::columnBlockFromMatrix(const MatrixBase& mat,const std::vector<index>& colnums)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::columnBlockFromMatrix(const MatrixBase& mat,const std::vector<index>& colnums)
 {
 	this->resize(mat.rows(),colnums.size());
 	
@@ -477,8 +490,8 @@ void MatrixBase<scalar,index>::columnBlockFromMatrix(const MatrixBase& mat,const
 	}
 }
 
-template<class scalar,class index> template<class InputIterator>
-void MatrixBase<scalar,index>::columnBlockFromMatrix(
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime> template<class InputIterator>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::columnBlockFromMatrix(
 	const MatrixBase& mat,
 	const InputIterator& colbegin,
 	const InputIterator& colend)
@@ -501,8 +514,8 @@ void MatrixBase<scalar,index>::columnBlockFromMatrix(
 	}
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::rowBlockFromMatrix(const MatrixBase& mat,const std::vector<index>& rownums)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::rowBlockFromMatrix(const MatrixBase& mat,const std::vector<index>& rownums)
 {
 	this->resize(rownums.size(),mat.cols());
 	for ( index r = 0 ; r < rownums.size() ; ++ r )
@@ -517,7 +530,7 @@ void MatrixBase<scalar,index>::rowBlockFromMatrix(const MatrixBase& mat,const st
 }
 
 template<class scalar, class index> template<class InputIterator>
-void MatrixBase<scalar,index>::rowBlockFromMatrix(
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::rowBlockFromMatrix(
 	const MatrixBase& mat,
 	const InputIterator& rowbegin,
 	const InputIterator& rowend)
@@ -540,20 +553,20 @@ void MatrixBase<scalar,index>::rowBlockFromMatrix(
 	}
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::combineAlongRow(const MatrixBase& m1,const MatrixBase& m2)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::combineAlongRow(const MatrixBase& m1,const MatrixBase& m2)
 {
 	MatrixBase::stCombineAlongRow(m1,m2,*this);
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::combineAlongColumn(const MatrixBase& m1,const MatrixBase& m2)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::combineAlongColumn(const MatrixBase& m1,const MatrixBase& m2)
 {
 	MatrixBase::stCombineAlongColumn(m1,m2,*this);
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::stCombineAlongRow(const MatrixBase& m1,const MatrixBase& m2,MatrixBase& m)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::stCombineAlongRow(const MatrixBase& m1,const MatrixBase& m2,MatrixBase& m)
 {
 	if(m1.cols()!=m2.cols())
 		throw COException("Please make sure the column number of two matrices is the same before combination!");
@@ -569,8 +582,8 @@ void MatrixBase<scalar,index>::stCombineAlongRow(const MatrixBase& m1,const Matr
 	}
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::stCombineAlongColumn(const MatrixBase& m1,const MatrixBase& m2,MatrixBase& m)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::stCombineAlongColumn(const MatrixBase& m1,const MatrixBase& m2,MatrixBase& m)
 {
 	if(m1.rows()!=m2.rows())
 		throw COException("Please make sure the row number of two matrices is the same before combination!");
@@ -586,8 +599,8 @@ void MatrixBase<scalar,index>::stCombineAlongColumn(const MatrixBase& m1,const M
 	}
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::setRandom(const index rows,const index cols)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::setRandom(const index rows,const index cols)
 {
 	if(rows<0||cols<0)
 		throw COException("Please make sure that the number of row and column is bigger than zero!");
@@ -603,16 +616,16 @@ void MatrixBase<scalar,index>::setRandom(const index rows,const index cols)
 		}
 }
 
-template<class scalar,class index>
-MatrixBase<scalar,index> MatrixBase<scalar,index>::random(const index rows,const index cols)
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::random(const index rows,const index cols)
 {
 	MatrixBase result;
 	result.setRandom(rows,cols);
 	return result;
 }
 
-template<class scalar,class index>
-void MatrixBase<scalar,index>::mtm( MatrixBase& mat ) const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::mtm( MatrixBase& mat ) const
 {
 	int m = this->rows();
 	int n = this->cols();
@@ -631,8 +644,8 @@ void MatrixBase<scalar,index>::mtm( MatrixBase& mat ) const
 template<class Matrix>
 class PartialEigenSolver;
 
-template<class scalar,class index>
-typename MatrixBase<scalar,index>::podscalar MatrixBase<scalar,index>::operationNorm() const
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::podscalar MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operationNorm() const
 {
 	MatrixBase mtm;
 	this->mtm(mtm);
@@ -643,707 +656,6 @@ typename MatrixBase<scalar,index>::podscalar MatrixBase<scalar,index>::operation
 ///////////////End of implementation of 'MatrixBase'
 
 
-/*******************Implementation of Triplet******************/
-template<class scalar,class index>
-TripletBase<scalar,index>::TripletBase(
-	const index r,
-	const index c,
-	const scalar v)
-	:
-	__r(r),
-	__c(c),
-	__v(v)
-{
-}
-
-template<class scalar,class index>
-TripletBase<scalar,index>::~TripletBase()
-{
-}
-
-template<class scalar,class index>
-const index& TripletBase<scalar,index>::rowIndex() const
-{
-	return __r;
-}
-
-template<class scalar,class index>
-const index& TripletBase<scalar,index>::columnIndex() const
-{
-	return __c;
-}
-
-template<class scalar,class index>
-const scalar& TripletBase<scalar,index>::value() const
-{
-	return __v;
-}
-
-/** 		Implementation of rowComparison 	*/
-template<class Triplet>
-bool rowComparison<Triplet>::operator() (const Triplet& t1,const Triplet& t2)
-{
-	return t1.rowIndex()<t2.rowIndex();
-}
-
-/**			Implementation of columnComparison	*/
-template<class Triplet>
-bool columnComparison<Triplet>::operator() (const Triplet& t1,const Triplet& t2)
-{
-	return t1.columnIndex()<t2.columnIndex();
-}
-
-/**			Implementation of SpMatrixBase 		*/
-
-template<class scalar,class index>
-void SpMatrixBase<scalar,index>::judgeRationality()
-{
-	for ( index i = 0 ; i < __elesize ; ++ i )
-	{
-		if ( __rowind[i] >= __rows )
-			throw COException("Sparse matrix not rational: row index out of range!");
-	}
-}
-
-template<class scalar,class index>
-const typename SpMatrixBase<scalar,index>::scalar SpMatrixBase<scalar,index>::__zero = static_cast<scalar>(0.0);
-
-template<class scalar,class index>
-SpMatrixBase<scalar,index>::SpMatrixBase()
-	:
-	__rows(0),
-	__cols(0),
-	__elesize(0),
-	__colptr(NULL),
-	__rowind(NULL),
-	__vals(NULL)
-{
-}
-
-template<class scalar,class index>
-SpMatrixBase<scalar,index>::SpMatrixBase(
-	const index 						rows,
-	const index 						cols,
-	const index 						elesize,
-	const index*						colptr,
-	const index*						rowind,
-	const scalar*						vals)
-	:
-	__rows(rows),
-	__cols(cols),
-	__elesize(elesize),
-	__colptr(new index[cols+1]),
-	__rowind(new index[elesize]),
-	__vals(new scalar[elesize])
-{
-
-	blas::copt_blas_copy(__cols+1,colptr,1,__colptr,1);
-	blas::copt_blas_copy(__elesize,rowind,1,__rowind,1);
-	blas::copt_blas_copy(__elesize,vals,1,__vals,1);
-
-	judgeRationality();
-}
-
-template<class scalar,class index>
-SpMatrixBase<scalar,index>::SpMatrixBase(
-	const SpMatrixBase& mat)
-	:
-	__colptr(NULL),
-	__rowind(NULL),
-	__vals(NULL)
-{
-	setSparseMatrix(
-		mat.rows(),
-		mat.cols(),
-		mat.elementSize(),
-		mat.columnPointer(),
-		mat.rowIndex(),
-		mat.values());
-}
-
-template<class scalar,class index>
-SpMatrixBase<scalar,index>::~SpMatrixBase()
-{
-	if(__rowind)
-		SAFE_DELETE_ARRAY(__rowind);
-	if(__vals)
-		SAFE_DELETE_ARRAY(__vals);
-	if(__colptr)
-		SAFE_DELETE_ARRAY(__colptr);
-}
-
-template<class scalar,class index>
-void SpMatrixBase<scalar,index>::setSparseMatrix(
-	const index 					rows,
-	const index 					cols,
-	const index 					elesize,
-	const index*			 		colptr,
-	const index*					rowind,
-	const scalar*			 		vals)
-{
-	clear();
-	__rows = rows;
-	__cols = cols;
-	__elesize = elesize;
-	
-	__rowind = new index[__elesize];
-	__vals = new scalar[__elesize];
-	__colptr = new index[__cols+1];
-
-	blas::copt_blas_copy(__elesize,rowind,1,__rowind,1);
-	blas::copt_blas_copy(__elesize,vals,1,__vals,1);
-	blas::copt_blas_copy(__cols+1,colptr,1,__colptr,1);
-
-	judgeRationality();
-}
-
-template<class scalar,class index>
-SpMatrixBase<scalar,index>& SpMatrixBase<scalar,index>::operator=(const SpMatrixBase& mat)
-{
-	setSparseMatrix(
-		mat.rows(),
-		mat.cols(),
-		mat.elementSize(),
-		mat.columnPointer(),
-		mat.rowIndex(),
-		mat.values());
-	return *this;
-}
-
-template<class scalar,class index>
-void SpMatrixBase<scalar,index>::setFromTriplets(
-	const index rows,
-	const index cols,
-	std::vector<Triplet>& triplets)
-{
-	clear();
-	__rows = rows;
-	__cols = cols;
-	// sort the triplets according to the column index at first
-	std::sort(triplets.begin(),triplets.end(),columnComparison<Triplet>());
-	// compute how many elements there are in one column
-	index colind = 0 , ip = 0;
-	for ( index i = 0 ; i < triplets.size() ; ++ i )
-	{
-		if(triplets[i].columnIndex()>colind)
-		{
-			colind = triplets[i].columnIndex();
-			std::sort(triplets.begin()+ip,triplets.begin()+i,rowComparison<Triplet>());
-			ip = i;
-		}
-	}
-	// last sort
-	std::sort(triplets.begin()+ip,triplets.end(),rowComparison<Triplet>());
-	std::vector<index> 	colcounts(__cols,0);
-	std::list<index> 		rowinds;
-	std::list<scalar>	vals;
-	colind = 0 , ip = 0;
-	index count = 0;
-	for ( index i = 0 ; i < triplets.size() ; ++ i )
-	{
-		if(triplets[i].columnIndex()>colind)
-		{
-			colcounts[colind] = count;
-			colind = triplets[i].columnIndex();
-			count = 0;
-		}
-		
-		if(i==0)
-		{
-			rowinds.push_back(triplets[i].rowIndex());
-			vals.push_back(triplets[i].value());
-			++count;
-		}
-		else if(triplets[i].rowIndex()==triplets[i-1].rowIndex())
-		{
-			vals.back() += triplets[i].value();
-		}
-		else
-		{
-			rowinds.push_back(triplets[i].rowIndex());
-			vals.push_back(triplets[i].value());
-			++count;
-		}
-	}
-	// last column
-	colcounts[colind] = count;
-
-	__colptr = new index[__cols+1];
-	index columncount = 0;
-	for ( index i = 0 ; i < __cols ; ++ i )
-	{
-		__colptr[i] = columncount;
-		columncount += colcounts[i];
-	}
-	__colptr[__cols] = columncount;
-
-	__rowind = new index[rowinds.size()];
-	index i = 0;
-	for ( typename std::list<index>::iterator iter = rowinds.begin() ; iter != rowinds.end() ; ++ iter , ++ i )
-		__rowind[i] = *iter;
-
-	__vals = new scalar[vals.size()];
-	i = 0;
-	for ( typename std::list<scalar>::iterator iter = vals.begin() ; iter != vals.end() ; ++ iter , ++ i )
-		__vals[i] = *iter;
-
-	__elesize = rowinds.size();
-}
-
-template<class scalar,class index> template<class InputIterator>
-void SpMatrixBase<scalar,index>::setFromTriplets(
-	const index rows,
-	const index cols,
-	const InputIterator& begin,
-	const InputIterator& end)
-{
-	clear();
-	__rows = rows;
-	__cols = cols;
-	// sort the triplets according to the column index at first
-	std::sort(begin,end,columnComparison<Triplet>());
-	// compute how many elements there are in one column
-	index colind = 0 , ip = 0;
-	InputIterator previter = begin;
-	for ( InputIterator iter = begin ; iter != end ; ++ iter )
-	{
-		if(iter->columnIndex()>colind)
-		{
-			colind = iter->columnIndex();
-			std::sort(previter,iter,rowComparison<Triplet>());
-			previter = iter;
-		}
-	}
-	// last sort
-	std::sort(previter,end,rowComparison<Triplet>());
-	std::vector<index> 		colcounts(__cols,0);
-	std::list<index> 		rowinds;
-	std::list<scalar>	vals;
-	colind = 0 , ip = 0;
-	previter = begin;
-	index count = 0;
-	for ( InputIterator iter = begin ; iter != end ; ++ iter )
-	{
-		if(iter->columnIndex()>colind)
-		{
-			colcounts[colind] = count;
-			colind = iter->columnIndex();
-			count = 0;
-		}
-		if(iter == begin)
-		{
-			rowinds.push_back(iter->rowIndex());
-			vals.push_back(iter->value());
-			++count;
-		}
-		else if(iter->rowIndex()==previter->rowIndex()&&iter->columnIndex()==previter->columnIndex())
-		{
-			vals.back() += iter->value();
-		}
-		else
-		{
-			rowinds.push_back(iter->rowIndex());
-			vals.push_back(iter->value());
-			++count;
-		}
-		previter = iter;
-	}
-	// last column
-	colcounts[colind] = count;
-
-	__colptr = new index[__cols+1];
-	index columncount = 0;
-	for ( index i = 0 ; i < __cols ; ++ i )
-	{
-		__colptr[i] = columncount;
-		columncount += colcounts[i];
-	}
-	__colptr[__cols] = columncount;
-
-	__rowind = new index[rowinds.size()];
-	index i = 0;
-	for ( typename std::list<index>::iterator iter = rowinds.begin() ; iter != rowinds.end() ; ++ iter , ++ i )
-		__rowind[i] = *iter;
-
-	__vals = new scalar[vals.size()];
-	i = 0;
-	for ( typename std::list<scalar>::iterator iter = vals.begin() ; iter != vals.end() ; ++ iter , ++ i )
-		__vals[i] = *iter;
-
-	__elesize = rowinds.size();
-}
-
-template<class scalar,class index> template<class InputIterator>
-void SpMatrixBase<scalar,index>::fastSetFromTriplets(
-	const index rows,
-	const index cols,
-	const InputIterator& begin,
-	const InputIterator& end)
-{
-	clear();
-	__rows = rows;
-	__cols = cols;
-	__colptr = new index[__cols+1];
-	// compute nnz
-	index nnz = 0;
-	for ( InputIterator iter = begin ; iter != end ; ++ iter )
-		++ nnz;
-	__elesize = nnz;
-	__rowind = new index[nnz];
-	__vals = new scalar[nnz];
-	InputIterator previter = begin;
-	index count = 0 , i = 0;
-	std::vector<index> counts (__cols,0);
-	for ( InputIterator iter = begin ; iter != end ; ++ iter , ++ i )
-	{
-		if(iter->columnIndex()!=previter->columnIndex())
-		{
-			counts[previter->columnIndex()] = count;
-			count = 0;
-			previter = iter;
-		}
-		__rowind[i] = iter->rowIndex();
-		__vals[i] = iter->value();
-		++ count;
-	}
-	counts[previter->columnIndex()] = count;
-	count = 0;
-	for ( index c = 0 ; c < __cols ; ++ c )
-	{
-		__colptr[c] = count;
-		count += counts[c];
-	}
-	__colptr[__cols] = count;
-}
-
-template<class scalar,class index>
-void SpMatrixBase<scalar,index>::clear()
-{
-	__rows = 0;
-	__cols = 0;
-	__elesize = 0;
-
-	if(__rowind)
-	{
-		SAFE_DELETE_ARRAY(__rowind);
-		__rowind = NULL;
-	}
-	if(__vals)
-	{
-		SAFE_DELETE_ARRAY(__vals);
-		__vals = NULL;
-	}
-	if(__colptr)
-	{
-		SAFE_DELETE_ARRAY(__colptr);
-		__colptr = NULL;
-	}
-}
-
-template<class scalar,class index>
-const index& SpMatrixBase<scalar,index>::rows() const
-{
-	return __rows;
-}
-
-template<class scalar,class index>
-const index& SpMatrixBase<scalar,index>::cols() const
-{
-	return __cols;
-}
-
-template<class scalar,class index>
-const index& SpMatrixBase<scalar,index>::elementSize() const
-{
-	return __elesize;
-}
-
-template<class scalar,class index>
-const index* SpMatrixBase<scalar,index>::columnPointer() const
-{
-	return __colptr;
-}
-
-template<class scalar,class index>
-const index* SpMatrixBase<scalar,index>::rowIndex() const
-{
-	return __rowind;
-}
-
-template<class scalar,class index>
-const scalar* SpMatrixBase<scalar,index>::values() const
-{
-	return __vals;
-}
-
-template<class scalar,class index>
-void SpMatrixBase<scalar,index>::scale(const scalar s)
-{
-	for ( index i = 0 ; i < __elesize ; ++ i )
-		__vals[i] *= s;
-}
-
-template<class scalar,class index>
-void SpMatrixBase<scalar,index>::neg()
-{
-	for ( index i = 0 ; i < __elesize ; ++ i )
-		__vals[i] = -__vals[i];
-}
-
-template<class scalar,class index>
-const scalar& SpMatrixBase<scalar,index>::operator()(
-	const index i,
-	const index j) const
-{
-	if(i>=__rows||j>=__cols)
-		throw COException("Sparse Matrix error, index out of range!");
-	index ip = __colptr[j],in=__colptr[j+1];
-	for ( index ind = ip ; ind < in ; ++ ind )
-	{
-		if( i == __rowind[ind] )
-			return __vals[ind];
-	}
-	return __zero;
-}
-
-template<class scalar,class index>
-SpMatrixBase<scalar,index> SpMatrixBase<scalar,index>::operator*(const SpMatrixBase& mat) const
-{
-	if(__cols != mat.rows() )
-		throw COException("Multiplication error: matrix index does not fit!");
-	std::list<Triplet> tris;
-	for ( index c = 0 ; c < __cols ; ++ c )
-	{
-		index ci = __colptr[c] , cn = __colptr[c+1];
-		for ( index r = ci ; r < cn ; ++ r )
-		{
-			index rind = __rowind[r];
-			// traverse mat
-			for ( index mc = 0 ; mc < mat.cols() ; ++ mc )
-			{
-				index mci = mat.columnPointer()[mc], mcn = mat.columnPointer()[mc+1];
-				for ( index mr = mci ; mr < mcn ; ++ mr )
-				{
-					if ( c == mat.rowIndex()[mr] )
-						tris.push_back(Triplet(rind,mc,__vals[r]*mat.values()[mr]));
-				}
-			}
-		}
-	}
-	std::vector<Triplet> triplets;
-	triplets.reserve(tris.size());
-	for ( typename std::list<Triplet>::iterator iter = tris.begin() ; iter != tris.end() ; ++ iter )
-		triplets.push_back(*iter);
-	SpMatrixBase result;
-	result.setFromTriplets(__rows,mat.cols(),triplets);
-	return result;
-}
-
-
-template<class scalar,class index>
-SpMatrixBase<scalar,index> SpMatrixBase<scalar,index>::operator+ ( const SpMatrixBase& mat ) const
-{
-	if( __cols != mat.cols() || __rows != mat.rows() )
-		throw COException("Sparse matrix summation error: index does not fit!");
-	std::list<index> inds;
-	std::list<scalar> vals;
-	index *colptr = new index[__cols+1];
-	index count = 0;
-	for ( index c = 0 ; c < __cols ; ++ c )
-	{
-		colptr[c] = count;
-		index ci1 = __colptr[c],cn1 = __colptr[c+1],ci2 = mat.columnPointer()[c],cn2=mat.columnPointer()[c+1];
-		index i1 = ci1,i2=ci2;
-		while( i1<cn1 || i2<cn2 )
-		{
-			if( i1 < cn1 && i2 < cn2 )
-			{
-				if(__rowind[i1]==mat.rowIndex()[i2])
-				{
-					inds.push_back(__rowind[i1]);
-					vals.push_back(__vals[i1]+mat.values()[i2]);
-					++ i1;
-					++ i2;
-				}
-				else if(__rowind[i1]<mat.rowIndex()[i2])
-				{
-					inds.push_back(__rowind[i1]);
-					vals.push_back(__vals[i1]);
-					++ i1;
-				}
-				else
-				{
-					inds.push_back(mat.rowIndex()[i2]);
-					vals.push_back(mat.values()[i2]);
-					++ i2;
-				}
-			}
-			else if ( i1 < cn1 )
-			{
-				inds.push_back(__rowind[i1]);
-				vals.push_back(__vals[i1]);
-				++ i1;
-			}
-			else{
-				inds.push_back(mat.rowIndex()[i2]);
-				vals.push_back(mat.values()[i2]);
-				++ i2;
-			}
-			++ count;
-		}
-	}
-	colptr[__cols] = count;
-	index *rowind = new index[inds.size()];
-	index i = 0;
-	for ( typename std::list<index>::iterator iter = inds.begin() ; iter != inds.end() ; ++ iter , ++i )
-		rowind[i] = *iter;
-	i = 0;
-	scalar *vs = new scalar[vals.size()];
-	for ( typename std::list<scalar>::iterator iter = vals.begin() ; iter != vals.end() ; ++ iter , ++ i )
-		vs[i] = *iter;
-	SpMatrixBase result;
-	result.setSparseMatrix(__rows,__cols,inds.size(),colptr,rowind,vs);
-
-	delete[]rowind;
-	delete[]colptr;
-	delete[]vs;
-	return result;
-}
-
-template<class scalar,class index>
-SpMatrixBase<scalar,index> SpMatrixBase<scalar,index>::operator- ( const SpMatrixBase& mat ) const
-{
-	if( __cols != mat.cols() || __rows != mat.rows() )
-		throw COException("Sparse matrix summation error: index does not fit!");
-	std::list<index> inds;
-	std::list<scalar> vals;
-	index *colptr = new index[__cols+1];
-	index count = 0;
-	for ( index c = 0 ; c < __cols ; ++ c )
-	{
-		colptr[c] = count;
-		index ci1 = __colptr[c],cn1 = __colptr[c+1],ci2 = mat.columnPointer()[c],cn2=mat.columnPointer()[c+1];
-		index i1 = ci1,i2=ci2;
-		while( i1<cn1 || i2<cn2 )
-		{
-			if( i1 < cn1 && i2 < cn2 )
-			{
-				if(__rowind[i1]==mat.rowIndex()[i2])
-				{
-					inds.push_back(__rowind[i1]);
-					vals.push_back(__vals[i1]-mat.values()[i2]);
-					++ i1;
-					++ i2;
-				}
-				else if(__rowind[i1]<mat.rowIndex()[i2])
-				{
-					inds.push_back(__rowind[i1]);
-					vals.push_back(__vals[i1]);
-					++ i1;
-				}
-				else
-				{
-					inds.push_back(mat.rowIndex()[i2]);
-					vals.push_back(-mat.values()[i2]);
-					++ i2;
-				}
-			}
-			else if ( i1 < cn1 )
-			{
-				inds.push_back(__rowind[i1]);
-				vals.push_back(__vals[i1]);
-				++ i1;
-			}
-			else{
-				inds.push_back(mat.rowIndex()[i2]);
-				vals.push_back(-mat.values()[i2]);
-				++ i2;
-			}
-			++ count;
-		}
-	}
-	colptr[__cols] = count;
-	index *rowind = new index[inds.size()];
-	index i = 0;
-	for ( typename std::list<index>::iterator iter = inds.begin() ; iter != inds.end() ; ++ iter , ++i )
-		rowind[i] = *iter;
-	i = 0;
-	scalar *vs = new scalar[vals.size()];
-	for ( typename std::list<scalar>::iterator iter = vals.begin() ; iter != vals.end() ; ++ iter , ++ i )
-		vs[i] = *iter;
-	SpMatrixBase result;
-	result.setSparseMatrix(__rows,__cols,inds.size(),colptr,rowind,vs);
-	delete[]rowind;
-	delete[]colptr;
-	delete[]vs;
-	return result;
-}
-
-template<class scalar,class index>
-SpMatrixBase<scalar,index> SpMatrixBase<scalar,index>::operator- () const
-{
-	SpMatrixBase result(*this);
-	result.neg();
-	return result;
-}
-
-template<class scalar,class index>
-typename SpMatrixBase<scalar,index>::Vector SpMatrixBase<scalar,index>::operator*(const Vector& vec) const
-{
-	if(__cols!=vec.size() )
-		throw COException("Multiplication error: index does not fit!");
-	Vector result(__rows);
-	for ( index i = 0 ; i < __cols ; ++ i )
-	{
-		index ip = __colptr[i] , in = __colptr[i+1];
-		for ( index r = ip ; r < in ; ++ r ){
-			result[__rowind[r]] += __vals[r]*vec[i];
-		}
-	}
-	return result;
-}
-
-
-template<class scalar,class index, class T>
-SpMatrixBase<scalar,index> operator* (const T s,const SpMatrixBase<scalar,index>& mat)
-{
-	return mat.operator*(static_cast<scalar>(s));
-}
-
-template<class scalar,class index>
-MatrixBase<scalar,index> SpMatrixBase<scalar,index>::toDenseMatrix() const
-{
-	MatrixBase<scalar,index> result(__rows,__cols);
-	for ( index i = 0 ; i < __cols ; ++ i )
-	{
-		index ip = __colptr[i] , in = __colptr[i+1];
-		for ( index r = ip ; r < in ; ++ r )
-		{
-			result(__rowind[r],i) = __vals[r];
-		}
-	}
-	return result;
-}
-
-template<class scalar,class index>
-VectorBase<scalar,index> SpMatrixBase<scalar,index>::solve(const VectorBase<scalar,index>& vec)
-{
-	return UMFLinearSolver<SpMatrixBase>(*this).solve(vec);
-}
-
-template<class scalar,class index>
-SpMatrixBase<scalar,index> SpMatrixBase<scalar,index>::operator* ( const scalar s ) const
-{
-	SpMatrixBase result(*this);
-	result.scale(s);
-	return result;
-}
-
-template<class scalar,class index>
-SpMatrixBase<scalar,index> operator*(const scalar s,const SpMatrixBase<scalar,index>& mat)
-{
-	return mat.operator*(s);
-}
 
 }// End of namespace COPT
 
