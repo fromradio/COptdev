@@ -53,6 +53,8 @@ public:
 	typedef 				KernelTrait<T,I>	Kernel;
 	/** 	the iterator 					*/
 	typedef scalar* 							iterator;
+	/** 	constant iterator 				*/
+	typedef const scalar* 						const_iterator;
 
 
 private:
@@ -118,16 +120,15 @@ public:
 	/** the interval of the array */
 	index interval() const;
 	//%}
-	
-	/**		resize the array to specific size
-	 *
-	 */
-	void resize(const index size, const index inter = 1);
+
+	/** stl like iterator */
+	iterator begin();
+	const_iterator begin() const;
+	iterator end();
+	const_iterator end() const;
 
 	/** reset the array even if the array is a referred array */
 	void reset(const index size, const index inter=1);
-
-	/** reset the non-dynamic array */
 
 	/** set the array with given size and data */
 	void setArray(const index size, const scalar* data, const index inter = 1);

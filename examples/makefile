@@ -17,5 +17,12 @@ vector: bin/vector
 	
 bin/vector: obj/vector.o
 	$(CXX) obj/vector.o -L$(DIR_LIB) -o $@ $(LIB)
-obj/vector.o: vector.cpp 
+obj/vector.o: vector.cpp ../include/Base/Vector.hpp ../include/Base/VectorImpl.hpp
+	$(CXX) $(CXXFLAGS) $(I) -c $< -o $@
+
+matrix: bin/matrix
+	
+bin/matrix: obj/matrix.o
+	$(CXX) obj/matrix.o -L$(DIR_LIB) -o $@ $(LIB)
+obj/matrix.o: matrix.cpp ../include/Base/Matrix.hpp ../include/Base/MatrixImpl.hpp ../include/Base/ArrayImpl.hpp ../include/Base/Array.hpp
 	$(CXX) $(CXXFLAGS) $(I) -c $< -o $@

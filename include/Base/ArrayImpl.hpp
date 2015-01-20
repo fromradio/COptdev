@@ -167,7 +167,7 @@ void Array<scalar,index,SizeAtCompileTime>::copy(const Array& arr)
 {
 	if(this->isReferred())
 		__referred = false;
-	resize(arr.size(),arr.interval());
+	reset(arr.size(),arr.interval());
 	blas::copt_blas_copy(__size,arr.dataPtr(),1,__data_ptr,arr.interval());
 }
 
@@ -207,29 +207,28 @@ index Array<scalar,index,SizeAtCompileTime>::interval() const
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
-void Array<scalar,index,SizeAtCompileTime>::resize(const index size, const index inter)
+typename Array<scalar,index,SizeAtCompileTime>::iterator Array<scalar,index,SizeAtCompileTime>::begin()
 {
-	if(__referred)
-		throw COException("referred array is not allowed to be resized!");
-	else if(SizeAtCompileTime!=Dynamic)
-		throw COException("Size specified array is not able to be resized");
-	else
-	{
-		if(__size != size || __inter != inter ){
-			__size = size;
-			__inter = inter;
-			SAFE_DELETE_ARRAY(__data_ptr);
-			__data_ptr = new scalar[__size*__inter];
-			for ( index i = 0 ; i < __size ; ++ i )
-				__data_ptr[i*__inter] = static_cast<scalar>(0.0);
-		}
-		else{
-			for ( index i = 0 ; i < __size ; ++ i )
-				__data_ptr[i*__inter] = static_cast<scalar>(0.0);
-		}
-	}
+	return &__data_ptr[0];
 }
 
+template<class scalar,class index,int SizeAtCompileTime>
+typename Array<scalar,index,SizeAtCompileTime>::const_iterator Array<scalar,index,SizeAtCompileTime>::begin() const
+{
+	return &__data_ptr[0];
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
+typename Array<scalar,index,SizeAtCompileTime>::iterator Array<scalar,index,SizeAtCompileTime>::end()
+{
+	return &__data_ptr[__size];
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
+typename Array<scalar,index,SizeAtCompileTime>::const_iterator Array<scalar,index,SizeAtCompileTime>::end() const
+{
+	return &__data_ptr[__size];
+}
 
 template<class scalar,class index,int SizeAtCompileTime>
 void Array<scalar,index,SizeAtCompileTime>::reset(const index size,const index inter)
@@ -238,7 +237,9 @@ void Array<scalar,index,SizeAtCompileTime>::reset(const index size,const index i
 		throw COException("Size specified array is not able to be resized");
 	if(this->isReferred())
 	{
+		std::cerr<<"COPT Warning: it is dangerous to resize a reffered array. The previous pointer will not be deleted here"<<std::endl;
 		clear();
+		__referred = false;
 		__data_ptr = new scalar[__size*__inter];
 		for ( index i = 0 ; i < __size ; ++ i )
 			__data_ptr[i*__inter] = static_cast<scalar>(0.0);
@@ -246,9 +247,9 @@ void Array<scalar,index,SizeAtCompileTime>::reset(const index size,const index i
 	else
 	{
 		if(__size != size || __inter != inter ){
+			clear();
 			__size = size;
 			__inter = inter;
-			SAFE_DELETE_ARRAY(__data_ptr);
 			__data_ptr = new scalar[__size*__inter];
 			for ( index i = 0 ; i < __size ; ++ i )
 				__data_ptr[i*__inter] = static_cast<scalar>(0.0);
@@ -268,8 +269,9 @@ void Array<scalar,index,SizeAtCompileTime>::setArray(const index size, const sca
 	if (__referred)
 		throw COException("referred array is not allowed to be reset ");
 	else{
-		resize(size,inter);
-		blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
+		reset(size,inter);
+		if(data)
+			blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
 	}
 }
 
@@ -282,7 +284,7 @@ void Array<scalar,index,SizeAtCompileTime>::setFromArray(const Array<scalar,inde
 	if ( __referred )
 		throw COException("referred array is not allowed to be reset ");
 	else{
-		resize(arr.size(),arr.interval());
+		reset(arr.size(),arr.interval());
 		blas::copt_blas_copy(__size,arr.dataPtr(),arr.interval(),__data_ptr,__inter);
 	}
 }

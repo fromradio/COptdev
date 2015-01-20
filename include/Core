@@ -36,6 +36,7 @@
 #include <complex>
 #include <algorithm>
 #include <limits>
+#include <cassert>
 
 /** third party libraries */
 #include "ThirdParty/cblas.h"
@@ -57,8 +58,8 @@
 #include "Base/ArrayImpl.hpp"
 #include "Base/Vector.hpp"
 #include "Base/VectorImpl.hpp"
-// #include "Base/Matrix.hpp"
-// #include "Base/MatrixImpl.hpp"
+#include "Base/Matrix.hpp"
+#include "Base/MatrixImpl.hpp"
 #include "Base/ArithOperation.hpp"
 // #include "Base/NumDifferential.hpp"
 // #include "Base/Function.hpp"

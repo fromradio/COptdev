@@ -33,7 +33,7 @@ int main(int argc, char *argv[])
 
 	try
 	{
-		a.resize(5); //not allowed to be resized
+		a.reset(5); //not allowed to be resized
 	}
 	catch(COException &e)
 	{
@@ -48,4 +48,9 @@ int main(int argc, char *argv[])
 	/** normal array-like element access */
 	std::cout<<"the third element of a is "<<a[2]<<std::endl; //1.0
 	std::cout<<"the fourth element of da is "<<da[3]<<std::endl; //1.3
+
+	/** test */
+	double &&e=0;
+	std::for_each(a.begin(),a.end(),[&](double x){e+=x;});
+	std::cout<<e<<std::endl;
 }
