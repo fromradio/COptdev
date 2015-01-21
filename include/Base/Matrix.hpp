@@ -56,7 +56,7 @@ private:
 	
 	/** definition used in implementation */
 	typedef 			VectorBase<FT,index>			Vector;
-	typedef 			Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime+1)>			
+	typedef 			Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>			
 														Array;
 	typedef VectorBase<scalar,index,Dynamic> 			DVector;
 	typedef MatrixBase<FT,I,Dynamic,Dynamic> 			DMatrix; // dynamic matrix
@@ -191,12 +191,17 @@ public:
 	// }
 
 	// transpose
-	MatrixBase transpose() const;
+	DMatrix transpose() const;
 
 	/** transpose muliplication */
-	Vector transMulti(const Vector& vec) const;
+	template<class T>
+	typename T::DType transMulti(const T &t) const;
 
-	MatrixBase transMulti(const MatrixBase& mat) const;
+	template<class Vec>
+	DVector transMulti(const Vec& vec, const vector_object&) const;
+
+	template<class Mat>
+	DMatrix transMulti(const Mat &mat, const matrix_object&) const;
 
 	/*				overload of ostream
 	 */
@@ -353,7 +358,8 @@ public:
 	void setRandom(const index rows, const index cols);
 	static inline MatrixBase random(const index rows, const index cols);
 	/** compute A^TA of a given matrix */
-	void mtm(DMatrix &mat) const;
+	template<class Mat>
+	void mtm(Mat &mat) const;
 
 	/** norms */
 	//%{

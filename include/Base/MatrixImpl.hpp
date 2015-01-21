@@ -397,7 +397,7 @@ typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix Mat
 	binaryCheck(mat);
 	if ( __cols != mat.rows() )
 		throw COException("MatrixBase multiply error: the size of two matrices are not consistent!");
-	MatrixBase result(__rows,mat.cols());
+	DMatrix result(__rows,mat.cols());
 	if(__trans&&mat.isTranspose())
 	{
 		if( is_real<scalar>::value )
@@ -436,18 +436,28 @@ typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix Mat
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::transpose() const
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::transpose() const
 {
-	MatrixBase result(__cols,__rows,this->dataPtr(),true);
-	return result;
+	if(!__trans)
+		return DMatrix(__cols,__rows,this->dataPtr(),true);
+	else
+		return DMatrix(__cols,__rows,this->dataPtr());
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::transMulti( const Vector& vec ) const
+template<class T>
+typename T::DType MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::transMulti(const T &t)const
+{
+	return transMulti(t,typename T::ObjectCategory());
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+template<class Vec>
+typename  MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DVector MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::transMulti( const Vec& vec, const vector_object& ) const
 {
 	if(__rows != vec.size() )
 		throw COException("transpose multiplication error: the size of vector and matrix is not consistent!");
-	Vector result(__cols);
+	DVector result(__cols);
 	if(__trans)
 		blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__cols,__rows,1.0,this->dataPtr(),lda(),vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 	else
@@ -456,11 +466,12 @@ VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTi
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::transMulti(const MatrixBase& mat ) const
+template<class Mat>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::transMulti(const Mat &mat,const matrix_object&) const
 {
 	if(__rows != mat.rows() )
 		throw COException("transpose multiplication error: the size of two matrices are not consistent!");
-	MatrixBase result(__cols,mat.cols());
+	DMatrix result(__cols,mat.cols());
 	if (__trans&&mat.isTranspose())
 		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
 	else if(__trans)
@@ -751,16 +762,17 @@ MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,ind
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::mtm( DMatrix &mat ) const
+template<class Mat>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::mtm(Mat &mat ) const
 {
 	int m = this->rows();
 	int n = this->cols();
-	mat.resize(n,n);
+	if(mat.rows()!=n||mat.cols()!=n)
+		mat.resize(n,n);
 	if ( is_real<scalar>::value )
 		blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),lda(),0.0,mat.dataPtr(),mat.lda());
 	else
 		blas::copt_blas_herk(CblasColMajor,CblasUpper,CblasConjTrans,n,m,1.0,this->dataPtr(),lda(),0.0,mat.dataPtr(),mat.lda());
-	/** remember to assign the other half */
 	for ( int i = 0 ; i < mat.rows() ; ++ i )
 		for ( int j = 0 ; j < i ; ++ j )
 			mat.operator[](i+j*mat.cols()) = mat.operator[](j+i*mat.cols());

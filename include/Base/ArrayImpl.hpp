@@ -351,7 +351,7 @@ Array<scalar,index,SizeAtCompileTime>& Array<scalar,index,SizeAtCompileTime>::op
 	if (arr.isReferred())
 	{
 		__referred = true;
-		__data_ptr = arr.dataPtr();
+		__data_ptr = const_cast<scalar *>(arr.dataPtr());
 		__size = arr.size();
 		__inter = arr.interval();
 	}
