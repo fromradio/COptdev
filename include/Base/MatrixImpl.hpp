@@ -44,19 +44,21 @@ template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::MatrixBase(
 	index m,
 	index n,
-	const scalar* data)
+	const scalar* data,
+	bool trans)
 	:
-	Array((m+1)*n,data),
+	Array(),
 	__rows(m),
 	__cols(n),
 	__sym(false),
-	__trans(false),
-	__lda(m+1),
+	__trans(trans),
+	__lda(trans?(n+1):(m+1)),
 	__is_row_dynamic(false),
 	__is_col_dynamic(false)
 {
 	assert(RowAtCompileTime==Dynamic);
 	assert(ColAtCompileTime==Dynamic);
+	this->setArray(trans?(m*(n+1)):((m+1)*n),data);
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
@@ -274,7 +276,7 @@ void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::resize(index m,
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 template<class Mat>
-void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::binaryCheck(const Mat&mat)
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::binaryCheck(const Mat&mat) const
 {
 	if(!is_same<typename MatrixBase::scalar,typename Mat::scalar>::value||!is_same<typename MatrixBase::index,typename Mat::index>::value)
 		throw COException("Matrix binary check failed: the scalar type or the index type of two matrices is not the same! Please check it");
@@ -358,30 +360,39 @@ typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix Mat
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator*(const VectorBase<scalar,index>& vec )const
+template<class Vec>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DVector MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::multi(const Vec &vec, const vector_object&)const
 {
+	binaryCheck(vec);
 	if ( __cols != vec.size() )
 		throw COException("MatrixBase multiply error: the size of MatrixBase and vector are not consistent!");
-	VectorBase<scalar,index> result(__rows);
+	DVector result(__rows);
 	if (__sym)
-		blas::copt_blas_symv(CblasColMajor,CblasUpper,__rows,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+		blas::copt_blas_symv(CblasColMajor,CblasUpper,__rows,1.0,this->dataPtr(),lda(),vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 	else if (__trans)
 	{
 		if( is_real<scalar>::value )
-			blas::copt_blas_gemv(CblasColMajor,CblasTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+			blas::copt_blas_gemv(CblasColMajor,CblasTrans,__cols,__rows,1.0,this->dataPtr(),lda(),vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 		else if ( is_complex<scalar>::value )
-			blas::copt_blas_gemv(CblasColMajor,CblasConjTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+			blas::copt_blas_gemv(CblasColMajor,CblasConjTrans,__cols,__rows,1.0,this->dataPtr(),lda(),vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 	}
 	else
 	{
-		blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__rows,__cols,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+		blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__rows,__cols,1.0,this->dataPtr(),lda(),vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 	}
 	return result;
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+template<class T>
+typename T::DType MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator*(const T &t )const
+{
+	return multi(t,typename T::ObjectCategory());
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 template<class Mat>
-typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator*(const Mat& mat )const
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::multi(const Mat& mat,const matrix_object&)const
 {
 	binaryCheck(mat);
 	if ( __cols != mat.rows() )
@@ -390,35 +401,44 @@ typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix Mat
 	if(__trans&&mat.isTranspose())
 	{
 		if( is_real<scalar>::value )
-			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
 		else if( is_complex<scalar>::value )
-			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasConjTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasConjTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
 	}
 	else if( __trans )
 	{
 		if( is_real<scalar>::value )
-			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+			blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
 		else if ( is_complex<scalar>::value ){
-			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__cols,mat.dataPtr(),__cols,0.0,result.dataPtr(),__rows);
+			blas::copt_blas_gemm(CblasColMajor,CblasConjTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
 		}
 	}
 	else if (mat.isTranspose())
 	{
 		if( is_real<scalar>::value )
-			blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+			blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
 		else if( is_complex<scalar>::value )
-			blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasConjTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),__rows);
+			blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasConjTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
 	}
 	else
-		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.rows(),0.0,result.dataPtr(),__rows);
+		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__rows,mat.cols(),__cols,1.0,this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
+	return result;
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator*(const scalar s)const
+{
+	DMatrix result(rows(),cols());
+	for ( index i = 0 ; i < rows() ; ++ i )
+		for ( index j = 0 ; j < cols() ; ++ j )
+			result(i,j) = this->operator()(i,j)*s;
 	return result;
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::transpose() const
 {
-	MatrixBase result(__cols,__rows,this->dataPtr());
-	result.setTransposeFlag(true);
+	MatrixBase result(__cols,__rows,this->dataPtr(),true);
 	return result;
 }
 
@@ -429,9 +449,9 @@ VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTi
 		throw COException("transpose multiplication error: the size of vector and matrix is not consistent!");
 	Vector result(__cols);
 	if(__trans)
-		blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__cols,__rows,1.0,this->dataPtr(),__cols,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+		blas::copt_blas_gemv(CblasColMajor,CblasNoTrans,__cols,__rows,1.0,this->dataPtr(),lda(),vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 	else
-		blas::copt_blas_gemv(CblasColMajor,CblasTrans,__rows,__cols,1.0,this->dataPtr(),__rows,vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
+		blas::copt_blas_gemv(CblasColMajor,CblasTrans,__rows,__cols,1.0,this->dataPtr(),lda(),vec.dataPtr(),vec.interval(),0.0,result.dataPtr(),1);
 	return result;
 }
 
@@ -442,14 +462,14 @@ MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,ind
 		throw COException("transpose multiplication error: the size of two matrices are not consistent!");
 	MatrixBase result(__cols,mat.cols());
 	if (__trans&&mat.isTranspose())
-		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),result.rows());
+		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
 	else if(__trans)
-		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),__cols,mat.dataPtr(),mat.rows(),0.0,result.dataPtr(),result.rows());
+		blas::copt_blas_gemm(CblasColMajor,CblasNoTrans,CblasNoTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
 	else if(mat.isTranspose())
-		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),__rows,mat.dataPtr(),mat.cols(),0.0,result.dataPtr(),result.rows());
+		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasTrans,__cols,mat.cols(),__rows,1.0,this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
 	else
 		blas::copt_blas_gemm(CblasColMajor,CblasTrans,CblasNoTrans,__cols,mat.cols(),__rows,1.0,
-			this->dataPtr(),__rows,mat.dataPtr(),mat.rows(),0.0,result.dataPtr(),result.rows());
+			this->dataPtr(),lda(),mat.dataPtr(),mat.lda(),0.0,result.dataPtr(),result.lda());
 	return result;
 }
 
@@ -731,15 +751,15 @@ MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,ind
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::mtm( MatrixBase& mat ) const
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::mtm( DMatrix &mat ) const
 {
 	int m = this->rows();
 	int n = this->cols();
 	mat.resize(n,n);
 	if ( is_real<scalar>::value )
-		blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
+		blas::copt_blas_syrk(CblasColMajor,CblasUpper,CblasTrans,n,m,1.0,this->dataPtr(),lda(),0.0,mat.dataPtr(),mat.lda());
 	else
-		blas::copt_blas_herk(CblasColMajor,CblasUpper,CblasConjTrans,n,m,1.0,this->dataPtr(),m,0.0,mat.dataPtr(),n);
+		blas::copt_blas_herk(CblasColMajor,CblasUpper,CblasConjTrans,n,m,1.0,this->dataPtr(),lda(),0.0,mat.dataPtr(),mat.lda());
 	/** remember to assign the other half */
 	for ( int i = 0 ; i < mat.rows() ; ++ i )
 		for ( int j = 0 ; j < i ; ++ j )

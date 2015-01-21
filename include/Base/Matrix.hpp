@@ -40,15 +40,17 @@ class MatrixBase
 public:
 
 	/** the scalar type */
-	typedef 			FT 				 			scalar;
+	typedef 			FT 				 				scalar;
 	/** pod scalar type */
-	typedef typename get_pod_type<scalar>::type 	podscalar;
+	typedef typename get_pod_type<scalar>::type 		podscalar;
 	/** the size type used */
-	typedef 			I 							index;						
+	typedef 			I 								index;						
 	/** define fthe category */
-	typedef 			matrix_object				ObjectCategory;
+	typedef 			matrix_object					ObjectCategory;
 	/** define the trait */
-	typedef 			KernelTrait<FT,index>		Kernel;
+	typedef 			KernelTrait<FT,index>			Kernel;
+	/** the dynamic object */
+	typedef MatrixBase<scalar,index,Dynamic,Dynamic> 	DType;
 
 private:
 	
@@ -56,6 +58,7 @@ private:
 	typedef 			VectorBase<FT,index>			Vector;
 	typedef 			Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime+1)>			
 														Array;
+	typedef VectorBase<scalar,index,Dynamic> 			DVector;
 	typedef MatrixBase<FT,I,Dynamic,Dynamic> 			DMatrix; // dynamic matrix
 
 	/**			private variables			*/
@@ -76,13 +79,21 @@ private:
 	bool 					__is_col_dynamic;
 	//%}
 
+
+	/** private functions */
+	template<class Mat>
+	DMatrix multi(const Mat &mat, const matrix_object&) const;
+
+	template<class Vec>
+	DVector multi(const Vec &vec,const vector_object&) const;
+
 public:
 	/** constructor and deconstructor */
 	//%{
 	/** default constructor */
 	MatrixBase();
 	/** construct a matrix with input dimension m*n */
-	MatrixBase(const index m, const index n, const scalar *data=nullptr);
+	MatrixBase(const index m, const index n, const scalar *data=nullptr,bool trans = false);
 	/** constructor for Matrix with row number of column number specified */
 	MatrixBase(const index m, const scalar *data=nullptr);
 	/** Copy assignment */
@@ -124,6 +135,8 @@ public:
 
 	/** resize the matrix */
 	void resize (index m, index n);
+	/** resize for one dimension fixed matrix */
+	void resize (index m);
 
 	/** set the matrix to be symmetric */
 	void setSymmetricFlag(bool sym);
@@ -135,7 +148,7 @@ public:
 
 	/** basic check for two matrices */
 	template<class Mat>
-	void binaryCheck(const Mat& mat);
+	void binaryCheck(const Mat& mat) const;
 
 	/** Copy operation */
 	template<class Mat>
@@ -151,27 +164,31 @@ public:
 	DMatrix operator- (const Mat& mat);
 
 	/** matrix multiplications */
-	VectorBase<scalar,index> operator* (const VectorBase<scalar,index>& vec) const;
+	template<class T>
+	typename T::DType operator* (const T &vec) const;
 
-	/** matrix and matrix multiplication */
-	template<class Mat>
-	DMatrix operator* (const Mat& mat) const;
+	// /** matrix and matrix multiplication */
+	// template<class Mat>
+	// DMatrix operator* (const Mat &mat) const;
+
+	/** multiplication with a scalar */
+	DMatrix operator* (const scalar s) const;
 
 	// multiplication between a scalar and a matrix
-	friend MatrixBase operator* (const scalar s, const MatrixBase& mat)
+	friend DMatrix operator* (const scalar s, const MatrixBase& mat)
 	{
-		MatrixBase result(mat.rows(),mat.cols());
+		DMatrix result(mat.rows(),mat.cols());
 		for ( index i = 0 ; i < mat.rows() ; ++ i )
 			for ( index j = 0 ; j < mat.cols() ; ++ j )
 				result(i,j) = mat(i,j)*s;
 		return result;
 	}
 
-	// multiplication between a scalar and a matrix
-	friend MatrixBase operator* (const MatrixBase& mat, const scalar s)
-	{
-		return s*mat;
-	}
+	// // multiplication between a scalar and a matrix
+	// friend MatrixBase operator* (const MatrixBase& mat, const scalar s)
+	// {
+	// 	return s*mat;
+	// }
 
 	// transpose
 	MatrixBase transpose() const;
@@ -336,7 +353,7 @@ public:
 	void setRandom(const index rows, const index cols);
 	static inline MatrixBase random(const index rows, const index cols);
 	/** compute A^TA of a given matrix */
-	void mtm(MatrixBase& mat) const;
+	void mtm(DMatrix &mat) const;
 
 	/** norms */
 	//%{

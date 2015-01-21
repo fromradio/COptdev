@@ -48,6 +48,8 @@ public:
 	typedef vector_object 							ObjectCategory;
 	/**		define the kernel 		*/
 	typedef KernelTrait<FT,index>					Kernel;
+	/** 	the dynamic type */
+	typedef VectorBase<FT,index,Dynamic> 			DType;
 
 private:
 	/**		definitions used in implementation */
