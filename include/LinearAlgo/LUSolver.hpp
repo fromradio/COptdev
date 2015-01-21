@@ -33,9 +33,10 @@ class LU
 	public LinearSolver<Matrix>
 {
 private:
-	typedef typename Matrix::scalar 		scalar;
-	typedef typename Matrix::index 			index;
-	typedef VectorBase<scalar,index>		Vector;
+	typedef typename Matrix::scalar 			scalar;
+	typedef typename Matrix::index 				index;
+	typedef VectorBase<scalar,index,Dynamic>	DVector;
+	typedef Matrix::DType 						DMatrix;
 
 	/** the array */
 	scalar 						*__a;
@@ -46,12 +47,19 @@ private:
 	/** the factorization information */
 	index 						__info;
 
-	void doCompute( const Matrix& mat );
-	Vector doSolve ( const Vector& b );
-	Matrix doSolve ( const Matrix& b );
+	void doCompute (const Matrix& mat);
+
+	template<class Vec>
+	DVector doSolve(const Vec &b, const vector_object&);
+
+	template<class Mat>
+	DMatrix doSolve(const Mat &b, const matrix_object&);
+
+	// Vector doSolve (const Vector& b);
+	template<class T>
+	typname T::DType doSolve (const T &b);
 
 public:
-
 	/** constructor and deconstructor */
 	//%{
 	LU ( );
@@ -101,15 +109,16 @@ void LU<Matrix>::doCompute( const Matrix& mat )
 	clear();
 	__a = new scalar[mat.size()];
 	__piv = new index[std::min(mat.rows(),mat.cols())];
-	this->setLDA(mat.rows());
+	this->setLDA(mat.lda());
 	this->setRowNum(mat.rows());
 	this->setColNum(mat.cols());
 	blas::copt_blas_copy(mat.size(),mat.dataPtr(),1,__a,1);
-	copt_lapack_getrf(mat.rows(),mat.cols(),__a,mat.rows(),__piv,&__info);
+	copt_lapack_getrf(this->rowNum(),this->colNum(),__a,this->lda(),__piv,&__info);
 }
 
 template<class Matrix>
-typename LU<Matrix>::Vector LU<Matrix>::doSolve( const Vector& b )
+template<class Vec>
+typename Vec::DType LU<Matrix>::doSolve(const Vec &b, const vector_object&)
 {
 	this->squareValidation();
 	if ( this->rowNum() != b.size() )
@@ -117,13 +126,14 @@ typename LU<Matrix>::Vector LU<Matrix>::doSolve( const Vector& b )
 		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of vector is "<<b.size()<<std::endl;
 		throw COException("Linear system solving error: the size is not consistent!");
 	}
-	Vector result(b);
+	DVector result(b);
 	copt_lapack_getrs('N',this->rowNum(),1,__a,this->lda(),__piv,result.dataPtr(),result.size(),&__info);
 	return result;
 }
 
 template<class Matrix>
-Matrix LU<Matrix>::doSolve( const Matrix& b )
+template<class Mat>
+typename Mat::DType LU<Matrix>::doSolve(const Mat &b, const matrix_object&)
 {
 	this->squareValidation();
 	if( this->rowNum() != b.rows() )
@@ -131,10 +141,40 @@ Matrix LU<Matrix>::doSolve( const Matrix& b )
 		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of right hand vectors are "<<b.rows()<<std::endl;
 		throw COException("Linear system solving error: the size is not consistent!");
 	}
-	Matrix result(b);
-	copt_lapack_getrs('N',this->rowNum(),b.cols(),__a,this->lda(),__piv,result.dataPtr(),result.rows(),&__info);
+	DMatrix result(b);
+	copt_lapack_getrs('N',this->rowNum(),b.cols(),__a,this->lda(),__piv,result.dataPtr(),result.lda(),&__info);
 	return result;
 }
+
+template<class Matrix>
+template<class T>
+typename LU<Matrix>::Vector LU<Matrix>::doSolve( const T& b )
+{
+	this->doSolve(b,T::ObjectCategory());
+	// this->squareValidation();
+	// if ( this->rowNum() != b.size() )
+	// {
+	// 	std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of vector is "<<b.size()<<std::endl;
+	// 	throw COException("Linear system solving error: the size is not consistent!");
+	// }
+	// Vector result(b);
+	// copt_lapack_getrs('N',this->rowNum(),1,__a,this->lda(),__piv,result.dataPtr(),result.size(),&__info);
+	// return result;
+}
+
+// template<class Matrix>
+// Matrix LU<Matrix>::doSolve( const Matrix& b )
+// {
+// 	this->squareValidation();
+// 	if( this->rowNum() != b.rows() )
+// 	{
+// 		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of right hand vectors are "<<b.rows()<<std::endl;
+// 		throw COException("Linear system solving error: the size is not consistent!");
+// 	}
+// 	Matrix result(b);
+// 	copt_lapack_getrs('N',this->rowNum(),b.cols(),__a,this->lda(),__piv,result.dataPtr(),result.rows(),&__info);
+// 	return result;
+// }
 
 template<class Matrix>
 Matrix LU<Matrix>::inverse( )
