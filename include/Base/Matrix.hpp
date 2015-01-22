@@ -41,9 +41,15 @@ public:
 	typedef 		matrix_object 						ObjectCategory;
 	/** Dynamic type */
 	typedef 		AbstractMatrix 						DType;
+
+	typedef typename copt_traits<Derived>::scalar 				scalar;
+	typedef typename copt_traits<Derived>::index				index;
+	static const int RowAtCompileTime = copt_traits<Derived>::RowAtCompileTime;
+	static const int ColAtCompileTime = copt_traits<Derived>::ColAtCompileTime;
+	static const int SizeAtCompileTime = copt_traits<Derived>::SizeAtCompileTime;
+
 private:
-	typedef typename copt_traits<Derived>::scalar 			scalar;
-	typedef typename copt_traits<Derived>::index			index;
+	
 public:
 	/** the row and column number */
 	virtual index rows() const = 0;
@@ -52,6 +58,11 @@ public:
 	virtual index lda() const = 0;
 	virtual scalar* dataPtr() = 0;
 	virtual const scalar *dataPtr() const = 0;
+
+	/** the size */
+	virtual index size() const = 0;
+	virtual bool isSymmetric() const = 0;
+	virtual bool isTranspose() const = 0;
 
 };
 /*
@@ -93,6 +104,8 @@ private:
 	typedef 			Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>			
 														Array;
 
+	typedef AbstractMatrix<MatrixBase> 					AbstractMatrix;
+
 	/**			private variables			*/
 	//%{
 	/** the size of rows */
@@ -130,12 +143,16 @@ public:
 	MatrixBase(const index m, const scalar *data=nullptr);
 	/** Copy assignment */
 	MatrixBase(const MatrixBase& mat);
+	/** Copy assignment */
+	MatrixBase(const AbstractMatrix& mat);
 	/** deconstructor */
 	~MatrixBase();
 	//%} end of constructor and deconstructor
 
 	scalar *dataPtr() {return Array::dataPtr();}
 	const scalar *dataPtr() const {return Array::dataPtr();}
+
+	index size() const {return Array::size();}
 
 	/**	getters and setters*/
 	//%{

@@ -42,7 +42,7 @@ private:
 	typedef typename Matrix::DMatrix 			DMatrix;
 
 	typedef COPT::AbstractMatrix<Matrix> 		AbstractMatrix;
-	typedef COPT::AbstractVector<Matrix>		AbstractVector;
+	typedef COPT::AbstractVector<DVector>		AbstractVector;
 
 	/** the array */
 	scalar 						*__a;
@@ -106,7 +106,7 @@ LU<Matrix>::LU(const Matrix& mat)
 template<class Matrix>
 LU<Matrix>::~LU()
 {
-	clear();
+	clear();	
 }
 
 template<class Matrix>
@@ -155,13 +155,13 @@ template<class Matrix>
 typename LU<Matrix>::DVector LU<Matrix>::doSolve( const AbstractVector& b )
 {
 	this->squareValidation();
-	if ( this->rowNum() != b.size() )
+	if ( this->rowNum() != b.dimension() )
 	{
-		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of vector is "<<b.size()<<std::endl;
+		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of vector is "<<b.dimension()<<std::endl;
 		throw COException("Linear system solving error: the size is not consistent!");
 	}
 	DVector result(b);
-	copt_lapack_getrs('N',this->rowNum(),1,__a,this->lda(),__piv,result.dataPtr(),result.size(),&__info);
+	copt_lapack_getrs('N',this->rowNum(),1,__a,this->lda(),__piv,result.dataPtr(),result.dimension(),&__info);
 	return result;
 }
 

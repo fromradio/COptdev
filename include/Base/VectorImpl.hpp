@@ -27,14 +27,16 @@ namespace COPT
 template<class scalar,class index,int SizeAtCompileTime>
 VectorBase<scalar,index,SizeAtCompileTime>::VectorBase()
 	:
-	Array()
+	Array(),
+	AbstractVector()
 {
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
 VectorBase<scalar,index,SizeAtCompileTime>::VectorBase(const index size, const scalar *data, const index inter )
 	:
-	Array(size,data,inter)
+	Array(size,data,inter),
+	AbstractVector()
 {
 }
 
@@ -48,7 +50,8 @@ VectorBase<scalar,index,SizeAtCompileTime>::VectorBase(const scalar *data, const
 template<class scalar,class index,int SizeAtCompileTime>
 VectorBase<scalar,index,SizeAtCompileTime>::VectorBase( const VectorBase& vec )
 	:
-	Array()
+	Array(),
+	AbstractVector()
 {
 	if (vec.isReferred())
 	{
@@ -62,23 +65,42 @@ VectorBase<scalar,index,SizeAtCompileTime>::VectorBase( const VectorBase& vec )
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
+VectorBase<scalar,index,SizeAtCompileTime>::VectorBase(const AbstractVector& vec)
+	:
+	Array(),
+	AbstractVector()
+{
+	assert(SizeAtCompileTime!=Dynamic&&SizeAtCompileTime!=AbstractVector::SizeAtCompileTime);
+	if(vec.isReferred())
+	{
+		this->setReferredArray(vec.size(),const_cast<scalar*>(vec.dataPtr()),vec.interval());
+	}
+	else{
+		this->setArray(vec.size(),vec.dataPtr(),vec.interval());
+	}
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
 VectorBase<scalar,index,SizeAtCompileTime>::VectorBase( const index size, const referred_array& tag, scalar *data, const index inter )
 	:
-	Array(size,tag,data,inter)
+	Array(size,tag,data,inter),
+	AbstractVector()
 {
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
 VectorBase<scalar,index,SizeAtCompileTime>::VectorBase( const index size , const referred_array& tag , const scalar* data ,const index inter )
 	:
-	Array(size,tag,const_cast<scalar*>(data),inter)
+	Array(size,tag,const_cast<scalar*>(data),inter),
+	AbstractVector()
 {
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
 VectorBase<scalar,index,SizeAtCompileTime>::VectorBase(const std::vector<scalar>& vec)
 	:
-	Array()
+	Array(),
+	AbstractVector()
 {
 	this->resize(vec.size(),1);
 	for ( index i = 0 ; i < this->size() ; ++ i )

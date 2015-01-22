@@ -46,7 +46,7 @@ class LinearSolver
 	typedef typename Matrix::DMatrix 			DMatrix;
 
 	typedef COPT::AbstractMatrix<Matrix> 		AbstractMatrix;
-	typedef COPT::AbstractVector<Matrix> 		AbstractVector;
+	typedef COPT::AbstractVector<DVector> 		AbstractVector;
 
 	/** private varibles */
 	//%{

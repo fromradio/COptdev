@@ -319,12 +319,16 @@ template<class s,class i,int R,int C>
 struct copt_traits<MatrixBase<s,i,R,C> >{
 	typedef s scalar;
 	typedef i index;
+	const static int RowAtCompileTime = R;
+	const static int ColAtCompileTime = C;
+	const static int SizeAtCompileTime = (RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime);
 };
 
 template<class s,class i,int Si>
 struct copt_traits<VectorBase<s,i,Si> >{
 	typedef s scalar;
 	typedef i index;
+	const static int SizeAtCompileTime = Si;
 };
 
 template<class s,class i,int Si>

@@ -96,12 +96,27 @@ template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::MatrixBase(
 	const MatrixBase& mat)
 	:
-	Array(mat.rows()*mat.cols(),mat.dataPtr()),
+	Array(mat.size(),mat.dataPtr()),
 	__rows(mat.rows()),
 	__cols(mat.cols()),
 	__sym(mat.isSymmetric()),
-	__trans(mat.isTranspose())
+	__trans(mat.isTranspose()),
+	__lda(mat.lda())
 {
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::MatrixBase(
+	const AbstractMatrix& mat)
+{
+	assert(!((RowAtCompileTime!=Dynamic)&&(RowAtCompileTime!=AbstractMatrix::RowAtCompileTime)));
+	assert(!(ColAtCompileTime!=Dynamic&&ColAtCompileTime!=AbstractMatrix::ColAtCompileTime));
+	this->setArray(mat.size(),mat.dataPtr());
+	__rows = mat.rows();
+	__cols = mat.cols();
+	__sym = mat.isSymmetric();
+	__trans = mat.isTranspose();
+	__lda = mat.lda();
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
@@ -775,7 +790,7 @@ void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::mtm(Mat &mat ) 
 		blas::copt_blas_herk(CblasColMajor,CblasUpper,CblasConjTrans,n,m,1.0,this->dataPtr(),lda(),0.0,mat.dataPtr(),mat.lda());
 	for ( int i = 0 ; i < mat.rows() ; ++ i )
 		for ( int j = 0 ; j < i ; ++ j )
-			mat.operator[](i+j*mat.cols()) = mat.operator[](j+i*mat.cols());
+			mat(i,j) = mat(j,i);
 	mat.setSymmetricFlag(true);
 }
 

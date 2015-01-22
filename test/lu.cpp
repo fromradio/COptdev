@@ -3,7 +3,7 @@
 #include "Core"
 
 
-typedef COPT::KernelTrait<std::complex<double>,int> 			kernel;
+typedef COPT::KernelTrait<double,int> 			kernel;
 typedef kernel::Vector 							Vector;
 typedef kernel::Matrix 							Matrix;
 typedef COPT::LU<Matrix> 						LU;
@@ -23,14 +23,17 @@ int main( int argc , char *argv[] )
 	// Eigen::VectorXd vec(m);
 	// for ( int i = 0 ; i < m ; ++ i )
 		// vec(i) = v(i);
-	Matrix rhb = Matrix::random(m,n);
+	Matrix x = Matrix::random(m,n);
+	Matrix rhb = mat*x;
 	// std::cout<<"matrix is "<<std::endl<<mat<<std::endl;
 	LU lu(mat);
 	Matrix mtm;
 	mat.mtm(mtm);
 	// Cholesky cho(mtm);
 	// QR qr(mat);
+	std::cout<<x<<std::endl;
 	std::cout<<lu.solve(rhb)<<std::endl;
+	std::cout<<mtm<<std::endl;
 	lu.compute(mtm);
 	std::cout<<lu.solve(mat.transpose()*rhb)<<std::endl;
 	// std::cout<<qr.solve(mat.transpose()*rhb)<<std::endl;
