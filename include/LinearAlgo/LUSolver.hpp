@@ -35,8 +35,14 @@ class LU
 private:
 	typedef typename Matrix::scalar 			scalar;
 	typedef typename Matrix::index 				index;
-	typedef VectorBase<scalar,index,Dynamic>	DVector;
-	typedef Matrix::DType 						DMatrix;
+
+	/** the corresponding dynamic vector type for Matrix */
+	typedef typename Matrix::DVector 			DVector;
+	/** the corresponding dynamic matrix type for Matrix */
+	typedef typename Matrix::DMatrix 			DMatrix;
+
+	typedef COPT::AbstractMatrix<Matrix> 		AbstractMatrix;
+	typedef COPT::AbstractVector<Matrix>		AbstractVector;
 
 	/** the array */
 	scalar 						*__a;
@@ -49,15 +55,15 @@ private:
 
 	void doCompute (const Matrix& mat);
 
-	template<class Vec>
-	DVector doSolve(const Vec &b, const vector_object&);
+	// template<class Vec>
+	// DVector doSolve(const Vec &b, const vector_object&);
 
-	template<class Mat>
-	DMatrix doSolve(const Mat &b, const matrix_object&);
+	// template<class Mat>
+	// DMatrix doSolve(const Mat &b, const matrix_object&);
 
 	// Vector doSolve (const Vector& b);
-	template<class T>
-	typname T::DType doSolve (const T &b);
+	virtual DVector doSolve( const AbstractVector& b );
+	virtual DMatrix doSolve( const AbstractMatrix& b );
 
 public:
 	/** constructor and deconstructor */
@@ -116,9 +122,37 @@ void LU<Matrix>::doCompute( const Matrix& mat )
 	copt_lapack_getrf(this->rowNum(),this->colNum(),__a,this->lda(),__piv,&__info);
 }
 
+// template<class Matrix>
+// template<class Vec>
+// typename Vec::DType LU<Matrix>::doSolve(const Vec &b, const vector_object&)
+// {
+// 	this->squareValidation();
+// 	if ( this->rowNum() != b.size() )
+// 	{
+// 		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of vector is "<<b.size()<<std::endl;
+// 		throw COException("Linear system solving error: the size is not consistent!");
+// 	}
+// 	DVector result(b);
+// 	copt_lapack_getrs('N',this->rowNum(),1,__a,this->lda(),__piv,result.dataPtr(),result.size(),&__info);
+// 	return result;
+// }
+
+// template<class Matrix>
+// typename Mat::DType LU<Matrix>::doSolve(const Mat &b, const matrix_object&)
+// {
+// 	this->squareValidation();
+// 	if( this->rowNum() != b.rows() )
+// 	{
+// 		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of right hand vectors are "<<b.rows()<<std::endl;
+// 		throw COException("Linear system solving error: the size is not consistent!");
+// 	}
+// 	DMatrix result(b);
+// 	copt_lapack_getrs('N',this->rowNum(),b.cols(),__a,this->lda(),__piv,result.dataPtr(),result.lda(),&__info);
+// 	return result;
+// }
+
 template<class Matrix>
-template<class Vec>
-typename Vec::DType LU<Matrix>::doSolve(const Vec &b, const vector_object&)
+typename LU<Matrix>::DVector LU<Matrix>::doSolve( const AbstractVector& b )
 {
 	this->squareValidation();
 	if ( this->rowNum() != b.size() )
@@ -132,8 +166,7 @@ typename Vec::DType LU<Matrix>::doSolve(const Vec &b, const vector_object&)
 }
 
 template<class Matrix>
-template<class Mat>
-typename Mat::DType LU<Matrix>::doSolve(const Mat &b, const matrix_object&)
+typename LU<Matrix>::DMatrix LU<Matrix>::doSolve( const AbstractMatrix& b )
 {
 	this->squareValidation();
 	if( this->rowNum() != b.rows() )
@@ -142,39 +175,9 @@ typename Mat::DType LU<Matrix>::doSolve(const Mat &b, const matrix_object&)
 		throw COException("Linear system solving error: the size is not consistent!");
 	}
 	DMatrix result(b);
-	copt_lapack_getrs('N',this->rowNum(),b.cols(),__a,this->lda(),__piv,result.dataPtr(),result.lda(),&__info);
+	copt_lapack_getrs('N',this->rowNum(),b.cols(),__a,this->lda(),__piv,result.dataPtr(),result.rows(),&__info);
 	return result;
 }
-
-template<class Matrix>
-template<class T>
-typename LU<Matrix>::Vector LU<Matrix>::doSolve( const T& b )
-{
-	this->doSolve(b,T::ObjectCategory());
-	// this->squareValidation();
-	// if ( this->rowNum() != b.size() )
-	// {
-	// 	std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of vector is "<<b.size()<<std::endl;
-	// 	throw COException("Linear system solving error: the size is not consistent!");
-	// }
-	// Vector result(b);
-	// copt_lapack_getrs('N',this->rowNum(),1,__a,this->lda(),__piv,result.dataPtr(),result.size(),&__info);
-	// return result;
-}
-
-// template<class Matrix>
-// Matrix LU<Matrix>::doSolve( const Matrix& b )
-// {
-// 	this->squareValidation();
-// 	if( this->rowNum() != b.rows() )
-// 	{
-// 		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of right hand vectors are "<<b.rows()<<std::endl;
-// 		throw COException("Linear system solving error: the size is not consistent!");
-// 	}
-// 	Matrix result(b);
-// 	copt_lapack_getrs('N',this->rowNum(),b.cols(),__a,this->lda(),__piv,result.dataPtr(),result.rows(),&__info);
-// 	return result;
-// }
 
 template<class Matrix>
 Matrix LU<Matrix>::inverse( )

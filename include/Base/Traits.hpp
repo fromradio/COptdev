@@ -273,6 +273,66 @@ void ForceAssignment(const T& t1, T& t2)
 	t2 = t1;
 }
 
+/** get the dynamic type of mathematical type */
+template<class T>
+struct DynamicType{
+	typedef T Type;
+};
+template<class scalar,class index,int Row>
+struct DynamicType<MatrixBase<scalar,index,Row,Dynamic> >{
+	typedef MatrixBase<scalar,index,Dynamic,Dynamic> Type;
+};
+template<class scalar,class index,int Col>
+struct DynamicType<MatrixBase<scalar,index,Dynamic,Col> >{
+	typedef MatrixBase<scalar,index,Dynamic,Dynamic> Type;
+};
+template<class scalar,class index,int Row,int Col>
+struct DynamicType<MatrixBase<scalar,index,Row,Col> >{
+	typedef MatrixBase<scalar,index,Dynamic,Dynamic> Type;
+};
+
+template<class Derived>
+class AbstractMatrix;
+template<class Derived>
+class AbstractVector;
+
+/** copt traits of numerical types */
+template<class T>
+struct copt_traits{
+	typedef float 	scalar;
+	typedef long 	index;
+};
+
+template<class T>
+struct copt_traits<AbstractMatrix<T> >{
+	typedef typename copt_traits<T>::scalar scalar;
+	typedef typename copt_traits<T>::index index;
+};
+
+template<class T>
+struct copt_traits<AbstractVector<T> >{
+	typedef typename copt_traits<T>::scalar scalar;
+	typedef typename copt_traits<T>::index index;
+};
+
+template<class s,class i,int R,int C>
+struct copt_traits<MatrixBase<s,i,R,C> >{
+	typedef s scalar;
+	typedef i index;
+};
+
+template<class s,class i,int Si>
+struct copt_traits<VectorBase<s,i,Si> >{
+	typedef s scalar;
+	typedef i index;
+};
+
+template<class s,class i,int Si>
+struct copt_traits<Array<s,i,Si> >{
+	typedef s scalar;
+	typedef i index;
+};
+
 }// End of namespace COPT
 
 

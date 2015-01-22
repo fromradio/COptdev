@@ -28,15 +28,15 @@ int main( int argc , char *argv[] )
 	LU lu(mat);
 	Matrix mtm;
 	mat.mtm(mtm);
-	Cholesky cho(mtm);
-	QR qr(mat);
+	// Cholesky cho(mtm);
+	// QR qr(mat);
 	std::cout<<lu.solve(rhb)<<std::endl;
 	lu.compute(mtm);
 	std::cout<<lu.solve(mat.transpose()*rhb)<<std::endl;
-	std::cout<<qr.solve(mat.transpose()*rhb)<<std::endl;
+	// std::cout<<qr.solve(mat.transpose()*rhb)<<std::endl;
 	// std::cout<<lu.inverse()<<std::endl;
 	std::cout<<"solving result"<<std::endl;
-	std::cout<<cho.solve(mat.transpose()*rhb)<<std::endl;
+	// std::cout<<cho.solve(mat.transpose()*rhb)<<std::endl;
 
 	// LU lu2(mtm);
 	// std::cout<<"result of eigen"<<std::endl<<mm.inverse()<<std::endl;

@@ -32,10 +32,24 @@ namespace COPT
 template <class FT,class I,int RowAtCompileTime,int ColAtCompileTime>
 class MatrixBase;
 
+template<class Derived>
+class AbstractVector
+{
+public:
+	typedef typename copt_traits<Derived>::scalar 			scalar;
+	typedef typename copt_traits<Derived>::index			index;
+
+	virtual index size() const = 0;
+	virtual scalar *dataPtr();
+
+	virtual const scalar *dataPtr() const = 0;
+};
+
 template <class FT,class I = int,int SizeAtCompileTime=Dynamic>
 class VectorBase 
 	: 
-	public Array<FT,I>
+	public Array<FT,I>,
+	AbstractVector<VectorBase<FT,I,SizeAtCompileTime> >
 {
 public:
 	/** 	scalar type 	*/
@@ -50,6 +64,10 @@ public:
 	typedef KernelTrait<FT,index>					Kernel;
 	/** 	the dynamic type */
 	typedef VectorBase<FT,index,Dynamic> 			DType;
+	/** 	the corresponding Abstract Vector */
+	// typedef AbstractVector<FT,index> 				AbVector;
+	/** 	the corresponding Abstract Matrix */
+	// typedef AbstractMatrix<FT,index> 				AbMatrix;
 
 private:
 	/**		definitions used in implementation */
@@ -99,6 +117,9 @@ public:
 	/** Matlab-like element assignment */
 	scalar& operator()(const index i );
 	const scalar& operator()(const index i )const ;
+
+	scalar *dataPtr() {return Array::dataPtr();}
+	const scalar *dataPtr() const {return Array::dataPtr();}
 
 	/** overload operations*/
 	//%{

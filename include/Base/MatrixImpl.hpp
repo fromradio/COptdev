@@ -110,7 +110,7 @@ MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::~MatrixBase()
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-const index& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::rows() const
+index MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::rows() const
 {
 	return __rows;
 }
@@ -122,7 +122,7 @@ bool MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::isRowDynamic() 
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-const index& MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::cols() const
+index MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::cols() const
 {
 	return __cols;
 }

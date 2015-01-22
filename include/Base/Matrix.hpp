@@ -26,6 +26,34 @@
  */
 namespace COPT
 {
+
+/** 	Abstract matrix class for special consideration. the AbstractMatrix has no
+ *  	actual functionality and any matrix that derives from AbstractMatrix is able
+ *  	to be used in the COPT.
+ */
+template<class Derived>
+class AbstractMatrix
+	:
+	DataObject<AbstractMatrix<Derived> >
+{
+public:
+	/** the category of matrix */
+	typedef 		matrix_object 						ObjectCategory;
+	/** Dynamic type */
+	typedef 		AbstractMatrix 						DType;
+private:
+	typedef typename copt_traits<Derived>::scalar 			scalar;
+	typedef typename copt_traits<Derived>::index			index;
+public:
+	/** the row and column number */
+	virtual index rows() const = 0;
+	virtual index cols() const = 0;
+	/** the lda of matrix */
+	virtual index lda() const = 0;
+	virtual scalar* dataPtr() = 0;
+	virtual const scalar *dataPtr() const = 0;
+
+};
 /*
  *	Class of 'MatrixBase'
  *		the data is stored column by column
@@ -35,7 +63,8 @@ namespace COPT
 template<class FT,class I = int,int RowAtCompileTime=Dynamic,int ColAtCompileTime=Dynamic>
 class MatrixBase
 	:
-	public Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>
+	public Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>,
+	public AbstractMatrix<MatrixBase<FT,I,RowAtCompileTime,ColAtCompileTime> > 
 {
 public:
 
@@ -51,6 +80,11 @@ public:
 	typedef 			KernelTrait<FT,index>			Kernel;
 	/** the dynamic object */
 	typedef MatrixBase<scalar,index,Dynamic,Dynamic> 	DType;
+	/** the dynamic matrix */
+	typedef MatrixBase<FT,I,Dynamic,Dynamic> 			DMatrix;
+	/** the dynamic vector */
+	typedef VectorBase<scalar,index,Dynamic> 			DVector;
+	/** the corresponding Abstract Matrix */
 
 private:
 	
@@ -58,8 +92,6 @@ private:
 	typedef 			VectorBase<FT,index>			Vector;
 	typedef 			Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>			
 														Array;
-	typedef VectorBase<scalar,index,Dynamic> 			DVector;
-	typedef MatrixBase<FT,I,Dynamic,Dynamic> 			DMatrix; // dynamic matrix
 
 	/**			private variables			*/
 	//%{
@@ -102,16 +134,17 @@ public:
 	~MatrixBase();
 	//%} end of constructor and deconstructor
 
-
+	scalar *dataPtr() {return Array::dataPtr();}
+	const scalar *dataPtr() const {return Array::dataPtr();}
 
 	/**	getters and setters*/
 	//%{
 	/** get the number of rows */
-	const index&		rows() const;
+	index		rows() const;
 	/** is the row number dynamic */
 	bool isRowDynamic() const;
 	/** get the number of columns */
-	const index& 		cols() const;
+	index 		cols() const;
 	bool isColumnDynamic() const;
 	/** lda of the matrix */
 	index lda() const;

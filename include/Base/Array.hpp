@@ -26,9 +26,15 @@ namespace COPT
  *
  *
  */
+template<class Derived>
 class DataObject: public COPTObject
 {
+public:
+	typedef typename copt_traits<Derived>::scalar 				scalar;
+	typedef typename copt_traits<Derived>::index 				index;
 
+	virtual scalar *dataPtr() = 0;
+	virtual const scalar *dataPtr() const = 0;
 };
 /*		class Array describes a base class for basic dense data types used in COPT
  *		like vector and matrix. The array can be referred to another array or independent 
@@ -40,7 +46,7 @@ class DataObject: public COPTObject
 template<class T,class I,int SizeAtCompileTime = Dynamic>
 class Array
 	:
-	public DataObject
+	public DataObject<Array<T,I,SizeAtCompileTime> >
 {
 public:
 	/**		define the scalar type 			*/
@@ -55,7 +61,6 @@ public:
 	typedef scalar* 							iterator;
 	/** 	constant iterator 				*/
 	typedef const scalar* 						const_iterator;
-
 
 private:
 
