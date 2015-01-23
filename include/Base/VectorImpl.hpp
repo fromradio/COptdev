@@ -70,7 +70,7 @@ VectorBase<scalar,index,SizeAtCompileTime>::VectorBase(const AbstractVector& vec
 	Array(),
 	AbstractVector()
 {
-	assert(SizeAtCompileTime!=Dynamic&&SizeAtCompileTime!=AbstractVector::SizeAtCompileTime);
+	assert(SizeAtCompileTime!=Dynamic&&SizeAtCompileTime!=vec.sizeAtCompileTime());
 	if(vec.isReferred())
 	{
 		this->setReferredArray(vec.size(),const_cast<scalar*>(vec.dataPtr()),vec.interval());

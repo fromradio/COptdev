@@ -26,12 +26,14 @@ namespace COPT
  *
  *
  */
-template<class Derived>
+template<class FT,class I>
 class DataObject: public COPTObject
 {
 public:
-	typedef typename copt_traits<Derived>::scalar 				scalar;
-	typedef typename copt_traits<Derived>::index 				index;
+	typedef FT scalar;
+	typedef I index;
+	// typedef typename copt_traits<Derived>::scalar 				scalar;
+	// typedef typename copt_traits<Derived>::index 				index;
 
 	virtual scalar *dataPtr() = 0;
 	virtual const scalar *dataPtr() const = 0;
@@ -46,7 +48,7 @@ public:
 template<class T,class I,int SizeAtCompileTime = Dynamic>
 class Array
 	:
-	public DataObject<Array<T,I,SizeAtCompileTime> >
+	public DataObject<T,I>
 {
 public:
 	/**		define the scalar type 			*/

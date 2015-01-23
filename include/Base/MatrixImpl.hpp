@@ -109,8 +109,8 @@ template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::MatrixBase(
 	const AbstractMatrix& mat)
 {
-	assert(!((RowAtCompileTime!=Dynamic)&&(RowAtCompileTime!=AbstractMatrix::RowAtCompileTime)));
-	assert(!(ColAtCompileTime!=Dynamic&&ColAtCompileTime!=AbstractMatrix::ColAtCompileTime));
+	assert(!(RowAtCompileTime!=Dynamic&&RowAtCompileTime!=mat.rowAtCompileTime()&&RowAtCompileTime!=mat.rows()));
+	assert(!(ColAtCompileTime!=Dynamic&&ColAtCompileTime!=mat.colAtCompileTime()&&ColAtCompileTime!=mat.cols()));
 	this->setArray(mat.size(),mat.dataPtr());
 	__rows = mat.rows();
 	__cols = mat.cols();
@@ -243,6 +243,36 @@ template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 index MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::lda() const
 {
 	return __lda;
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+scalar* MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::dataPtr()
+{
+	return Array::dataPtr();
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+const scalar* MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::dataPtr() const
+{
+	return Array::dataPtr();
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+index MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::size() const
+{
+	return Array::size();
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+int MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::rowAtCompileTime() const
+{
+	return RowAtCompileTime;
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+int MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::colAtCompileTime() const
+{
+	return ColAtCompileTime;
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>

@@ -32,22 +32,26 @@ namespace COPT
 template <class FT,class I,int RowAtCompileTime,int ColAtCompileTime>
 class MatrixBase;
 
-template<class Derived>
+template<class FT,class I>
 class AbstractVector
 {
 public:
 
 	virtual ~AbstractVector(){}
+	typedef FT scalar;
+	typedef I index;
 
-	typedef typename copt_traits<Derived>::scalar 			scalar;
-	typedef typename copt_traits<Derived>::index			index;
-	const static int SizeAtCompileTime = copt_traits<Derived>::SizeAtCompileTime;
+	// typedef typename copt_traits<Derived>::scalar 			scalar;
+	// typedef typename copt_traits<Derived>::index			index;
+	// const static int SizeAtCompileTime = copt_traits<Derived>::SizeAtCompileTime;
 
 	virtual index dimension() const = 0;
 	virtual index size() const = 0;
 	virtual scalar *dataPtr();
 	virtual bool isReferred() const = 0;
 	virtual index interval() const = 0;
+
+	virtual int sizeAtCompileTime() const = 0;
 
 	virtual const scalar *dataPtr() const = 0;
 };
@@ -56,7 +60,7 @@ template <class FT,class I = int,int SizeAtCompileTime=Dynamic>
 class VectorBase 
 	: 
 	public Array<FT,I>,
-	AbstractVector<VectorBase<FT,I,SizeAtCompileTime> >
+	public AbstractVector<FT,I>
 {
 public:
 	/** 	scalar type 	*/
@@ -80,7 +84,9 @@ private:
 	/**		definitions used in implementation */
 	typedef COPT::Array<FT,index,SizeAtCompileTime>	Array;
 
-	typedef COPT::AbstractVector<VectorBase> 		AbstractVector;
+	typedef COPT::AbstractVector<FT,I>		 		AbstractVector;
+
+	typedef COPT::AbstractMatrix<FT,I> 				AbstractMatrix;
 
 	typedef COPT::MatrixBase<FT,index,Dynamic,Dynamic> 	DMatrix;
 public:
@@ -124,6 +130,8 @@ public:
 	bool isReferred() const {return Array::isReferred();}
 
 	index interval() const {return Array::interval();}
+
+	int sizeAtCompileTime() const{return SizeAtCompileTime;}
 
 	/** resize the Vector */
 	void resize(const index size, const index inter=1);

@@ -37,6 +37,12 @@ private:
 	typedef typename Matrix::scalar 			scalar;
 	typedef VectorBase<scalar,index>			Vector;
 
+	typedef typename Matrix::DVector 			DVector;
+	typedef typename Matrix::DMatrix 			DMatrix;
+
+	typedef typename Matrix::AbstractVector 	AbstractVector;
+	typedef typename Matrix::AbstractMatrix 	AbstractMatrix;
+
 	/** the data */
 	scalar 							*__a;
 
@@ -49,8 +55,8 @@ private:
 	/** implementation of virtual functions */
 	//%{
 	void doCompute( const Matrix& mat );
-	Vector doSolve( const Vector& b );
-	Matrix doSolve( const Matrix& b );
+	DVector doSolve( const AbstractVector& b );
+	DMatrix doSolve( const AbstractMatrix& b );
 	//%}
 
 public:
@@ -103,7 +109,7 @@ void Cholesky<Matrix>::doCompute( const Matrix& mat )
 	__a = new scalar[mat.size()];
 	this->setRowNum(mat.rows());
 	this->setColNum(mat.cols());
-	this->setLDA(mat.rows());
+	this->setLDA(mat.lda());
 	blas::copt_blas_copy(mat.size(),mat.dataPtr(),1,__a,1);
 	copt_lapack_potrf('U',this->rowNum(),__a,this->lda(),&__info);
 	if( __info != 0 )
@@ -114,14 +120,14 @@ void Cholesky<Matrix>::doCompute( const Matrix& mat )
 }
 
 template<class Matrix>
-typename Cholesky<Matrix>::Vector Cholesky<Matrix>::doSolve( const Vector& b )
+typename Cholesky<Matrix>::DVector Cholesky<Matrix>::doSolve( const AbstractVector& b )
 {
 	if ( this->rowNum() != b.size() )
 	{
 		std::cerr<<"The order of matrix is "<<this->rowNum()<<" and the dimension of vector is "<<b.size()<<std::endl;
 		throw COException("Cholesky solving error: the size if not consistent!");
 	}
-	Vector result(b);
+	DVector result(b);
 	copt_lapack_potrs('U',this->rowNum(),1,__a,this->lda(),result.dataPtr(),result.size(),&__info);
 	if ( __info != 0 )
 		std::cerr<<"Warning in Cholesky solver: solving is wrong!"<<std::endl;
@@ -129,15 +135,15 @@ typename Cholesky<Matrix>::Vector Cholesky<Matrix>::doSolve( const Vector& b )
 }
 
 template<class Matrix>
-Matrix Cholesky<Matrix>::doSolve( const Matrix& b )
+typename Cholesky<Matrix>::DMatrix Cholesky<Matrix>::doSolve( const AbstractMatrix& b )
 {
 	if ( this->rowNum() != b.rows() )
 	{
 		std::cerr<<"The order of matrix is "<<this->rowNum()<<" and the dimension of vector is "<<b.rows()<<std::endl;
 		throw COException("Cholesky solving error: the size if not consistent!");
 	}
-	Matrix result(b);
-	copt_lapack_potrs('U',this->rowNum(),b.cols(),__a,this->lda(),result.dataPtr(),result.rows(),&__info);
+	DMatrix result(b);
+	copt_lapack_potrs('U',this->rowNum(),b.cols(),__a,this->lda(),result.dataPtr(),result.lda(),&__info);
 	if ( __info != 0 )
 		std::cerr<<"Warning in Cholesky solver: solving is wrong!"<<std::endl;
 	return result;

@@ -43,7 +43,12 @@ class QR
 private:
 	typedef typename Matrix::scalar 			scalar;
 	typedef typename Matrix::index 				index;
-	typedef VectorBase<scalar,index>			Vector;
+
+	typedef typename Matrix::DMatrix 			DMatrix;
+	typedef typename Matrix::DVector 			DVector;
+
+	typedef typename Matrix::AbstractVector 	AbstractVector;
+	typedef typename Matrix::AbstractMatrix 	AbstractMatrix;
 
 	/** private variables */
 	//%{
@@ -56,8 +61,9 @@ private:
 
 
 	void doCompute ( const Matrix& mat );
-	Vector doSolve( const Vector& b );
-	Matrix doSolve( const Matrix& b );
+	DVector doSolve( const AbstractVector& b );
+	DMatrix doSolve( const AbstractMatrix& b );
+
 public:
 
 	/** constructor and deconstructor */
@@ -97,7 +103,7 @@ template<class Matrix>
 void QR<Matrix>::doCompute( const Matrix& mat )
 {
 	clear();
-	this->setLDA( mat.rows() );
+	this->setLDA( mat.lda() );
 	this->setRowNum( mat.rows() );
 	this->setColNum( mat.cols() );
 	__a = new scalar[mat.size()];
@@ -109,23 +115,23 @@ void QR<Matrix>::doCompute( const Matrix& mat )
 }
 
 template<class Matrix>
-typename QR<Matrix>::Vector QR<Matrix>::doSolve( const Vector& b )
+typename QR<Matrix>::DVector QR<Matrix>::doSolve( const AbstractVector& b )
 {
 	if( b.size() != this->colNum())
 		throw COException("QR solving error: the size of matrix and vector are not consistent!");
-	Vector result(b);
+	DVector result(b);
 	copt_lapack_geqrs(this->rowNum(),this->colNum(),1,__a,this->lda(),__tau,result.dataPtr(),result.size(),&__info);
 	return result;
 }
 
 template<class Matrix>
-Matrix QR<Matrix>::doSolve( const Matrix& b )
+typename QR<Matrix>::DMatrix QR<Matrix>::doSolve( const AbstractMatrix& b )
 {
 	if ( b.rows() != this->colNum() )
 		throw COException("QR solving error: the size of matrix and right hand vectors are not consistent!");
-	Matrix result(b);
+	DMatrix result(b);
 	copt_lapack_geqrs(this->rowNum(),this->colNum(),result.cols(),__a,this->lda(),__tau,result.dataPtr(),
-		result.rows(),&__info);
+		result.lda(),&__info);
 	return result;
 }
 

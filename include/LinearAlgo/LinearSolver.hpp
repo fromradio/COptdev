@@ -45,8 +45,8 @@ class LinearSolver
 	/** the corresponding dynamic matrix type for Matrix */
 	typedef typename Matrix::DMatrix 			DMatrix;
 
-	typedef COPT::AbstractMatrix<Matrix> 		AbstractMatrix;
-	typedef COPT::AbstractVector<DVector> 		AbstractVector;
+	typedef typename Matrix::AbstractMatrix		AbstractMatrix;
+	typedef typename Matrix::AbstractVector		AbstractVector;
 
 	/** private varibles */
 	//%{

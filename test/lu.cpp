@@ -24,22 +24,25 @@ int main( int argc , char *argv[] )
 	// for ( int i = 0 ; i < m ; ++ i )
 		// vec(i) = v(i);
 	Matrix x = Matrix::random(m,n);
-	Matrix rhb = mat*x;
+	COPT::MatrixBase<double,int,m,n> rhb = mat*x;
 	// std::cout<<"matrix is "<<std::endl<<mat<<std::endl;
 	LU lu(mat);
 	Matrix mtm;
 	mat.mtm(mtm);
-	// Cholesky cho(mtm);
-	// QR qr(mat);
+	Cholesky cho(mtm);
+	QR qr(mtm);
 	std::cout<<x<<std::endl;
 	std::cout<<lu.solve(rhb)<<std::endl;
 	std::cout<<mtm<<std::endl;
 	lu.compute(mtm);
+	std::cout<<mat.transpose()*rhb<<std::endl;
+	// Matrix t = lu.solve(mat.transpose()*rhb);
 	std::cout<<lu.solve(mat.transpose()*rhb)<<std::endl;
-	// std::cout<<qr.solve(mat.transpose()*rhb)<<std::endl;
+	// std::cout<<mat*t<<std::endl;
+	std::cout<<"qr"<<std::endl<<qr.solve(mat.transpose()*rhb)<<std::endl;
 	// std::cout<<lu.inverse()<<std::endl;
 	std::cout<<"solving result"<<std::endl;
-	// std::cout<<cho.solve(mat.transpose()*rhb)<<std::endl;
+	std::cout<<cho.solve(mat.transpose()*rhb)<<std::endl;
 
 	// LU lu2(mtm);
 	// std::cout<<"result of eigen"<<std::endl<<mm.inverse()<<std::endl;

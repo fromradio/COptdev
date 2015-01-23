@@ -264,12 +264,12 @@ void Array<scalar,index,SizeAtCompileTime>::reset(const index size,const index i
 template<class scalar,class index,int SizeAtCompileTime>
 void Array<scalar,index,SizeAtCompileTime>::setArray(const index size, const scalar *data, const index inter)
 {
-	if(SizeAtCompileTime!=Dynamic)
+	if(SizeAtCompileTime!=Dynamic&&SizeAtCompileTime!=size)
 		throw COException("Size specified array is not able to be resized");
 	if (__referred)
 		throw COException("referred array is not allowed to be reset ");
 	else{
-		reset(size,inter);
+		if(SizeAtCompileTime==Dynamic) reset(size,inter);
 		if(data)
 			blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
 	}
@@ -279,7 +279,7 @@ template<class scalar,class index,int SizeAtCompileTime>
 template<int Size>
 void Array<scalar,index,SizeAtCompileTime>::setFromArray(const Array<scalar,index,Size> &arr)
 {
-	if(SizeAtCompileTime!=Dynamic)
+	if(SizeAtCompileTime!=Dynamic&&SizeAtCompileTime!=arr.size())
 		throw COException("Size specified array is not able to be resized");
 	if ( __referred )
 		throw COException("referred array is not allowed to be reset ");

@@ -31,26 +31,28 @@ namespace COPT
  *  	actual functionality and any matrix that derives from AbstractMatrix is able
  *  	to be used in the COPT.
  */
-template<class Derived>
+template<class FT,class I>
 class AbstractMatrix
 	:
-	DataObject<AbstractMatrix<Derived> >
+	DataObject<FT,I>
 {
 public:
 	/** the category of matrix */
 	typedef 		matrix_object 						ObjectCategory;
 	/** Dynamic type */
 	typedef 		AbstractMatrix 						DType;
-
-	typedef typename copt_traits<Derived>::scalar 				scalar;
-	typedef typename copt_traits<Derived>::index				index;
-	static const int RowAtCompileTime = copt_traits<Derived>::RowAtCompileTime;
-	static const int ColAtCompileTime = copt_traits<Derived>::ColAtCompileTime;
-	static const int SizeAtCompileTime = copt_traits<Derived>::SizeAtCompileTime;
+	typedef FT 											scalar;
+	typedef I 											index;
+	// typedef typename copt_traits<Derived>::scalar 				scalar;
+	// typedef typename copt_traits<Derived>::index				index;
+	// static const int RowAtCompileTime = copt_traits<Derived>::RowAtCompileTime;
+	// static const int ColAtCompileTime = copt_traits<Derived>::ColAtCompileTime;
+	// static const int SizeAtCompileTime = copt_traits<Derived>::SizeAtCompileTime;
 
 private:
 	
 public:
+	virtual ~AbstractMatrix(){}
 	/** the row and column number */
 	virtual index rows() const = 0;
 	virtual index cols() const = 0;
@@ -64,6 +66,9 @@ public:
 	virtual bool isSymmetric() const = 0;
 	virtual bool isTranspose() const = 0;
 
+	virtual int rowAtCompileTime() const = 0;
+	virtual int colAtCompileTime() const = 0;
+
 };
 /*
  *	Class of 'MatrixBase'
@@ -75,7 +80,7 @@ template<class FT,class I = int,int RowAtCompileTime=Dynamic,int ColAtCompileTim
 class MatrixBase
 	:
 	public Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>,
-	public AbstractMatrix<MatrixBase<FT,I,RowAtCompileTime,ColAtCompileTime> > 
+	public AbstractMatrix<FT,I> 
 {
 public:
 
@@ -97,6 +102,11 @@ public:
 	typedef VectorBase<scalar,index,Dynamic> 			DVector;
 	/** the corresponding Abstract Matrix */
 
+
+	typedef AbstractMatrix<FT,I> 						AbstractMatrix;
+
+	typedef AbstractVector<FT,I>						AbstractVector;
+
 private:
 	
 	/** definition used in implementation */
@@ -104,7 +114,6 @@ private:
 	typedef 			Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>			
 														Array;
 
-	typedef AbstractMatrix<MatrixBase> 					AbstractMatrix;
 
 	/**			private variables			*/
 	//%{
@@ -149,11 +158,6 @@ public:
 	~MatrixBase();
 	//%} end of constructor and deconstructor
 
-	scalar *dataPtr() {return Array::dataPtr();}
-	const scalar *dataPtr() const {return Array::dataPtr();}
-
-	index size() const {return Array::size();}
-
 	/**	getters and setters*/
 	//%{
 	/** get the number of rows */
@@ -165,6 +169,15 @@ public:
 	bool isColumnDynamic() const;
 	/** lda of the matrix */
 	index lda() const;
+	/** overload of dataPtr() */
+	scalar* dataPtr();
+	const scalar* dataPtr() const;
+	/** overload of size */
+	index size() const;
+	/** overload of rowAtCompileTime */
+	int rowAtCompileTime() const;
+	/** overload of colAtCompileTime */
+	int colAtCompileTime() const;
 
 	/**	matlab-like (i,j) element getter */
 	scalar& operator() (const index i, const index j);

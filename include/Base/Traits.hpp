@@ -291,9 +291,9 @@ struct DynamicType<MatrixBase<scalar,index,Row,Col> >{
 	typedef MatrixBase<scalar,index,Dynamic,Dynamic> Type;
 };
 
-template<class Derived>
+template<class FT,class I>
 class AbstractMatrix;
-template<class Derived>
+template<class FT,class I>
 class AbstractVector;
 
 /** copt traits of numerical types */
@@ -303,39 +303,39 @@ struct copt_traits{
 	typedef long 	index;
 };
 
-template<class T>
-struct copt_traits<AbstractMatrix<T> >{
-	typedef typename copt_traits<T>::scalar scalar;
-	typedef typename copt_traits<T>::index index;
-};
+// template<class T>
+// struct copt_traits<AbstractMatrix<T> >{
+// 	typedef typename copt_traits<T>::scalar scalar;
+// 	typedef typename copt_traits<T>::index index;
+// };
 
-template<class T>
-struct copt_traits<AbstractVector<T> >{
-	typedef typename copt_traits<T>::scalar scalar;
-	typedef typename copt_traits<T>::index index;
-};
+// template<class T>
+// struct copt_traits<AbstractVector<T> >{
+// 	typedef typename copt_traits<T>::scalar scalar;
+// 	typedef typename copt_traits<T>::index index;
+// };
 
-template<class s,class i,int R,int C>
-struct copt_traits<MatrixBase<s,i,R,C> >{
-	typedef s scalar;
-	typedef i index;
-	const static int RowAtCompileTime = R;
-	const static int ColAtCompileTime = C;
-	const static int SizeAtCompileTime = (RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime);
-};
+// template<class s,class i,int R,int C>
+// struct copt_traits<MatrixBase<s,i,R,C> >{
+// 	typedef s scalar;
+// 	typedef i index;
+// 	const static int RowAtCompileTime = R;
+// 	const static int ColAtCompileTime = C;
+// 	const static int SizeAtCompileTime = (RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime);
+// };
 
-template<class s,class i,int Si>
-struct copt_traits<VectorBase<s,i,Si> >{
-	typedef s scalar;
-	typedef i index;
-	const static int SizeAtCompileTime = Si;
-};
+// template<class s,class i,int Si>
+// struct copt_traits<VectorBase<s,i,Si> >{
+// 	typedef s scalar;
+// 	typedef i index;
+// 	const static int SizeAtCompileTime = Si;
+// };
 
-template<class s,class i,int Si>
-struct copt_traits<Array<s,i,Si> >{
-	typedef s scalar;
-	typedef i index;
-};
+// template<class s,class i,int Si>
+// struct copt_traits<Array<s,i,Si> >{
+// 	typedef s scalar;
+// 	typedef i index;
+// };
 
 }// End of namespace COPT
 
