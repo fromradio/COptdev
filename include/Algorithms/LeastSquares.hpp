@@ -25,20 +25,21 @@
 
 namespace COPT
 {
-/*         Least Mean Square solver for LeastSquares problem
-*
-*
-*/ 
+/*	"""         Least Mean Square solver for LeastSquares problem
+ 
+ 	""" */ 
 template<class Problem,class Time = NoTimeStatistics>
 class LeastMeanSquareSolver
     :
     public GeneralSolver<typename Problem::KernelTrait,Time>
 {
 private:
+	/*** the type of index used in 'LeastMeanSquareSolver' ***/
 	typedef typename Problem::KernelTrait::index		index;
 	typedef typename Problem::KernelTrait::scalar 		scalar;
 	typedef typename Problem::KernelTrait::Vector 		Vector;
 	typedef typename Problem::KernelTrait::Matrix 		Matrix;
+
 	/** private variables */
 	//%{
 	/** the reference to the problem */
@@ -64,13 +65,15 @@ private:
 
 	/** the final result */
 	Vector                      __x;
-
 	//%} end of variables
 
 	// void init();
 
 	LeastMeanSquareSolver();
 
+	/*	"
+
+		"*/
 	void doSolve();
 
 	void solvingBegin();
