@@ -2,14 +2,19 @@
 #include "PoissonDisk.h"
 #include <QPainter>
 #include <QBrush>
+#include <QGraphicsEllipseItem>
+
 
 PoissonWidget::PoissonWidget(double r,int k,QWidget *parent)
 	:
 	QWidget(parent),
 	__pd(2,r,k)
 {
+	__animation = new QGraphicsItemAnimation;
+	__timeline = new TimeLine(1000,this);
+	__timeline->setFrameRange(0,100);
+
 	generatePoints();
-	update();
 }
 
 QSize PoissonWidget::minimumSizeHint() const
@@ -36,7 +41,9 @@ void PoissonWidget::generatePoints()
 	std::cout<<v1<<" "<<v2<<std::endl;
 	__pd.setRange(v1,v2);
 	__pd.generate();
-	update();
+
+
+	// update();
 }
 
 void PoissonWidget::paintEvent(QPaintEvent *event)

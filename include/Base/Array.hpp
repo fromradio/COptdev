@@ -26,19 +26,31 @@ namespace COPT
  *
  *
  */
+template<class FT,class I>
 class DataObject: public COPTObject
 {
+public:
+	typedef FT scalar;
+	typedef I index;
+	// typedef typename copt_traits<Derived>::scalar 				scalar;
+	// typedef typename copt_traits<Derived>::index 				index;
 
+	virtual scalar *dataPtr() = 0;
+	virtual const scalar *dataPtr() const = 0;
 };
+
+
 /*		class Array describes a base class for basic dense data types used in COPT
  *		like vector and matrix. The array can be referred to another array or independent 
  *		array. 
+ *		If dim is given as a non-negative value, the array is initialized with a specific 
+ * 		dimension. And the array is not able to be modified in this case. 
  */
 
-template<class T,class I>
+template<class T,class I,int SizeAtCompileTime = Dynamic>
 class Array
 	:
-	public DataObject
+	public DataObject<T,I>
 {
 public:
 	/**		define the scalar type 			*/
@@ -49,7 +61,10 @@ public:
 	typedef 				array_object 		ObjectCategory;
 	/** 	define the kernel trait 		*/
 	typedef 				KernelTrait<T,I>	Kernel;
-
+	/** 	the iterator 					*/
+	typedef scalar* 							iterator;
+	/** 	constant iterator 				*/
+	typedef const scalar* 						const_iterator;
 
 private:
 
@@ -63,6 +78,8 @@ private:
 	scalar*							__data_ptr;
 	/** whether the array is referred */
 	bool							__referred;
+	/** whether the array is dynamic array */
+	bool 							__is_dynamic;
 	//%}
 	
 public:
@@ -73,8 +90,12 @@ public:
 	Array();
 	/** constructor for a standard array. */
 	Array (const index size, const scalar *data = nullptr, const index inter = 1);
+	/** constructor for a non-dynamic array. */
+	Array (const scalar *data, const index inter = 1);
 	/** constructor for a referred array. */
 	Array(const index size, const referred_array&, scalar* data, const index inter = 1);
+	/** constructor for a non-dynamic, referred array */
+	Array(const referred_array&, scalar *data, const index inter = 1);
 	/** copy constructor */
 	Array(const Array& arr);
 	/** deconstructor */
@@ -103,14 +124,17 @@ public:
 	const index& size() const;
 	/** whether the array is referred */
 	bool isReferred() const;
+	/** whether the array is dynamic */
+	bool isDynamic() const;
 	/** the interval of the array */
 	index interval() const;
 	//%}
-	
-	/**		resize the array to specific size
-	 *
-	 */
-	void resize(const index size, const index inter = 1);
+
+	/** stl like iterator */
+	iterator begin();
+	const_iterator begin() const;
+	iterator end();
+	const_iterator end() const;
 
 	/** reset the array even if the array is a referred array */
 	void reset(const index size, const index inter=1);
@@ -118,14 +142,21 @@ public:
 	/** set the array with given size and data */
 	void setArray(const index size, const scalar* data, const index inter = 1);
 
+	/** set the array with given data if the size is specified at compile time */
+	void setArray(const scalar *data);
+
 	/** set the array with given array */
-	void setArray(const Array& arr);
+	template<int Size>
+	void setFromArray(const Array<scalar,index,Size> &arr);
 
 	/** set a referred array */
 	void setReferredArray(
 		const index size,
 		scalar* data,
 		const index inter = 1);
+
+	/** set a referred, size-specified array */
+	void setReferredArray( scalar *data, const index inter = 1);
 
 
 	/*	Judge whether the array is valid

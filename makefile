@@ -12,6 +12,7 @@ bin/vector: obj/vector.o
 	$(CXX) obj/vector.o -L$(DIR_LIB) -o $@ $(LIB)
 obj/vector.o: examples/vector.cpp 
 	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
+
 	
 matrix: bin/matrix
 bin/matrix: obj/matrix.o

@@ -4,6 +4,8 @@
 #include <QWidget>
 #include "PoissonDisk.h"
 #include <QKeyEvent>
+#include <QTimeLine>
+#include <QGraphicsItemAnimation>
 
 class PoissonWidget
 	:
@@ -12,7 +14,9 @@ class PoissonWidget
 	Q_OBJECT
 private:
 
-	PoissonDisk __pd;
+	PoissonDisk 				__pd;
+	QTimeLine					*__timeline;
+	QGraphicsItemAnimation 		*__animation;
 public:
 	PoissonWidget(double r,int k,QWidget *parent = 0);
 	~PoissonWidget(){}

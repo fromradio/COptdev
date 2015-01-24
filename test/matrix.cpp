@@ -53,7 +53,7 @@ int main(int argc,char* argv[])
 	// t2 = clock();
 	// std::cout<<"generation costs "<<(double)(t2-t1)/CLOCKS_PER_SEC<<std::endl;
 	// t1 = clock();
-	// mat = m;
+	// mat = m;the
 	// t2 = clock();
 	// std::cout<<"assignment costs "<<(double)(t2-t1)/CLOCKS_PER_SEC<<std::endl;  
 	// t1 = clock();

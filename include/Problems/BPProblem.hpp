@@ -364,11 +364,6 @@ void BPSolver<Problem,Time>::genreateLinearSolver()
 			__linear_solver = new Cholesky<Matrix>;
 		}
 		break;
-		case EigenWrap:
-		{
-			__linear_solver = new EigenSolver<Matrix>;
-		}
-		break;
 		default:
 		{
 		throw COException("Unknown linear solver for BP solver!");

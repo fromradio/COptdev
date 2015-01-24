@@ -33,9 +33,16 @@ class LU
 	public LinearSolver<Matrix>
 {
 private:
-	typedef typename Matrix::scalar 		scalar;
-	typedef typename Matrix::index 			index;
-	typedef VectorBase<scalar,index>		Vector;
+	typedef typename Matrix::scalar 			scalar;
+	typedef typename Matrix::index 				index;
+
+	/** the corresponding dynamic vector type for Matrix */
+	typedef typename Matrix::DVector 			DVector;
+	/** the corresponding dynamic matrix type for Matrix */
+	typedef typename Matrix::DMatrix 			DMatrix;
+
+	typedef typename Matrix::AbstractMatrix		AbstractMatrix;
+	typedef typename Matrix::AbstractVector		AbstractVector;
 
 	/** the array */
 	scalar 						*__a;
@@ -46,12 +53,12 @@ private:
 	/** the factorization information */
 	index 						__info;
 
-	void doCompute( const Matrix& mat );
-	Vector doSolve ( const Vector& b );
-	Matrix doSolve ( const Matrix& b );
+	void doCompute (const Matrix& mat);
+
+	virtual DVector doSolve( const AbstractVector& b );
+	virtual DMatrix doSolve( const AbstractMatrix& b );
 
 public:
-
 	/** constructor and deconstructor */
 	//%{
 	LU ( );
@@ -63,7 +70,7 @@ public:
 	// void squareValidation() const;
 
 	/** inverse matrix */
-	Matrix inverse ( );
+	DMatrix inverse ( );
 
 	/** clear */
 	void clear( );
@@ -92,7 +99,7 @@ LU<Matrix>::LU(const Matrix& mat)
 template<class Matrix>
 LU<Matrix>::~LU()
 {
-	clear();
+	clear();	
 }
 
 template<class Matrix>
@@ -101,29 +108,29 @@ void LU<Matrix>::doCompute( const Matrix& mat )
 	clear();
 	__a = new scalar[mat.size()];
 	__piv = new index[std::min(mat.rows(),mat.cols())];
-	this->setLDA(mat.rows());
+	this->setLDA(mat.lda());
 	this->setRowNum(mat.rows());
 	this->setColNum(mat.cols());
 	blas::copt_blas_copy(mat.size(),mat.dataPtr(),1,__a,1);
-	copt_lapack_getrf(mat.rows(),mat.cols(),__a,mat.rows(),__piv,&__info);
+	copt_lapack_getrf(this->rowNum(),this->colNum(),__a,this->lda(),__piv,&__info);
 }
 
 template<class Matrix>
-typename LU<Matrix>::Vector LU<Matrix>::doSolve( const Vector& b )
+typename LU<Matrix>::DVector LU<Matrix>::doSolve( const AbstractVector& b )
 {
 	this->squareValidation();
-	if ( this->rowNum() != b.size() )
+	if ( this->rowNum() != b.dimension() )
 	{
-		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of vector is "<<b.size()<<std::endl;
+		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of vector is "<<b.dimension()<<std::endl;
 		throw COException("Linear system solving error: the size is not consistent!");
 	}
-	Vector result(b);
-	copt_lapack_getrs('N',this->rowNum(),1,__a,this->lda(),__piv,result.dataPtr(),result.size(),&__info);
+	DVector result(b);
+	copt_lapack_getrs('N',this->rowNum(),1,__a,this->lda(),__piv,result.dataPtr(),result.dimension(),&__info);
 	return result;
 }
 
 template<class Matrix>
-Matrix LU<Matrix>::doSolve( const Matrix& b )
+typename LU<Matrix>::DMatrix LU<Matrix>::doSolve( const AbstractMatrix& b )
 {
 	this->squareValidation();
 	if( this->rowNum() != b.rows() )
@@ -131,16 +138,16 @@ Matrix LU<Matrix>::doSolve( const Matrix& b )
 		std::cerr<<"the order of matrix is "<<this->rowNum()<<" and the size of right hand vectors are "<<b.rows()<<std::endl;
 		throw COException("Linear system solving error: the size is not consistent!");
 	}
-	Matrix result(b);
-	copt_lapack_getrs('N',this->rowNum(),b.cols(),__a,this->lda(),__piv,result.dataPtr(),result.rows(),&__info);
+	DMatrix result(b);
+	copt_lapack_getrs('N',this->rowNum(),b.cols(),__a,this->lda(),__piv,result.dataPtr(),result.lda(),&__info);
 	return result;
 }
 
 template<class Matrix>
-Matrix LU<Matrix>::inverse( )
+typename LU<Matrix>::DMatrix LU<Matrix>::inverse( )
 {
 	this->squareValidation();
-	Matrix result(this->rowNum(),this->rowNum(),__a);
+	DMatrix result(this->rowNum(),this->rowNum(),__a);
 	copt_lapack_getri(this->rowNum(),result.dataPtr(),this->rowNum(),__piv,&__info);
 	return result;
 }

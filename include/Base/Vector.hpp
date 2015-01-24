@@ -29,29 +29,66 @@
 namespace COPT
 {
 // declaration
-template <class FT,class I>
+template <class FT,class I,int RowAtCompileTime,int ColAtCompileTime>
 class MatrixBase;
 
-template <class FT,class I = int>
+template<class FT,class I>
+class AbstractVector
+{
+public:
+
+	virtual ~AbstractVector(){}
+	typedef FT scalar;
+	typedef I index;
+
+	// typedef typename copt_traits<Derived>::scalar 			scalar;
+	// typedef typename copt_traits<Derived>::index			index;
+	// const static int SizeAtCompileTime = copt_traits<Derived>::SizeAtCompileTime;
+
+	virtual index dimension() const = 0;
+	virtual index size() const = 0;
+	virtual scalar *dataPtr();
+	virtual bool isReferred() const = 0;
+	virtual index interval() const = 0;
+
+	virtual int sizeAtCompileTime() const = 0;
+
+	virtual const scalar *dataPtr() const = 0;
+};
+
+template <class FT,class I = int,int SizeAtCompileTime=Dynamic>
 class VectorBase 
 	: 
-	public Array<FT,I>
+	public Array<FT,I>,
+	public AbstractVector<FT,I>
 {
 public:
 	/** 	scalar type 	*/
-	typedef 				FT						scalar;
+	typedef FT										scalar;
 	/** 	the pod type of scalar */
 	typedef typename get_pod_type<scalar>::type 	podscalar;
 	/** 	size type 		*/
-	typedef 				I 						index;
+	typedef I 										index;
 	/**		define the category 	*/
-	typedef 				vector_object 			ObjectCategory;
+	typedef vector_object 							ObjectCategory;
 	/**		define the kernel 		*/
-	typedef 				KernelTrait<FT,index>	Kernel;
+	typedef KernelTrait<FT,index>					Kernel;
+	/** 	the dynamic type */
+	typedef VectorBase<FT,index,Dynamic> 			DType;
+	/** 	the corresponding Abstract Vector */
+	// typedef AbstractVector<FT,index> 				AbVector;
+	/** 	the corresponding Abstract Matrix */
+	// typedef AbstractMatrix<FT,index> 				AbMatrix;
 
 private:
 	/**		definitions used in implementation */
-	typedef 				Array<FT,index>			Arr;
+	typedef COPT::Array<FT,index,SizeAtCompileTime>	Array;
+
+	typedef COPT::AbstractVector<FT,I>		 		AbstractVector;
+
+	typedef COPT::AbstractMatrix<FT,I> 				AbstractMatrix;
+
+	typedef COPT::MatrixBase<FT,index,Dynamic,Dynamic> 	DMatrix;
 public:
 
 	
@@ -64,10 +101,15 @@ public:
 		Construct the vector with specific length
 			if data is NULL, a zero vector is constructed
 	*/
-	VectorBase(const index size, scalar* data = nullptr);
+	VectorBase(const index size, const scalar *data = nullptr, const index inter = 1);
+
+	/** constructor for size-specified vector */
+	VectorBase(const scalar *data,const index inter = 1);
 
 	/** Copy assignment */
 	VectorBase (const VectorBase& vec);
+
+	VectorBase (const AbstractVector& vec);
 
 	VectorBase(const index size, const referred_array& tag, scalar* data, const index inter = 1);
 
@@ -80,6 +122,20 @@ public:
 	~VectorBase();
 	//%}
 
+	/** get the dimension */
+	index dimension() const;
+
+	index size() const {return Array::size();}
+
+	bool isReferred() const {return Array::isReferred();}
+
+	index interval() const {return Array::interval();}
+
+	int sizeAtCompileTime() const{return SizeAtCompileTime;}
+
+	/** resize the Vector */
+	void resize(const index size, const index inter=1);
+
 	/** copy operation */
 	VectorBase& operator=(const VectorBase& vec );
 
@@ -87,30 +143,39 @@ public:
 	scalar& operator()(const index i );
 	const scalar& operator()(const index i )const ;
 
+	scalar *dataPtr() {return Array::dataPtr();}
+	const scalar *dataPtr() const {return Array::dataPtr();}
+
 	/** overload operations*/
 	//%{
 	/** operator< */
-	bool operator< (const VectorBase& vec)const;
+	template<int S>
+	bool operator< (const VectorBase<scalar,index,S>& vec)const;
 	bool operator< (const scalar s)const;
 
 	/** operator<= */
-	bool operator<=(const VectorBase& vec)const;
+	template<int S>
+	bool operator<=(const VectorBase<scalar,index,S>& vec)const;
 	bool operator<=(const scalar s)const;
 
 	/** operator> */
-	bool operator> (const VectorBase& vec)const;
+	template<int S>
+	bool operator> (const VectorBase<scalar,index,S>& vec)const;
 	bool operator> (const scalar s)const;
 
 	/** operator>= */
-	bool operator>=(const VectorBase& vec)const;
+	template<int S>
+	bool operator>=(const VectorBase<scalar,index,S>& vec)const;
 	bool operator>=(const scalar s)const;
 
 	/** operator== */
-	bool operator==(const VectorBase& vec)const;
+	template<int S>
+	bool operator==(const VectorBase<scalar,index,S>& vec)const;
 	bool operator==(const scalar s)const;
 
 	/** operator!= */
-	bool operator!=(const VectorBase& vec)const;
+	template<int S>
+	bool operator!=(const VectorBase<scalar,index,S>& vec)const;
 	bool operator!=(const scalar s)const;
 	//%}
 
@@ -132,7 +197,8 @@ public:
 	podscalar normalize();
 	
 	/** dot operation */
-	scalar dot(const VectorBase& vec) const;
+	template<int S>
+	scalar dot(const VectorBase<scalar,index,S>& vec) const;
 
 	/** scale with a special length */
 	void scale(scalar s);
@@ -149,10 +215,12 @@ public:
 	}
 
 	/** summation operation */
-	VectorBase operator+ (const VectorBase& vec) const;
+	template<int S>
+	VectorBase operator+ (const VectorBase<scalar,index,S> &vec) const;
 
 	/** subtraction operation */
-	VectorBase operator- (const VectorBase& vec) const;
+	template<int S>
+	VectorBase operator- (const VectorBase<scalar,index,S> &vec) const;
 
 	/** */
 	VectorBase operator- () const;
@@ -190,11 +258,11 @@ public:
 	//%}
 
 	/** transpose operations */
-	MatrixBase<scalar,index> mulTrans(const VectorBase& vec) const;
+	DMatrix mulTrans(const VectorBase& vec) const;
 
 	/*			the transpose of the vector multiplies a matrix
 	 */
-	VectorBase transMul(const MatrixBase<scalar,index>& mat) const;
+	VectorBase transMul(const DMatrix& mat) const;
 
 	/** blocking operations */
 	//%{

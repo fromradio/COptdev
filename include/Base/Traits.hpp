@@ -37,6 +37,14 @@ template<class T2>
 struct get_pod_type<std::complex<T2> >
 { typedef T2 type;};
 
+template<class T1,class T2>
+struct is_same
+{ static const bool value = false;};
+
+template<class T>
+struct is_same<T,T>
+{ static const bool value = true;};
+
 template<class T1>
 struct is_float
 { static const bool value = false;};
@@ -153,11 +161,11 @@ struct is_scalar
 
 /** kernel of COPT */
 //%{
-template<class T,class I>
+template<class T,class I,int SizeAtCompileTime>
 class Array;
-template<class T,class I>
+template<class T,class I,int SizeAtCompileTime>
 class VectorBase;
-template<class T,class I>
+template<class T,class I,int RowAtCompileTime,int ColAtCompileTime>
 class MatrixBase;
 template<class T,class I>
 class SpMatrixBase;
@@ -176,9 +184,9 @@ public:
 	// whether the kernel is valid:
 	static const bool valid  = is_scalar<T>::value&&is_index<I>::value;
 
-	typedef COPT::Array<T,I> 									Array;
-	typedef VectorBase<T,I>								Vector;
-	typedef MatrixBase<T,I>								Matrix;
+	typedef COPT::Array<T,I,Dynamic> 					Array;
+	typedef VectorBase<T,I,Dynamic>						Vector;
+	typedef MatrixBase<T,I,Dynamic,Dynamic>				Matrix;
 	typedef SpMatrixBase<T,I>							SpMatrix;
 };
 //%}
@@ -264,6 +272,70 @@ void ForceAssignment(const T& t1, T& t2)
 {
 	t2 = t1;
 }
+
+/** get the dynamic type of mathematical type */
+template<class T>
+struct DynamicType{
+	typedef T Type;
+};
+template<class scalar,class index,int Row>
+struct DynamicType<MatrixBase<scalar,index,Row,Dynamic> >{
+	typedef MatrixBase<scalar,index,Dynamic,Dynamic> Type;
+};
+template<class scalar,class index,int Col>
+struct DynamicType<MatrixBase<scalar,index,Dynamic,Col> >{
+	typedef MatrixBase<scalar,index,Dynamic,Dynamic> Type;
+};
+template<class scalar,class index,int Row,int Col>
+struct DynamicType<MatrixBase<scalar,index,Row,Col> >{
+	typedef MatrixBase<scalar,index,Dynamic,Dynamic> Type;
+};
+
+template<class FT,class I>
+class AbstractMatrix;
+template<class FT,class I>
+class AbstractVector;
+
+/** copt traits of numerical types */
+template<class T>
+struct copt_traits{
+	typedef float 	scalar;
+	typedef long 	index;
+};
+
+// template<class T>
+// struct copt_traits<AbstractMatrix<T> >{
+// 	typedef typename copt_traits<T>::scalar scalar;
+// 	typedef typename copt_traits<T>::index index;
+// };
+
+// template<class T>
+// struct copt_traits<AbstractVector<T> >{
+// 	typedef typename copt_traits<T>::scalar scalar;
+// 	typedef typename copt_traits<T>::index index;
+// };
+
+// template<class s,class i,int R,int C>
+// struct copt_traits<MatrixBase<s,i,R,C> >{
+// 	typedef s scalar;
+// 	typedef i index;
+// 	const static int RowAtCompileTime = R;
+// 	const static int ColAtCompileTime = C;
+// 	const static int SizeAtCompileTime = (RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime);
+// };
+
+// template<class s,class i,int Si>
+// struct copt_traits<VectorBase<s,i,Si> >{
+// 	typedef s scalar;
+// 	typedef i index;
+// 	const static int SizeAtCompileTime = Si;
+// };
+
+// template<class s,class i,int Si>
+// struct copt_traits<Array<s,i,Si> >{
+// 	typedef s scalar;
+// 	typedef i index;
+// };
 
 }// End of namespace COPT
 

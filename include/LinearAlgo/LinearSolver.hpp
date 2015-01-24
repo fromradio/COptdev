@@ -39,7 +39,14 @@ class LinearSolver
 
 	typedef typename Matrix::scalar 		scalar;
 	typedef typename Matrix::index 			index;
-	typedef VectorBase<scalar,index>		Vector;
+
+	/** the corresponding dynamic vector type for Matrix */
+	typedef typename Matrix::DVector 			DVector;
+	/** the corresponding dynamic matrix type for Matrix */
+	typedef typename Matrix::DMatrix 			DMatrix;
+
+	typedef typename Matrix::AbstractMatrix		AbstractMatrix;
+	typedef typename Matrix::AbstractVector		AbstractVector;
 
 	/** private varibles */
 	//%{
@@ -56,8 +63,8 @@ class LinearSolver
 	/** computation of the solver */
 	virtual void doCompute( const Matrix& mat ) = 0;
 	/** solve a linear system with a right hand vectors */
-	virtual Vector doSolve( const Vector& b ) = 0;
-	virtual Matrix doSolve( const Matrix& b ) = 0;
+	virtual DVector doSolve( const AbstractVector& b ) = 0;
+	virtual DMatrix doSolve( const AbstractMatrix& b ) = 0;
 	//%}
 
 public:
@@ -68,10 +75,10 @@ public:
 	virtual void compute ( const Matrix& mat );
 
 	/** solving one right hand vector */
-	virtual Vector solve ( const Vector& b );
+	virtual DVector solve ( const AbstractVector& b );
 
 	/** solving several right hand vectors */
-	virtual Matrix solve ( const Matrix& b );
+	virtual DMatrix solve ( const AbstractMatrix& b );
 
 	/** clear the solver */
 	virtual void clear( ) = 0;
@@ -101,13 +108,13 @@ void LinearSolver<Matrix>::compute( const Matrix& mat )
 }
 
 template<class Matrix>
-typename LinearSolver<Matrix>::Vector LinearSolver<Matrix>::solve ( const Vector& b )
+typename LinearSolver<Matrix>::DVector LinearSolver<Matrix>::solve ( const AbstractVector& b )
 {
 	return this->doSolve( b );
 }
 
 template<class Matrix>
-Matrix LinearSolver<Matrix>::solve ( const Matrix& b )
+typename LinearSolver<Matrix>::DMatrix LinearSolver<Matrix>::solve ( const AbstractMatrix& b )
 {
 	return this->doSolve(b);
 }

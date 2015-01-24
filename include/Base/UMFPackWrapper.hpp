@@ -181,8 +181,9 @@ class UMFLinearSolver
 	noncopyable
 {
 private:
-	typedef		typename SpMatrix::scalar		Scalar;
+	typedef		typename SpMatrix::scalar			scalar;
 	typedef 	typename SpMatrix::index 			index;
+	typedef VectorBase<scalar,index,Dynamic>	 	DVector;
 
 	/**	private variables */
 	//%{
@@ -240,7 +241,8 @@ public:
 	void analyzeNumeric();
 
 	/** solve a linear system */
-	VectorBase<Scalar,index> solve(const VectorBase<Scalar,index>& vec);
+	template<class Vec>
+	DVector solve(const Vec& vec);
 
 	/** print information */
 	void printInfo();
@@ -405,14 +407,14 @@ void UMFLinearSolver<SpMatrix>::init()
 		__issquare = false;
 	__control = new double[UMFPACK_CONTROL];
 	__info = new double[UMFPACK_INFO];
-	umfpack_defaults(__control,Scalar(),index());
+	umfpack_defaults(__control,scalar(),index());
 }
 
 template<class SpMatrix>
 UMFLinearSolver<SpMatrix>::~UMFLinearSolver()
 {
-	umfpack_free_symbolic(&__symbolic,Scalar(),index());
-	umfpack_free_numeric(&__numeric,Scalar(),index());
+	umfpack_free_symbolic(&__symbolic,scalar(),index());
+	umfpack_free_numeric(&__numeric,scalar(),index());
 	SAFE_DELETE_ARRAY(__info);
 	SAFE_DELETE_ARRAY(__control);
 }
@@ -432,9 +434,10 @@ void UMFLinearSolver<SpMatrix>::analyzeNumeric()
 }
 
 template<class SpMatrix>
-VectorBase<typename SpMatrix::scalar,typename SpMatrix::index> UMFLinearSolver<SpMatrix>::solve(const VectorBase<Scalar,index>& vec)
+template<class Vec>
+typename UMFLinearSolver<SpMatrix>::DVector UMFLinearSolver<SpMatrix>::solve(const Vec &vec)
 {
-	VectorBase<Scalar,index>result (vec.size());
+	DVector result(vec.size());
 	clock_t solve_start = clock() , solve_end;
 	umfpack_solve(UMFPACK_A,__mat.columnPointer(),__mat.rowIndex(),__mat.values(),result.dataPtr(),vec.dataPtr(),__numeric,__control,__info);
 	solve_end = clock();

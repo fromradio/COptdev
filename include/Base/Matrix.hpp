@@ -26,79 +26,161 @@
  */
 namespace COPT
 {
+
+/** 	Abstract matrix class for special consideration. the AbstractMatrix has no
+ *  	actual functionality and any matrix that derives from AbstractMatrix is able
+ *  	to be used in the COPT.
+ */
+template<class FT,class I>
+class AbstractMatrix
+	:
+	DataObject<FT,I>
+{
+public:
+	/** the category of matrix */
+	typedef 		matrix_object 						ObjectCategory;
+	/** Dynamic type */
+	typedef 		AbstractMatrix 						DType;
+	typedef FT 											scalar;
+	typedef I 											index;
+	// typedef typename copt_traits<Derived>::scalar 				scalar;
+	// typedef typename copt_traits<Derived>::index				index;
+	// static const int RowAtCompileTime = copt_traits<Derived>::RowAtCompileTime;
+	// static const int ColAtCompileTime = copt_traits<Derived>::ColAtCompileTime;
+	// static const int SizeAtCompileTime = copt_traits<Derived>::SizeAtCompileTime;
+
+private:
+	
+public:
+	virtual ~AbstractMatrix(){}
+	/** the row and column number */
+	virtual index rows() const = 0;
+	virtual index cols() const = 0;
+	/** the lda of matrix */
+	virtual index lda() const = 0;
+	virtual scalar* dataPtr() = 0;
+	virtual const scalar *dataPtr() const = 0;
+
+	/** the size */
+	virtual index size() const = 0;
+	virtual bool isSymmetric() const = 0;
+	virtual bool isTranspose() const = 0;
+
+	virtual int rowAtCompileTime() const = 0;
+	virtual int colAtCompileTime() const = 0;
+
+};
 /*
  *	Class of 'MatrixBase'
  *		the data is stored column by column
  *		the matrix is assumed not to be transpose or symmetric
  *		but symmetric and transpose flag is designed
  */
-template<class FT,class I = int>
+template<class FT,class I = int,int RowAtCompileTime=Dynamic,int ColAtCompileTime=Dynamic>
 class MatrixBase
 	:
-	public Array<FT,I>
+	public Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>,
+	public AbstractMatrix<FT,I> 
 {
 public:
 
 	/** the scalar type */
-	typedef 			FT 				 			scalar;
+	typedef 			FT 				 				scalar;
 	/** pod scalar type */
-	typedef typename get_pod_type<scalar>::type 	podscalar;
+	typedef typename get_pod_type<scalar>::type 		podscalar;
 	/** the size type used */
-	typedef 			I 							index;						
+	typedef 			I 								index;						
 	/** define fthe category */
-	typedef 			matrix_object				ObjectCategory;
+	typedef 			matrix_object					ObjectCategory;
 	/** define the trait */
-	typedef 			KernelTrait<FT,index>		Kernel;
+	typedef 			KernelTrait<FT,index>			Kernel;
+	/** the dynamic object */
+	typedef MatrixBase<scalar,index,Dynamic,Dynamic> 	DType;
+	/** the dynamic matrix */
+	typedef MatrixBase<FT,I,Dynamic,Dynamic> 			DMatrix;
+	/** the dynamic vector */
+	typedef VectorBase<scalar,index,Dynamic> 			DVector;
+	/** the corresponding Abstract Matrix */
+
+
+	typedef AbstractMatrix<FT,I> 						AbstractMatrix;
+
+	typedef AbstractVector<FT,I>						AbstractVector;
 
 private:
+	
 	/** definition used in implementation */
 	typedef 			VectorBase<FT,index>			Vector;
-	typedef 			Array<FT,index>					Arr;
+	typedef 			Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>			
+														Array;
+
 
 	/**			private variables			*/
 	//%{
-
 	/** the size of rows */
 	index					__rows;
-
 	/** the size of columns */
 	index 					__cols;
-
 	/** whether the matrix is symmetric */
 	bool					__sym;
-
 	/** whether the matrix is transpose */
 	bool 					__trans;
-
+	/** lda. in current version lda = __rows+1 */
+	index 					__lda;
+	/** is row number dynamic */
+	bool 					__is_row_dynamic;
+	/** is column number dynamic */
+	bool 					__is_col_dynamic;
 	//%}
+
+
+	/** private functions */
+	template<class Mat>
+	DMatrix multi(const Mat &mat, const matrix_object&) const;
+
+	template<class Vec>
+	DVector multi(const Vec &vec,const vector_object&) const;
+
 public:
 	/** constructor and deconstructor */
 	//%{
 	/** default constructor */
 	MatrixBase();
-
-	MatrixBase(const index m, const index n, const scalar *data=NULL);
-
+	/** construct a matrix with input dimension m*n */
+	MatrixBase(const index m, const index n, const scalar *data=nullptr,bool trans = false);
+	/** constructor for Matrix with row number of column number specified */
+	MatrixBase(const index m, const scalar *data=nullptr);
 	/** Copy assignment */
 	MatrixBase(const MatrixBase& mat);
-
+	/** Copy assignment */
+	MatrixBase(const AbstractMatrix& mat);
 	/** deconstructor */
 	~MatrixBase();
 	//%} end of constructor and deconstructor
 
-
-
 	/**	getters and setters*/
 	//%{
 	/** get the number of rows */
-	const index&		rows() const;
-
+	index		rows() const;
+	/** is the row number dynamic */
+	bool isRowDynamic() const;
 	/** get the number of columns */
-	const index& 		cols() const;
+	index 		cols() const;
+	bool isColumnDynamic() const;
+	/** lda of the matrix */
+	index lda() const;
+	/** overload of dataPtr() */
+	scalar* dataPtr();
+	const scalar* dataPtr() const;
+	/** overload of size */
+	index size() const;
+	/** overload of rowAtCompileTime */
+	int rowAtCompileTime() const;
+	/** overload of colAtCompileTime */
+	int colAtCompileTime() const;
 
-	/**	matlab-like element getter */
+	/**	matlab-like (i,j) element getter */
 	scalar& operator() (const index i, const index j);
-
 	const scalar& operator() (const index i, const index j) const;
 
 	/** get the element using Arr */
@@ -111,14 +193,13 @@ public:
 	Vector col(const index num);
 	const Vector col(const index num) const;
 
-
 	/** set element using Arr */
-
 	void set (const index i, const scalar value);
-
 
 	/** resize the matrix */
 	void resize (index m, index n);
+	/** resize for one dimension fixed matrix */
+	void resize (index m);
 
 	/** set the matrix to be symmetric */
 	void setSymmetricFlag(bool sym);
@@ -128,50 +209,62 @@ public:
 	void setTransposeFlag(bool sym);
 	bool isTranspose() const;
 
+	/** basic check for two matrices */
+	template<class Mat>
+	void binaryCheck(const Mat& mat) const;
+
 	/** Copy operation */
-	MatrixBase& operator= (const MatrixBase& mat);
+	template<class Mat>
+	MatrixBase& operator= (const Mat& mat);
 
-	/*
-		Mathematical operations
-	*/
-
+	/** Mathematical operations */
 	/** summation */
-	MatrixBase operator+ (const MatrixBase& mat);
+	template<class Mat>
+	DMatrix operator+ (const Mat& mat);
 
-	// subtraction
-	// need to be tested
-	MatrixBase operator- (const MatrixBase& mat);
+	/** subtraction */
+	template<class Mat>
+	DMatrix operator- (const Mat& mat);
 
 	/** matrix multiplications */
-	VectorBase<scalar,index> operator* (const VectorBase<scalar,index>& vec) const;
+	template<class T>
+	typename T::DType operator* (const T &vec) const;
 
-	/** matrix and matrix multiplication */
-	MatrixBase operator* (const MatrixBase& mat) const;
+	// /** matrix and matrix multiplication */
+	// template<class Mat>
+	// DMatrix operator* (const Mat &mat) const;
 
+	/** multiplication with a scalar */
+	DMatrix operator* (const scalar s) const;
 
 	// multiplication between a scalar and a matrix
-	friend MatrixBase operator* (const scalar s, const MatrixBase& mat)
+	friend DMatrix operator* (const scalar s, const MatrixBase& mat)
 	{
-		MatrixBase result(mat.rows(),mat.cols());
+		DMatrix result(mat.rows(),mat.cols());
 		for ( index i = 0 ; i < mat.rows() ; ++ i )
 			for ( index j = 0 ; j < mat.cols() ; ++ j )
 				result(i,j) = mat(i,j)*s;
 		return result;
 	}
 
-	// multiplication between a scalar and a matrix
-	friend MatrixBase operator* (const MatrixBase& mat, const scalar s)
-	{
-		return s*mat;
-	}
+	// // multiplication between a scalar and a matrix
+	// friend MatrixBase operator* (const MatrixBase& mat, const scalar s)
+	// {
+	// 	return s*mat;
+	// }
 
 	// transpose
-	MatrixBase transpose() const;
+	DMatrix transpose() const;
 
 	/** transpose muliplication */
-	Vector transMulti(const Vector& vec) const;
+	template<class T>
+	typename T::DType transMulti(const T &t) const;
 
-	MatrixBase transMulti(const MatrixBase& mat) const;
+	template<class Vec>
+	DVector transMulti(const Vec& vec, const vector_object&) const;
+
+	template<class Mat>
+	DMatrix transMulti(const Mat &mat, const matrix_object&) const;
 
 	/*				overload of ostream
 	 */
@@ -205,30 +298,10 @@ public:
 		return v;
 	}
 	
-// #ifdef EIGEN
-// 	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec){
-// 		// currently we use eigen to solve it
-// 		Eigen::Matrix<scalar,Eigen::Dynamic,Eigen::Dynamic> matrix(__rows,__cols);
-// 		for ( index i = 0 ; i < __rows ; ++ i )
-// 		{
-// 			for ( index j = 0 ;  j < __cols ; ++ j )
-// 			{
-// 				matrix(i,j) = this->operator()(i,j);
-// 			}
-// 		}
-// 		Eigen::Matrix<scalar,Eigen::Dynamic,1> vector(vec.size());
-// 		for ( index i = 0 ; i < vec.size() ; ++ i )
-// 		{
-// 			vector(i) = vec[i];
-// 		}
-// 		Eigen::Matrix<scalar,Eigen::Dynamic,1> result = matrix.colPivHouseholderQr().solve(vector);
-// 		return VectorBase<scalar,index>(result);
-// 	}
 	Vector solve(const Vector& vec){
 		return lapackSolve(vec);
 	}
 
-// #ifdef USE_LAPACK
 	Vector leastSquareSolve(const Vector& vec){
 		if( __cols != vec.size() )
 			throw COException("least square error: the size is not consistent!");
@@ -245,7 +318,6 @@ public:
 		delete[]b;
 		return result;
 	}
-// #endif
 	
 
 
@@ -319,7 +391,6 @@ public:
 		const MatrixBase& mat,
 		const InputIterator& rowbegin,
 		const InputIterator& rowend);
-
 	//%}
 
 	/** combining methods */
@@ -350,7 +421,8 @@ public:
 	void setRandom(const index rows, const index cols);
 	static inline MatrixBase random(const index rows, const index cols);
 	/** compute A^TA of a given matrix */
-	void mtm(MatrixBase& mat) const;
+	template<class Mat>
+	void mtm(Mat &mat) const;
 
 	/** norms */
 	//%{
@@ -361,273 +433,6 @@ public:
 };// End of class MatrixBase
 
 
-/*
- *		class Triplet for sparse matrix assignment
- */
-template<class Scalar,class I>
-struct TripletBase
-{
-
-public:
-	typedef Scalar 								scalar;
-	typedef I 									index;
-	typedef KernelTrait<Scalar,I>				kernel;
-	typedef typename kernel::size 				size;
-private:
-	/** private variables */
-	//%{
-
-	/** row index */
-	index				__r;
-
-	/** column index */
-	index 				__c;
-
-	/** value */
-	Scalar 				__v;
-
-	//%}
-
-	/** private constructors */
-	//%{
-	TripletBase();
-	//%}
-
-public:
-
-	/** constructor and deconstructor */
-	//%{
-
-	/** the only constructor */
-	TripletBase(
-		const index r,
-		const index c,
-		const Scalar v);
-
-	~TripletBase();
-	//%}
-
-	/** getter (no other setter is allowed) */
-	//%{
-
-	/** row index */
-	const index& rowIndex() const;
-
-	/** column index */
-	const index& columnIndex() const;
-
-	/** value */
-	const scalar& value() const;
-	//%}
-};
-
-/*		compare two triplets according to row index
- *
- */
-template<class Triplet>
-struct rowComparison
-{
-	bool operator()(const Triplet& t1,const Triplet& t2);
-};
-
-/*		compare two triplets accordSize to column index
- *
- */
-template<class Triplet>
-struct columnComparison
-{
-	bool operator()(const Triplet& t1,const Triplet& t2);
-};
-
-/*		Sparse matrix class
- *		the sparse matrix is designed for solve sparse linear systems
- */
-
-template<class SpMatrix>
-class UMFLinearSolver;
-
-template<class T,class I>
-class SpMatrixBase
-{
-public:
-	typedef 	T 						scalar;
-	typedef  	I 	 					index;
-	typedef 	TripletBase<T,I>		Triplet;
-	typedef 	sp_matrix_object 		ObjectCategory;
-	typedef 	KernelTrait<T,I>		kernel;
-private:
-
-	typedef 	VectorBase<T,I>			Vector;
-	/** private variables */
-	//%{
-
-	/** the number of rows */
-	index 				__rows;
-
-	/** the number of columns */
-	index 				__cols;
-
-	/** the number of elements */
-	index 				__elesize;
-
-	/** the col poSizeers */
-	index*				__colptr;
-
-	/** the indices of the rows */
-	index*				__rowind;
-
-	/** the values */
-	scalar*		 		__vals;
-
-	/** static zero */
-	static const scalar __zero;
-
-	//%}
-
-	/** private functions */
-	//%{
-
-	/** judge the rationality */
-	void judgeRationality();
-
-	//%}
-
-public:
-
-	/** constructor and deconstructor */
-	//%{
-
-	/** default constructor */
-	SpMatrixBase();
-
-	SpMatrixBase(
-		const index 				rows,
-		const index 				cols,
-		const index 				elesize,
-		const index*			 	colptr,
-		const index*				rowind,
-		const scalar*				vals);
-
-	SpMatrixBase(
-		const SpMatrixBase&);
-
-	/** deconstructor */
-	~SpMatrixBase();
-	//*}
-
-	/** getter and setter */
-	//%{
-
-	/** traditional setter of sparse matrix*/
-	void setSparseMatrix(
-		const index 					rows,
-		const index 					cols,
-		const index 					elesize,
-		const index*			 		colptr,
-		const index*			 		rowind,
-		const scalar*			 		vals);
-
-	/** overload of operator = */
-	SpMatrixBase& operator = (const SpMatrixBase& );
-
-	/** set from triplets */
-	void setFromTriplets(
-		const index rows,
-		const index cols,
-		std::vector<Triplet>& triplets);
-
-	/** set from triplet iterator */
-	template<class InputIterator>
-	void setFromTriplets(
-		const index rows,
-		const index cols,
-		const InputIterator& begin,
-		const InputIterator& end);
-
-	/** fast setting from triplets iterator (like mtx file) */
-	template<class InputIterator>
-	void fastSetFromTriplets(
-		const index rows,
-		const index cols,
-		const InputIterator& begin,
-		const InputIterator& end);
-
-	/** clear the data */
-	void clear();
-
-	/** get the row number */
-	const index& rows() const;
-
-	/** get the column number */
-	const index& cols() const;
-
-	/** get the element size */
-	const index& elementSize() const;
-
-	/** get the column poSizeer */
-	const index* columnPointer() const; 
-
-	/** get the row indices */
-	const index* rowIndex() const;
-
-	/** get the values */
-	const scalar* values() const;
-
-	/** scale with a scalar s */
-	void scale(const scalar s);
-
-	/** negative sign of the matrix */
-	void neg();
-
-	//%}
-
-	/** element access */
-	//%{
-
-	/** only const access is allowed */
-	const scalar& operator()(
-		const index i,
-		const index j) const;
-
-	//%}
-
-	/** operations */
-	//%{
-
-	/** summation */
-	SpMatrixBase operator+(const SpMatrixBase& mat) const;
-
-	/** subtraction */
-	SpMatrixBase operator-(const SpMatrixBase& mat) const;
-
-	/** negative sign */
-	SpMatrixBase operator-() const;
-
-	/** multiplication with another sparse matrix */
-	SpMatrixBase operator*(const SpMatrixBase& mat) const;
-
-	/** multiplication with vector */
-	Vector operator*(const Vector& vec) const;
-
-	/** multiplication with scalar */
-	SpMatrixBase operator*(const scalar s) const;
-
-	/** transform to a dense matrix */
-	MatrixBase<scalar,index> toDenseMatrix() const;
-
-	/** solve a linear system */
-	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec);
-
-	//%}
-
-}; // end of class SpMatrixBase
-
-
-/** Sparse matrix related operator */
-template<class scalar,class index>
-SpMatrixBase<scalar,index> operator* (const scalar s, const SpMatrixBase<scalar,index>& mat);
-template<class scalar,class index,class T>
-SpMatrixBase<scalar,index> operator* (const T s, const SpMatrixBase<scalar,index>& mat);
 
 
 }// End of namespace COPT
