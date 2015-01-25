@@ -43,11 +43,6 @@ public:
 	typedef 		AbstractMatrix 						DType;
 	typedef FT 											scalar;
 	typedef I 											index;
-	// typedef typename copt_traits<Derived>::scalar 				scalar;
-	// typedef typename copt_traits<Derived>::index				index;
-	// static const int RowAtCompileTime = copt_traits<Derived>::RowAtCompileTime;
-	// static const int ColAtCompileTime = copt_traits<Derived>::ColAtCompileTime;
-	// static const int SizeAtCompileTime = copt_traits<Derived>::SizeAtCompileTime;
 
 private:
 	
@@ -102,9 +97,9 @@ public:
 	typedef VectorBase<scalar,index,Dynamic> 			DVector;
 	/** the corresponding Abstract Matrix */
 
-
+	/** the Abstract Matrix */
 	typedef AbstractMatrix<FT,I> 						AbstractMatrix;
-
+	/** the Abstract Vector */
 	typedef AbstractVector<FT,I>						AbstractVector;
 
 private:

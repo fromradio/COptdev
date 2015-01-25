@@ -41,10 +41,6 @@ public:
 	typedef FT scalar;
 	typedef I index;
 
-	// typedef typename copt_traits<Derived>::scalar 			scalar;
-	// typedef typename copt_traits<Derived>::index			index;
-	// const static int SizeAtCompileTime = copt_traits<Derived>::SizeAtCompileTime;
-
 	virtual index dimension() const = 0;
 	virtual index size() const = 0;
 	virtual scalar *dataPtr();
@@ -54,6 +50,7 @@ public:
 	virtual int sizeAtCompileTime() const = 0;
 
 	virtual const scalar *dataPtr() const = 0;
+	
 };
 
 template <class FT,class I = int,int SizeAtCompileTime=Dynamic>
@@ -75,10 +72,6 @@ public:
 	typedef KernelTrait<FT,index>					Kernel;
 	/** 	the dynamic type */
 	typedef VectorBase<FT,index,Dynamic> 			DType;
-	/** 	the corresponding Abstract Vector */
-	// typedef AbstractVector<FT,index> 				AbVector;
-	/** 	the corresponding Abstract Matrix */
-	// typedef AbstractMatrix<FT,index> 				AbMatrix;
 
 private:
 	/**		definitions used in implementation */
