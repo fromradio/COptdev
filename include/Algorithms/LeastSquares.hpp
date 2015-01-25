@@ -25,8 +25,9 @@
 
 namespace COPT
 {
-/*	"""         Least Mean Square solver for LeastSquares problem
- 
+/*	"""     'LeastMeanSquareSolver' is one of the solvers of least squares problems. 
+            'LeastMeanSquareSolver' solves the least squares problems using least mean squares algorithm which is a stochastic gradient descent method. 
+            This class derives directly from another class called 'GeneralSolver' and takes 'Problem' and 'Time' as template.
  	""" */ 
 template<class Problem,class Time = NoTimeStatistics>
 class LeastMeanSquareSolver
@@ -36,8 +37,11 @@ class LeastMeanSquareSolver
 private:
 	/*** the type of index used in 'LeastMeanSquareSolver' ***/
 	typedef typename Problem::KernelTrait::index		index;
+	/*** the type of scalar used in 'LeastMeanSquareSolver' ***/
 	typedef typename Problem::KernelTrait::scalar 		scalar;
+	/*** the type of vector used in 'LeastMeanSquareSolver' ***/
 	typedef typename Problem::KernelTrait::Vector 		Vector;
+	/*** the type of matrix used in 'LeastMeanSquareSolver' ***/
 	typedef typename Problem::KernelTrait::Matrix 		Matrix;
 
 	/** private variables */
@@ -68,16 +72,21 @@ private:
 	//%} end of variables
 
 	// void init();
-
 	LeastMeanSquareSolver();
 
-	/*	"
+	/* "  something happens in the beginning of solving  " */
+	void solvingBegin();
 
-		"*/
+	/* "  the real solving part  " */
 	void doSolve();
 
-	void solvingBegin();
+	/* "  the real computation of pre-treatment part  " */
 	void doCompute();
+
+	/* "    do one iteration
+	        Returns:
+	            The estimated error, a 'scalar'
+	   " */
 	scalar doOneIteration();
 
 
@@ -86,6 +95,11 @@ public:
 //	typedef leastmeansquare_solver              ObjectCategory;
 	/** constructor and deconstructor */
 	//%{
+	/* "    Initialization of the 'LeastMeanSquareSolver'.
+	        Parameters:
+	            s:    The least squares problem
+	            mu:   The step size of least mean squares algorithm. 0.01 is used as default.
+	   " */
 	LeastMeanSquareSolver(
 		const Problem& s ,
 		const scalar mu = 0.01);
@@ -94,10 +108,17 @@ public:
 
 	/** setter and getter */
 	//%{
-	/** the final result of proximal solver */
+	/* "    Get the final result of 'LeastMeanSquareSolver'. 
+	        Returns:
+	            The final result of the solver, a 'Vector'
+	   " */
 	const Vector& result() const;
 	//%}
 
+	/* "    Calculate the square of l2-norm of 'Ax - b' in order to see how well the problem is solved using least mean squares algorithm.
+	        Returns:
+	            The square of l2-norm of 'Ax - b', a 'scalar'
+	   " */
 	scalar objective() const;
 
 };
@@ -105,10 +126,10 @@ public:
 
 
 
-/*         Least Square solver for LeastSquares problem
-*
-*
-*/ 
+/*	"""     'LeastSquareSolver' is one of the solvers of least squares problems. 
+            'LeastSquareSolver' solves the least squares problems by solving the equation 'A^TAx = A^Tb' directly. 
+            This class derives directly from another class called 'GeneralSolver' and takes 'Problem' and 'Time' as template.
+   	""" */ 
 
 template<class Problem,class Time = NoTimeStatistics>
 class LeastSquareSolver
@@ -116,10 +137,15 @@ class LeastSquareSolver
     public GeneralSolver<typename Problem::KernelTrait,Time>
 {
 private:
+	/*** the type of index used in 'LeastSquareSolver' ***/
 	typedef typename Problem::KernelTrait::index		index;
+	/*** the type of scalar used in 'LeastSquareSolver' ***/
 	typedef typename Problem::KernelTrait::scalar 		scalar;
+	/*** the type of vector used in 'LeastSquareSolver' ***/
 	typedef typename Problem::KernelTrait::Vector 		Vector;
+	/*** the type of matrix used in 'LeastSquareSolver' ***/
 	typedef typename Problem::KernelTrait::Matrix 		Matrix;
+
 	/** private variables */
 	//%{
 	/** the reference to the problem */
@@ -137,15 +163,23 @@ private:
 	//%} end of variables
 
 	// void init();
-
 	LeastSquareSolver();
 
+	/* "  something happens in the beginning of solving  " */
+	void solvingBegin();
+
+	/* "  the real solving part  " */
 	void doSolve();
 
-	void solvingBegin();
+    /* "  the real computation of pre-treatment part  " */
 	void doCompute();
+
+	/* "    do one iteration
+	        Returns:
+	            The estimated error, a 'scalar'
+	   " */
 	scalar doOneIteration();
-    scalar objective() const;
+    
 
 
 public:
@@ -153,6 +187,10 @@ public:
 //	typedef leastsquare_solver              ObjectCategory;
 	/** constructor and deconstructor */
 	//%{
+	/* "    Initialization of the 'LeastSquareSolver'.
+	        Parameters:
+	            s:    The least squares problem
+	   " */
 	LeastSquareSolver(
 		const Problem& s);
 
@@ -160,19 +198,27 @@ public:
 
 	/** setter and getter */
 	//%{
-	/** the final result of proximal solver */
+	/* "    Get the final result of 'LeastSquareSolver'. 
+	        Returns:
+	            The final result of the solver, a 'Vector'
+	   " */
 	const Vector& result() const;
 	//%}
+
+	/* "    Calculate the square of l2-norm of 'Ax - b' in order to see how well the problem is solved using 'LeastSquareSolver'.
+	        Returns:
+	            The square of l2-norm of 'Ax - b', a 'scalar'
+	   " */
+	scalar objective() const;
 
 };
 
 
 
 
-/*         Recursive Least Square solver for LeastSquares problem
-*
-*
-*/ 
+/*	"""     'RecursiveLeastSquareSolver' is one of the solvers of least squares problems using recursive least squares algorithm. 
+            This class derives directly from another class called 'GeneralSolver' and takes 'Problem' and 'Time' as template.
+   	""" */ 
 
 template<class Problem,class Time = NoTimeStatistics>
 class RecursiveLeastSquareSolver
@@ -180,10 +226,15 @@ class RecursiveLeastSquareSolver
     public GeneralSolver<typename Problem::KernelTrait,Time>
 {
 private:
+	/*** the type of index used in 'RecursiveLeastSquareSolver' ***/
 	typedef typename Problem::KernelTrait::index		index;
+	/*** the type of scalar used in 'RecursiveLeastSquareSolver' ***/
 	typedef typename Problem::KernelTrait::scalar 		scalar;
+	/*** the type of vector used in 'RecursiveLeastSquareSolver' ***/
 	typedef typename Problem::KernelTrait::Vector 		Vector;
+	/*** the type of matrix used in 'RecursiveLeastSquareSolver' ***/
 	typedef typename Problem::KernelTrait::Matrix 		Matrix;
+
 	/** private variables */
 	//%{
 	/** the reference to the problem */
@@ -222,15 +273,23 @@ private:
 	//%} end of variables
 
 	// void init();
-
 	RecursiveLeastSquareSolver();
 
+	/* "  something happens in the beginning of solving  " */
+	void solvingBegin();
+
+	/* "  the real solving part  " */
 	void doSolve();
 
-	void solvingBegin();
+    /* "  the real computation of pre-treatment part  " */
 	void doCompute();
+
+	/* "    do one iteration
+	        Returns:
+	            The estimated error, a 'scalar'
+	   " */
 	scalar doOneIteration();
-	scalar objective() const;
+	
 
 
 public:
@@ -238,6 +297,12 @@ public:
 //	typedef recursiveleastsquare_solver              ObjectCategory;
 	/** constructor and deconstructor */
 	//%{
+	/* "    Initialization of the 'RecursiveLeastSquareSolver'.
+	        Parameters:
+	            s:     The least squares problem
+	            lam:   A parameter related to forgetting factor beta. 1 is used as default.
+	            delta: A parameter used to initialize matrix P in recursive least squares algorithm. 250 is used as default.
+	   " */
 	RecursiveLeastSquareSolver(
 		const Problem& s ,
 		const scalar lam = 1 ,
@@ -247,36 +312,58 @@ public:
 
 	/** setter and getter */
 	//%{
-	/** the final result of proximal solver */
+	/* "    Get the final result of 'RecursiveLeastSquareSolver'. 
+	        Returns:
+	            The final result of the solver, a 'Vector'
+	   " */
 	const Vector& result() const;
 	//%}
+
+	/* "    Calculate the square of l2-norm of 'Ax - b' in order to see how well the problem is solved using recursive least squares algorithm.
+	        Returns:    
+	            The square of l2-norm of 'Ax - b', a 'scalar'
+	   " */
+	scalar objective() const;
 
 };
 
 
 
 	
-/*		The Least Squares problem class
- *
- */
+/*	"""     'LeastSquaresProblem' is one of the problem classes in open source library COPT. It describes a least square problem. 
+            Briefly, a matrix 'A' and a target vector 'b' are given. We are supposed to find the optimal solution of 'Ax = b'. 
+            In other words, we need to minimize the l2-norm of 'Ax - b'. 
+            This class derives directly from another class called 'VectorProblem' and also takes 'kernal' as template. 
+   	""" */ 
 template<class kernel>
 class LeastSquaresProblem
 	:
 	public VectorProblem<kernel>
 {
 private:
+	/*** the type of scalar used in 'LeastSquaresProblem' ***/
 	typedef typename kernel::scalar 		scalar;
-	typedef typename kernel::Matrix 		Matrix;
+	/*** the type of vector used in 'LeastSquaresProblem' ***/
 	typedef typename kernel::Vector 		Vector;
-
+	/*** the type of matrix used in 'LeastSquaresProblem' ***/
+	typedef typename kernel::Matrix 		Matrix;
+	
+    /** the coefficient matrix */
 	const Matrix& 				__A;
+	/** the target vector */
 	const Vector& 				__b;
 
 public:
-
+	/*** the kernel that is used in the solver ***/
 	typedef kernel							KernelTrait;
+
 	// typedef leastsquares_problem					ObjectCategory;
 
+	/* "    Initialization of the least squares problem.
+	        Parameters:
+	            A:    The given coefficient matrix
+	            b:    The given target vector
+	   " */
 	LeastSquaresProblem(
 		const Matrix& A,
 		const Vector& b);
@@ -286,17 +373,41 @@ public:
 	// void recursiveLeastSquareSolve();
 
 
-	/** check whether the input is valid */
+	/* "    Check whether the input is valid. This means that the column number of the given coefficient matrix 'A' must be equal to the size of the parameter vector 'x' to be find.
+	        Parameters:
+	            x:    The parameter vector 'x' to be find
+	        Returns:
+	            True if the input is valid, false otherwise.
+	   " */
 	bool isValidInput( const Vector& x ) const;
 
-	/** check whether the problem is a valid problem */
-	bool isValid( ) const;
+	/* "    Check whether the problem is a valid problem. This means that the row number of the given coefficient matrix 'A' must be equal to the size of the given target vector 'b'.
+	        Returns:
+	            True if the problem is a valid one, false otherwise.
+	   " */
+	bool isValid() const;
 
 
 	/** getter and setter */
 	//%{
+	/* "    Get the coefficient matrix 'A' of a least squares problem.
+	        Returns:
+	            The coefficient matrix A
+	   " */
 	const Matrix& matA() const;
+
+	/* "    Get the target vector 'b' of a least squares problem.
+	        Returns:
+	            The target vector 'b'
+	   " */
 	const Vector& obB() const;
+
+	/* "    Calculate the square of l2-norm of 'Ax - b' in order to see how well the problem is solved.
+	        Parameters:
+	            x:    The parameter vector 'x' 
+	        Returns:
+	            The square of l2-norm of 'Ax - b', a 'scalar'
+	   " */
 	scalar objective( const Vector& x) const;
 	//%}
 };
@@ -348,12 +459,6 @@ void LeastMeanSquareSolver<Problem,Time>::solvingBegin()
 }
 
 template<class Problem,class Time>
-typename LeastMeanSquareSolver<Problem,Time>::scalar LeastMeanSquareSolver<Problem,Time>::objective() const
-{
-	return __p.objective(__x);
-}
-
-template<class Problem,class Time>
 typename LeastMeanSquareSolver<Problem,Time>::scalar LeastMeanSquareSolver<Problem,Time>::doOneIteration()
 {
 	Vector xp = __x;
@@ -370,6 +475,11 @@ const typename LeastMeanSquareSolver<Problem,Time>::Vector& LeastMeanSquareSolve
 	return __x;
 }
 
+template<class Problem,class Time>
+typename LeastMeanSquareSolver<Problem,Time>::scalar LeastMeanSquareSolver<Problem,Time>::objective() const
+{
+	return __p.objective(__x);
+}
 
 
 /*********************Implementation of LeastSquareSolver ******************/
@@ -405,12 +515,6 @@ void LeastSquareSolver<Problem,Time>::solvingBegin()
 }
 
 template<class Problem,class Time>
-typename LeastSquareSolver<Problem,Time>::scalar LeastSquareSolver<Problem,Time>::objective() const
-{
-	return __p.objective(__x);
-}
-
-template<class Problem,class Time>
 typename LeastSquareSolver<Problem,Time>::scalar LeastSquareSolver<Problem,Time>::doOneIteration()
 {
 	Vector xp = __x;
@@ -424,6 +528,11 @@ const typename LeastSquareSolver<Problem,Time>::Vector& LeastSquareSolver<Proble
 	return __x;
 }
 
+template<class Problem,class Time>
+typename LeastSquareSolver<Problem,Time>::scalar LeastSquareSolver<Problem,Time>::objective() const
+{
+	return __p.objective(__x);
+}
 
 
 /*********************Implementation of RecursiveLeastSquareSolver ******************/
@@ -475,12 +584,6 @@ void RecursiveLeastSquareSolver<Problem,Time>::solvingBegin()
 }
 
 template<class Problem,class Time>
-typename RecursiveLeastSquareSolver<Problem,Time>::scalar RecursiveLeastSquareSolver<Problem,Time>::objective() const
-{
-	return __p.objective(__x);
-}
-
-template<class Problem,class Time>
 typename RecursiveLeastSquareSolver<Problem,Time>::scalar RecursiveLeastSquareSolver<Problem,Time>::doOneIteration()
 {
 	Vector xp = __x;
@@ -502,6 +605,11 @@ const typename RecursiveLeastSquareSolver<Problem,Time>::Vector& RecursiveLeastS
 	return __x;
 }
 
+template<class Problem,class Time>
+typename RecursiveLeastSquareSolver<Problem,Time>::scalar RecursiveLeastSquareSolver<Problem,Time>::objective() const
+{
+	return __p.objective(__x);
+}
 
 
 /***********************Implementation of LeastSquaresProblem************************/
