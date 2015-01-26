@@ -54,6 +54,7 @@
 #include "Base/CBlasWrapper.hpp"
 #include "Base/LapackWrapper.hpp"
 #include "Base/UMFPackWrapper.hpp"
+#include "Base/Size.hpp"
 #include "Base/Array.hpp"
 #include "Base/ArrayImpl.hpp"
 #include "Base/Vector.hpp"

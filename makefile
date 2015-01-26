@@ -122,6 +122,12 @@ bin/lu: obj/lu.o
 obj/lu.o: test/lu.cpp include/LinearAlgo/LUSolver.hpp
 	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
 
+size: bin/size
+bin/size: obj/size.o
+	$(CXX) obj/size.o -L$(DIR_LIB) -o $@ $(LIB)
+obj/size.o: test/size.cpp include/Base/Size.hpp
+	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
+
 help: $(TEST_BIN) 
 	
 $(TEST_BIN): $(TEST_OBJ)
