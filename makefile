@@ -128,6 +128,12 @@ bin/size: obj/size.o
 obj/size.o: test/size.cpp include/Base/Size.hpp
 	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
 
+on: bin/on
+bin/on: obj/on.o
+	$(CXX) obj/on.o -L$(DIR_LIB) -o $@ $(LIB)
+obj/on.o: test/operation_norm.cpp
+	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
+
 help: $(TEST_BIN) 
 	
 $(TEST_BIN): $(TEST_OBJ)

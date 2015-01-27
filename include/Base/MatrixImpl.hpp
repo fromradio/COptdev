@@ -799,10 +799,19 @@ void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::setRandom(const
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::random(const index rows,const index cols)
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::random(const index rows,const index cols)
 {
-	MatrixBase result;
-	result.setRandom(rows,cols);
+	DMatrix result(rows,cols);
+	std::uniform_real_distribution<typename get_pod_type<scalar>::type> unif(0.0,1.0);
+	for ( int i = 0 ; i < rows; ++ i )
+		for ( int j = 0 ; j < cols ; ++ j )
+		{
+			if(is_real<scalar>::value)
+				ForceAssignment(unif(copt_rand_eng),result(i,j));
+			else
+				ForceAssignment(std::complex<podscalar>(unif(copt_rand_eng),unif(copt_rand_eng)),result(i,j));
+		}
+	// result.setRandom(rows,cols);
 	return result;
 }
 
@@ -830,7 +839,7 @@ class PartialEigenSolver;
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::podscalar MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operationNorm() const
 {
-	MatrixBase mtm;
+	DMatrix mtm;
 	this->mtm(mtm);
 	PartialEigenSolver<MatrixBase> solver(mtm);
 	podscalar e = solver.computeLargestEigenvalue();

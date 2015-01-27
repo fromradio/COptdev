@@ -413,8 +413,8 @@ public:
 	//%}
 
 	/** set a random matrix */
-	void setRandom(const index rows, const index cols);
-	static inline MatrixBase random(const index rows, const index cols);
+	void setRandom(const index rows=RowAtCompileTime, const index cols=ColAtCompileTime);
+	static inline DMatrix random(const index rows, const index cols);
 	/** compute A^TA of a given matrix */
 	template<class Mat>
 	void mtm(Mat &mat) const;
