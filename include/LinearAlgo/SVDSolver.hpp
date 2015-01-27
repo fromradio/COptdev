@@ -44,6 +44,7 @@ private:
 	int __info;
 public:
 	SVD();
+	~SVD();
 	SVD(const Matrix& mat);
 	void compute(const Matrix& mat);
 	const DMatrix& U() const;
@@ -62,6 +63,12 @@ template<class Matrix>
 SVD<Matrix>::SVD(const Matrix& mat)
 {
 	this->compute(mat);
+}
+
+template<class Matrix>
+SVD<Matrix>::~SVD()
+{
+	SAFE_DELETE_ARRAY(__a);
 }
 
 template<class Matrix>
