@@ -134,6 +134,12 @@ bin/on: obj/on.o
 obj/on.o: test/operation_norm.cpp
 	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
 
+svd: bin/svd
+bin/svd: obj/svd.o
+	$(CXX) obj/svd.o -L$(DIR_LIB) -o $@ $(LIB)
+obj/svd.o: test/svd.cpp
+	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
+
 help: $(TEST_BIN) 
 	
 $(TEST_BIN): $(TEST_OBJ)

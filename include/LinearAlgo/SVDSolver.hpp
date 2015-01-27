@@ -27,11 +27,73 @@ namespace COPT
 template<class Matrix>
 class SVD
 {
+
 private:
-	
+
+	typedef typename Matrix::scalar 			scalar;
+	typedef typename Matrix::DMatrix 			DMatrix;
+	typedef typename Matrix::DVector 			DVector;
+
+	DMatrix __u;
+	DMatrix __vt;
+	DMatrix __s;
+
+	scalar *__a;
+
+
+	int __info;
 public:
-	
+	SVD();
+	SVD(const Matrix& mat);
+	void compute(const Matrix& mat);
+	const DMatrix& U() const;
+	const DMatrix& VT() const;
+	const DMatrix& S() const;
 };
+
+template<class Matrix>
+SVD<Matrix>::SVD()
+	:
+	__a(NULL)
+{
+}
+
+template<class Matrix>
+SVD<Matrix>::SVD(const Matrix& mat)
+{
+	this->compute(mat);
+}
+
+template<class Matrix>
+void SVD<Matrix>::compute(const Matrix& mat)
+{
+	SAFE_DELETE_ARRAY(__a);
+	__a = new scalar[mat.size()];
+	blas::copt_blas_copy(mat.size(),mat.dataPtr(),mat.interval(),__a,1);
+	__u.resize(mat.rows(),mat.rows());
+	__vt.resize(mat.cols(),mat.cols());
+	DVector s(std::min(mat.rows(),mat.cols()));
+	copt_lapack_gesvd('A','A',mat.rows(),mat.cols(),__a,mat.lda(),s.dataPtr(),__u.dataPtr(),__u.lda(),__vt.dataPtr(),__vt.lda(),&__info);
+	__s = DMatrix::diag(mat.rows(),mat.cols(),s);
+}
+
+template<class Matrix>
+const typename SVD<Matrix>::DMatrix& SVD<Matrix>::U() const
+{
+	return __u;
+}
+
+template<class Matrix>
+const typename SVD<Matrix>::DMatrix& SVD<Matrix>::VT() const
+{
+	return __vt;
+}
+
+template<class Matrix>
+const typename SVD<Matrix>::DMatrix& SVD<Matrix>::S() const
+{
+	return __s;
+}
 
 }// End of namespace COPT
 

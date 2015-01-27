@@ -319,8 +319,8 @@ public:
 	/*			Special MatrixBase
 	 *
 	 */
-	static MatrixBase identity(index m, index n){
-		MatrixBase result(m,n);
+	static DMatrix identity(index m, index n){
+		DMatrix result(m,n);
 		// std::cout<<result<<std::endl;
 		index min = std::min(m,n);
 		for ( index i = 0 ; i < min ; ++ i )
@@ -328,7 +328,10 @@ public:
 		return result;
 	}
 
-	static MatrixBase identity(index m, index n, const scalar s);
+	static DMatrix identity(index m, index n, const scalar s);
+
+	template<class Vec>
+	static DMatrix diag(index m, index n, const Vec& vec);
 
 	/** Blocking methods */
 	//%{

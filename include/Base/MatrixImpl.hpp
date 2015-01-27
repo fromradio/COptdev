@@ -530,15 +530,30 @@ typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix Mat
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
-MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::identity(
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::identity(
 	index m,
 	index n,
 	const scalar s)
 {
-	MatrixBase result(m,n);
+	DMatrix result(m,n);
 	index min = std::min(m,n);
 	for ( index i = 0 ; i < min ; ++ i )
 		result(i,i) = s;
+	return result;
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+template<class Vec>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::diag(index m, index n, const Vec& vec)
+{
+	DMatrix result(m,n);
+	index mi = std::min(m,n);
+	if(vec.size()!=mi)
+	{
+		throw COException("Matrix diag error: please check the size of input vector!");
+	}
+	for (index i=0; i < mi; ++ i)
+		result(i,i) = vec(i);
 	return result;
 }
 

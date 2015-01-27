@@ -770,6 +770,45 @@ inline int copt_lapack_geqrs(int m, int n,int nrhs,
 	return copt_lapack_trsm('L','U','N','N',n,nrhs,std::complex<double>(1.0,0),a,lda,b,ldb);
 }
 
+/** svd factorization */
+// template<class index,class scalar>
+// inline int copt_lapack_gesvd(char jobu, char jobvt, index m, index n, 
+// 				scalar *a, index lda,
+// 				scalar *s, scalar *u, index ldu,
+// 				scalar *vt, index ldvt, int *info)
+// {
+// 	throw COException("Unknow type for lapack wrapper!");
+// }
+
+// template<>
+inline int copt_lapack_gesvd(char jobu,char jobvt,int m,int n,
+				float *a, int lda,
+				float *s, float *u, int ldu,
+				float *vt, int ldvt, int *info)
+{
+	float *work = new float[1];
+	int lwork = -1;
+	sgesvd_(&jobu,&jobvt,&m,&n,a,&lda,s,u,&ldu,vt,&ldvt,work,&lwork,info);
+	delete[] work;
+	work = new float[lwork];
+	return sgesvd_(&jobu,&jobvt,&m,&n,a,&lda,s,u,&ldu,vt,&ldvt,work,&lwork,info);
+}
+
+// template<>
+inline int copt_lapack_gesvd(char jobu,char jobvt,int m,int n,
+				double *a, int lda,
+				double *s, double *u, int ldu,
+				double *vt, int ldvt, int *info)
+{
+	double *work = new double[1];
+	int lwork = -1;
+	dgesvd_(&jobu,&jobvt,&m,&n,a,&lda,s,u,&ldu,vt,&ldvt,work,&lwork,info);
+	lwork=static_cast<int>(work[0]);
+	delete[] work;
+	work = new double[lwork];
+	return dgesvd_(&jobu,&jobvt,&m,&n,a,&lda,s,u,&ldu,vt,&ldvt,work,&lwork,info);
+}
+
 }
 
 #endif
