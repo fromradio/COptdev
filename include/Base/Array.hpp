@@ -137,6 +137,9 @@ public:
 	/** reset the array even if the array is a referred array */
 	void reset(const index size, const index inter=1);
 
+	/** set zeros */
+	void setZeros();
+
 	/** set the array with given size and data */
 	void setArray(const index size, const scalar* data, const index inter = 1);
 
