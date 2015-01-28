@@ -791,7 +791,9 @@ inline int copt_lapack_gesvd(char jobu,char jobvt,int m,int n,
 	sgesvd_(&jobu,&jobvt,&m,&n,a,&lda,s,u,&ldu,vt,&ldvt,work,&lwork,info);
 	delete[] work;
 	work = new float[lwork];
-	return sgesvd_(&jobu,&jobvt,&m,&n,a,&lda,s,u,&ldu,vt,&ldvt,work,&lwork,info);
+	float e = sgesvd_(&jobu,&jobvt,&m,&n,a,&lda,s,u,&ldu,vt,&ldvt,work,&lwork,info);
+	delete[] work;
+	return e;
 }
 
 // template<>
@@ -806,7 +808,30 @@ inline int copt_lapack_gesvd(char jobu,char jobvt,int m,int n,
 	lwork=static_cast<int>(work[0]);
 	delete[] work;
 	work = new double[lwork];
-	return dgesvd_(&jobu,&jobvt,&m,&n,a,&lda,s,u,&ldu,vt,&ldvt,work,&lwork,info);
+	double e = dgesvd_(&jobu,&jobvt,&m,&n,a,&lda,s,u,&ldu,vt,&ldvt,work,&lwork,info);
+	delete[]work;
+	return e;
+}
+
+/** norm of matrix */
+inline float copt_lapack_dlange(char norm, int m, int n, 
+				float *a, int lda)
+{
+	int lwork = block_size("slange","U",m,n,-1,-1);
+	float* work = new float[lwork];
+	float e = slange_(&norm,&m,&n,a,&lda,work);
+	delete[]work;
+	return e;
+}
+
+inline double copt_lapack_dlange(char norm, int m, int n, 
+				double *a, int lda)
+{
+	int lwork = block_size("dlange","U",m,n,-1,-1);
+	double* work = new double[lwork];
+	double e = dlange_(&norm,&m,&n,a,&lda,work);
+	delete[]work;
+	return e;
 }
 
 }
