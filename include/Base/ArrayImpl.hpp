@@ -259,7 +259,7 @@ void Array<scalar,index,SizeAtCompileTime>::reset(const index size,const index i
 template<class scalar,class index,int SizeAtCompileTime>
 void Array<scalar,index,SizeAtCompileTime>::setZeros()
 {
-	std::for_each(this->begin(),this->end(),[](auto& s){s=0.0;});
+	std::for_each(this->begin(),this->end(),[](scalar& s){s=0.0;});
 }
 
 template<class scalar,class index,int SizeAtCompileTime>
