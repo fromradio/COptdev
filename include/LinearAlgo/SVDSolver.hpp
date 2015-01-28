@@ -61,6 +61,8 @@ SVD<Matrix>::SVD()
 
 template<class Matrix>
 SVD<Matrix>::SVD(const Matrix& mat)
+	:
+	__a(NULL)
 {
 	this->compute(mat);
 }

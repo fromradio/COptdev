@@ -92,6 +92,7 @@
 #include "Algorithms/Lasso.hpp"
 #include "Algorithms/NonLinearSquare.hpp"
 #include "Algorithms/LeastSquares.hpp"
+#include "Algorithms/LowRank.hpp"
 
 /** Problems */
 #include "Problems/LPProblem.hpp"
