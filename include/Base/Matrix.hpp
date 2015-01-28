@@ -426,6 +426,8 @@ public:
 	//%{
 	/** compute the operation norm */
 	podscalar operationNorm() const;
+	/** frobenius norm */
+	podscalar frobeniusNorm() const;
 	//%}
 
 };// End of class MatrixBase

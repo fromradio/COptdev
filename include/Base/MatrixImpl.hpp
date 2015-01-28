@@ -860,6 +860,12 @@ typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::podscalar M
 	podscalar e = solver.computeLargestEigenvalue();
 	return std::sqrt(e);
 }
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::podscalar MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::frobeniusNorm() const
+{
+	return copt_lapack_dlange('f',__rows,__cols,const_cast<scalar *>(this->dataPtr()),this->lda());
+}
 ///////////////End of implementation of 'MatrixBase'
 
 
