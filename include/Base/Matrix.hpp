@@ -98,15 +98,15 @@ public:
 	/** the corresponding Abstract Matrix */
 
 	/** the Abstract Matrix */
-	typedef AbstractMatrix<FT,I> 						AbstractMatrix;
+	typedef COPT::AbstractMatrix<FT,I> 						AbstractMatrix;
 	/** the Abstract Vector */
-	typedef AbstractVector<FT,I>						AbstractVector;
+	typedef COPT::AbstractVector<FT,I>						AbstractVector;
 
 private:
 	
 	/** definition used in implementation */
 	typedef 			VectorBase<FT,index>			Vector;
-	typedef 			Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>			
+	typedef 			COPT::Array<FT,I,(RowAtCompileTime==Dynamic||ColAtCompileTime==Dynamic)?Dynamic:(RowAtCompileTime+1)*(ColAtCompileTime)>			
 														Array;
 
 

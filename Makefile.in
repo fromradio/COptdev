@@ -36,7 +36,7 @@ DIR_LIB = ./
 # Libraries that are used
 #-----------------------------------------------------
 
-LIB = -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -llapack -lcblas -lblas
+LIB = -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -llapack -lblas
 
 #-----------------------------------------------------
 # OBJ Path

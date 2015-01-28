@@ -43,7 +43,7 @@ public:
 
 	virtual index dimension() const = 0;
 	virtual index size() const = 0;
-	virtual scalar *dataPtr();
+	virtual scalar *dataPtr() = 0;
 	virtual bool isReferred() const = 0;
 	virtual index interval() const = 0;
 

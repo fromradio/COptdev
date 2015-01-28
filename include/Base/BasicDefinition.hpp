@@ -68,13 +68,13 @@ inline bool IS_ZERO( T data )
 template<class T>
 inline void SAFE_DELETE(T* value)
 {
-	if ( value ) {delete value; value = NULL;}
+	if ( value ) {delete value; value = nullptr;}
 }
 
 template<class T>
 inline void SAFE_DELETE_ARRAY(T* array)
 {
-	if ( array ) {delete[] array; array = NULL;}
+	if ( array ) {delete[] array; array = nullptr;}
 }
 
 /**		base class who is not copyable */
