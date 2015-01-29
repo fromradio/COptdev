@@ -23,11 +23,184 @@
 namespace COPT
 {
 
-// template<>
-// class APGSolver
-// {
 
-// };
+template<class kernel, class Time = NoTimeStatistics>
+class APGSolver
+    :
+    public GeneralSolver<kernel, Time>
+{
+private:
+	typedef typename kernel::index		    index;
+	typedef typename kernel::scalar 		scalar;
+	typedef typename kernel::Vector 		Vector;
+	typedef typename kernel::Matrix 		Matrix;
+
+	const Matrix&        __D;
+	const scalar         __lam;
+	index                __maxiteration;
+
+	scalar               __mu_forward;
+	scalar               __mu;
+	scalar               __mu_bar;
+	scalar               __delta;
+	scalar               __eta;
+	scalar               __t_forward;
+	scalar               __t;
+	Matrix               __A_forward;
+	Matrix               __A;
+	Matrix               __E_forward;
+	Matrix               __E;
+
+	APGSolver();
+	void solvingBegin();
+	void doCompute();
+	scalar doOneIteration();
+
+public:
+	APGSolver(
+		const Matrix&    D,
+		const scalar     lam,
+		const index maxiteration = 10000);
+
+	Matrix& funcS(scalar, Matrix&);
+	scalar max(scalar, scalar);
+
+	const Matrix& result() const;
+	const Matrix& result_E() const;
+
+	scalar objective() const;
+
+};
+
+
+template<class kernel, class Time>
+void APGSolver<kernel, Time>::doCompute()
+{
+    __mu_forward = 0.99*__D.operationNorm();
+    __delta = 1e-5;
+    __mu_bar = __delta*__mu_forward;
+}
+
+template<class kernel, class Time>
+APGSolver<kernel, Time>::APGSolver(
+	const Matrix& D,
+	const scalar lam,
+	const index maxiteration)
+    :
+    __D(D),
+    __lam(lam),
+    __maxiteration(maxiteration)
+{
+	this->doCompute();
+}
+
+template<class kernel, class Time>
+void APGSolver<kernel, Time>::solvingBegin()
+{
+	__A_forward = 0;
+	__A = 0;
+	__E_forward = 0;
+	__E = 0;
+	__t_forward = 1;
+	__t = 1;
+	__eta = 0.9;
+}
+
+template<class kernel, class Time>
+typename APGSolver<kernel, Time>::scalar APGSolver<kernel, Time>::doOneIteration()
+{
+	Matrix               __YA;
+	Matrix               __YE;
+	Matrix               __GA;
+	Matrix               __GE;
+	Matrix               __SA;
+	Matrix               __SE;
+	scalar               s;
+
+	__YA = __A + (__t_forward - 1)/__t*(__A - __A_forward);
+	__YE = __E + (__t_forward - 1)/__t*(__E - __E_forward);
+
+	__GA = __YA - 0.5*(__YA + __YE - __D);
+	COPT::SVD<Matrix> svd(__GA);
+	__A_forward = __A;
+	__A = svd.U()*funcS(__mu_forward/2,svd.S())*svd.VT();
+
+	__GE = __YE - 0.5*(__YA + __YE - __D);
+	__E_forward = __E;
+	__E = funcS(__lam*__mu_forward/2,__GE);
+
+	__t_forward = __t;
+	__t = (1 + sqrt(1 + 4*__t*__t))/2;
+	__mu_forward = __mu;
+	__mu = max(__eta*__mu, __mu_bar);
+
+	__SA = 2*(__YA - __A) + (__A + __E - __YA - __YE);
+	__SE = 2*(__YE - __E) + (__A + __E - __YA - __YE);
+	s = sqrt(pow(__SA.frobeniusNorm(),2) + pow(__SE.frobeniusNorm(),2));
+	return s;
+}
+
+template<class kernel, class Time>
+typename APGSolver<kernel, Time>::Matrix& APGSolver<kernel, Time>::funcS(scalar ep, Matrix& S)
+{
+	index r = S.rows(), c = S.cols();
+	Matrix Sep(r,c);
+	for(int i = 0; i < r; i++)
+		for(int j = 0; j < c; j++)
+			if(S(i,j) > ep)
+			    Sep(i,j) = S(i,j) - ep;
+			else if(S(i,j) < -ep)
+				Sep(i,j) = S(i,j) + ep;
+			else
+				Sep(i,j) = 0;
+	return Sep;
+}
+
+template<class kernel, class Time>
+typename APGSolver<kernel, Time>::scalar APGSolver<kernel, Time>::max(scalar x, scalar y)
+{
+	if(x >= y)
+		return x;
+	else
+		return y;
+}
+
+template<class kernel, class Time>
+const typename APGSolver<kernel, Time>::Matrix& APGSolver<kernel, Time>::result() const
+{
+	return __A;
+}
+
+template<class kernel, class Time>
+const typename APGSolver<kernel, Time>::Matrix& APGSolver<kernel, Time>::result_E() const
+{
+	return __E;
+}
+
+template<class kernel, class Time>
+typename APGSolver<kernel, Time>::scalar APGSolver<kernel, Time>::objective() const
+{
+	return (__A + __E - __D);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 template<class Objective>
 class LinearOperation
