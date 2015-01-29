@@ -28,6 +28,7 @@ namespace COPT
 template<class scalar,class index,int SizeAtCompileTime>
 Array<scalar,index,SizeAtCompileTime>::Array()
 	:
+	__data_ptr(nullptr),
 	__referred(false)
 {
 	// for dynamic array a zero-dimensional, non-referred array is constructed
@@ -117,6 +118,8 @@ Array<scalar,index,SizeAtCompileTime>::Array(const referred_array&, scalar *data
 
 template<class scalar,class index,int SizeAtCompileTime>
 Array<scalar,index,SizeAtCompileTime>::Array(const Array& arr)
+	:
+	__data_ptr(nullptr)
 {
 	if(arr.isReferred())
 		setReferredArray(arr.size(),arr.dataPtr(),arr.interval());
@@ -128,10 +131,13 @@ Array<scalar,index,SizeAtCompileTime>::Array(const Array& arr)
 template<class scalar,class index,int SizeAtCompileTime>
 Array<scalar,index,SizeAtCompileTime>::~Array()
 {
-	if (__referred)
-		__data_ptr = NULL;
-	else
+	if (__referred){
+		
+		__data_ptr = nullptr;
+	}
+	else{
 		SAFE_DELETE_ARRAY(__data_ptr);
+	}
 }
 
 template<class scalar,class index,int SizeAtCompileTime>

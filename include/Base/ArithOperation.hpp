@@ -91,6 +91,17 @@ typename Vector::podscalar distance(const Vector &v1, const Vector &v2)
 	return (v1-v2).norm();
 }
 
+/** compute the mean vector of a set of given vector */
+template<class VectorIterator>
+typename VectorIterator::value_type mean(VectorIterator begin,VectorIterator end)
+{
+	typename VectorIterator::value_type vec((*begin).dimension());
+	int n=0;
+	std::for_each(begin,end,[&vec,&n](typename VectorIterator::value_type& v){vec=vec+v;++n;});
+	vec.scale(1.0/n);
+	return vec;
+}
+
 }
 
 #endif
