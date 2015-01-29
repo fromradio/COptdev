@@ -42,4 +42,8 @@ int main(int argc, char *argv[])
 	MatrixBase<double,int,4,4> mtm;
 	m3.mtm(mtm);
 	std::cout<<mtm<<std::endl;
+
+	std::cout<<COPT::mean(mtm.rowBegin(),mtm.rowEnd())<<std::endl;
+	std::cout<<COPT::mean(mtm.colBegin(),mtm.colEnd())<<std::endl;
+	std::cout<<"here"<<std::endl;
 }
