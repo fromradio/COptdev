@@ -864,7 +864,25 @@ typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::podscalar M
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::podscalar MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::frobeniusNorm() const
 {
-	return copt_lapack_dlange('f',__rows,__cols,const_cast<scalar *>(this->dataPtr()),this->lda());
+	return copt_lapack_lange('f',__rows,__cols,const_cast<scalar *>(this->dataPtr()),this->lda());
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::podscalar MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::maxNorm() const
+{
+	return copt_lapack_lange('m',__rows,__cols,const_cast<scalar *>(this->dataPtr()),this->lda());
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::podscalar MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::oneNorm() const
+{
+	return copt_lapack_lange('o',__rows,__cols,const_cast<scalar *>(this->dataPtr()),this->lda());
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::podscalar MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::infinityNorm() const
+{
+	return copt_lapack_lange('i',__rows,__cols,const_cast<scalar *>(this->dataPtr()),this->lda());
 }
 ///////////////End of implementation of 'MatrixBase'
 

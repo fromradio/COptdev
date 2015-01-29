@@ -23,7 +23,6 @@
 namespace COPT
 {
 
-
 template<class kernel, class Time = NoTimeStatistics>
 class APGSolver
     :
@@ -180,37 +179,28 @@ const typename APGSolver<kernel, Time>::Matrix& APGSolver<kernel, Time>::result_
 template<class kernel, class Time>
 typename APGSolver<kernel, Time>::scalar APGSolver<kernel, Time>::objective() const
 {
-	return (__A + __E - __D);
+	return __A + __E - __D;
 }
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-template<class Objective>
-class LinearOperation
+template<class InputType,class OutputType = InputType,class ConjugateType = InputType>
+class COPTMap
+	:
+	public COPTObject
 {
 public:
+	virtual ~COPTMap(){}
 
+	virtual OutputType operator() (const InputType& ) = 0;
+
+	virtual ConjugateType conjugate( const OutputType& ) = 0;
 };
 
 template<class Matrix>
 class CompletionMap
+	:
+	public COPTMap<Matrix,typename Matrix::DVector>
 {
 private:
 	typedef typename Matrix::scalar 		scalar;
@@ -232,7 +222,7 @@ public:
 	CompletionMap(const CompletionMap& cm) = delete;
 
 	DVector operator() (const Matrix& mat);
-	SpMatrix conjugate (const DVector& vec);
+	Matrix conjugate (const DVector& vec);
 
 };
 
@@ -266,10 +256,10 @@ typename CompletionMap<Matrix>::DVector CompletionMap<Matrix>::operator() (const
 }
 
 template<class Matrix>
-typename CompletionMap<Matrix>::SpMatrix CompletionMap<Matrix>::conjugate(const DVector& vec)
+Matrix CompletionMap<Matrix>::conjugate(const DVector& vec)
 {
 	assert(vec.size()==__nnz);
-	return SpMatrix(__nr,__nc,__nnz,__jc,__ir,vec.dataPtr());
+	return SpMatrix(__nr,__nc,__nnz,__jc,__ir,vec.dataPtr()).toDenseMatrix();
 }
 
 template<class kernel>
@@ -279,30 +269,36 @@ class APGLSolver
 {
 private:
 
+	/** 
+	**/
 	typedef typename kernel::scalar 			scalar;
 	typedef typename kernel::podscalar 			podscalar;
 	typedef typename kernel::index 				index;
 	typedef typename kernel::Matrix 			Matrix;
 	typedef typename kernel::Vector 			Vector;
+	typedef typename kernel::SpMatrix 			SpMatrix;
 
-	index 				__m;
-	index 				__n;
+	index 						__m;
+	index 						__n;
+	/** completion map */
 	CompletionMap<Matrix> 		__cm;
-	Vector 				__b;
+	Vector 						__b;
+	/** beta */
+	scalar 						__beta;
 	/** mu */
-	scalar 				__mu;
+	scalar 						__mu;
 	/** x_{k-1} */
-	Matrix 				__x_m;
+	Matrix 						__x_m;
 	/** x_k */
-	Matrix 				__x;
+	Matrix 						__x;
 	/** t_{k-1} */
-	scalar 				__t_m;
+	scalar 						__t_m;
 	/** t_k */
-	scalar 				__t;
+	scalar 						__t;
 	/** tau */
-	scalar 				__tau;
+	scalar 						__tau;
 	/** objective function */
-	scalar 				__o;
+	scalar 						__o;
 
 	void solvingBegin();
 	void doCompute();
@@ -310,7 +306,8 @@ private:
 
 public:
 
-	APGLSolver(const index nr, const index nc, const index nnz, const index *ir, const index *jc, const Vector& b, const scalar mu = 0.5);
+	APGLSolver(const index nr, const index nc, const index nnz, const index *ir, const index *jc, const Vector& b, const scalar beta = 0.5, const scalar mu = 0.005);
+	APGLSolver(const SpMatrix& spmat, const scalar beta = 2.0, const scalar mu = 0.000005);
 
 	podscalar objective() const;
 
@@ -323,18 +320,32 @@ template<class kernel>
 APGLSolver<kernel>::APGLSolver(
 	const index nr, const index nc, const index nnz,
 	const index *ir, const index *jc, const Vector& b,
-	const scalar mu)
+	const scalar beta, const scalar mu)
 	:
 
 	__m(nr),
 	__n(nc),
 	__cm(nr,nc,nnz,ir,jc),
 	__b(b),
+	__beta(beta),
 	__mu(mu)
 {
 	std::cout<<"here"<<std::endl;
 	assert(b.size()==nnz);
 	this->compute();
+}
+
+template<class kernel>
+APGLSolver<kernel>::APGLSolver(
+	const SpMatrix& spmat, const scalar beta, const scalar mu)
+	:
+	__m(spmat.rows()),
+	__n(spmat.cols()),
+	__cm(spmat.rows(),spmat.cols(),spmat.elementSize(),spmat.rowIndex(),spmat.columnPointer()),
+	__beta(beta),
+	__mu(mu)
+{
+	__b.setArray(spmat.elementSize(),spmat.values());
 }
 
 template<class kernel>
@@ -359,7 +370,7 @@ typename APGLSolver<kernel>::podscalar APGLSolver<kernel>::doOneIteration()
 {
 
 	Matrix y = __x+((__t_m-1)/__t)*(__x-__x_m);
-	Matrix g = y - (1.0/__tau)*__cm.conjugate(__cm(y)-__b).toDenseMatrix();
+	Matrix g = y - (1.0/__tau)*__cm.conjugate(__cm(y)-__b);
 	SVD<Matrix> de(g);
 	Matrix S = de.S();
 	index mi = std::min(S.rows(),S.cols());
