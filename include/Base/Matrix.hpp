@@ -137,6 +137,173 @@ private:
 	DVector multi(const Vec &vec,const vector_object&) const;
 
 public:
+	/** struct for vector iterator */
+	class RowVectorIterator
+		:
+		public std::iterator<std::input_iterator_tag,DVector>
+	{
+		
+		MatrixBase& __m;
+		index __i;
+		DVector* __v;
+
+	public:
+		RowVectorIterator(const index i,MatrixBase& mat)
+			:
+			__m(mat),
+			__i(i),
+			__v(nullptr)
+		{
+			if(__i<0||__i>=__m.rows())
+				__v = nullptr;
+			else
+				__v = new DVector(__m.row(i));
+		}
+		RowVectorIterator(const RowVectorIterator& iter)
+			:
+			__m(iter.__m),
+			__i(iter.__i),
+			__v(nullptr)
+		{
+			if(__i<0||__i>=__m.rows())
+				__v = nullptr;
+			else
+				__v = new DVector(__m.row(__i));
+		}
+		~RowVectorIterator()
+		{
+			SAFE_DELETE(__v);
+			__v = nullptr;
+		}
+		RowVectorIterator& operator++() 
+		{
+			if(__i>=0&&__i<__m.rows())
+			{
+				SAFE_DELETE(__v);
+				++__i;
+				if(__i<__m.rows())
+					__v = new DVector(__m.row(__i));
+				else
+					__v = nullptr;
+			}
+			else
+			{
+				SAFE_DELETE(__v);
+				__v = nullptr;
+			}
+			return (*this);
+		}
+		RowVectorIterator operator++(int)
+		{
+			RowVectorIterator tmp (*this);
+			if(__i>=0&&__i<__m.rows())
+			{
+				SAFE_DELETE(__v);
+				++__i;
+				if(__i<__m.rows())
+					__v = new DVector(__m.row(__i));
+				else
+					__v = nullptr;
+			}
+			else
+			{
+				SAFE_DELETE(__v);
+				__v = nullptr;
+			}
+			return tmp;
+		}
+		bool operator==(const RowVectorIterator& rhs){
+			return (__i==rhs.__i&& &__m==&rhs.__m);
+		}
+		bool operator!=(const RowVectorIterator& rhs){
+			return (!operator==(rhs));
+		}
+		DVector& operator*(){return *__v;}
+	};
+
+	class ColVectorIterator
+		:
+		public std::iterator<std::input_iterator_tag,DVector>
+	{
+		
+		MatrixBase& __m;
+		index __i;
+		DVector* __v;
+
+	public:
+		ColVectorIterator(const index i,MatrixBase& mat)
+			:
+			__m(mat),
+			__i(i),
+			__v(nullptr)
+		{
+			if(__i<0||__i>=__m.cols())
+				__v = nullptr;
+			else
+				__v = new DVector(__m.col(i));
+		}
+		ColVectorIterator(const ColVectorIterator& iter)
+			:
+			__m(iter.__m),
+			__i(iter.__i),
+			__v(nullptr)
+		{
+			if(__i<0||__i>=__m.cols())
+				__v = nullptr;
+			else
+				__v = new DVector(__m.col(__i));
+		}
+		~ColVectorIterator()
+		{
+
+			SAFE_DELETE(__v);
+			__v = nullptr;
+		}
+		ColVectorIterator& operator++() 
+		{
+			if(__i>=0&&__i<__m.cols())
+			{
+				SAFE_DELETE(__v);
+				++__i;
+				if(__i<__m.cols())
+					__v = new DVector(__m.col(__i));
+				else
+					__v = nullptr;
+			}
+			else
+			{
+				SAFE_DELETE(__v);
+				__v = nullptr;
+			}
+			return (*this);
+		}
+		ColVectorIterator operator++(int)
+		{
+			ColVectorIterator tmp (*this);
+			if(__i>=0&&__i<__m.cols())
+			{
+				SAFE_DELETE(__v);
+				++__i;
+				if(__i<__m.cols())
+					__v = new DVector(__m.col(__i));
+				else
+					__v = nullptr;
+			}
+			else
+			{
+				SAFE_DELETE(__v);
+				__v = nullptr;
+			}
+			return tmp;
+		}
+		bool operator==(const ColVectorIterator& rhs){
+			return (__i==rhs.__i&& &__m==&rhs.__m);
+		}
+		bool operator!=(const ColVectorIterator& rhs){
+			return (!operator==(rhs));
+		}
+		DVector& operator*(){return *__v;}
+	};
 	/** constructor and deconstructor */
 	//%{
 	/** default constructor */
@@ -187,6 +354,13 @@ public:
 	/**	obtain the i-th column */
 	Vector col(const index num);
 	const Vector col(const index num) const;
+
+	/** the first iterator */
+	RowVectorIterator rowBegin(){return RowVectorIterator(0,*this);}
+	RowVectorIterator rowEnd(){return RowVectorIterator(__rows,*this);}
+	ColVectorIterator colBegin(){return ColVectorIterator(0,*this);}
+	ColVectorIterator colEnd(){return ColVectorIterator(__cols,*this);}
+
 
 	/** set element using Arr */
 	void set (const index i, const scalar value);
@@ -321,7 +495,6 @@ public:
 	 */
 	static DMatrix identity(index m, index n){
 		DMatrix result(m,n);
-		// std::cout<<result<<std::endl;
 		index min = std::min(m,n);
 		for ( index i = 0 ; i < min ; ++ i )
 			result(i,i) = static_cast<scalar>(1.0);
@@ -431,7 +604,7 @@ public:
 	/** max element, actually not a norm */
 	podscalar maxNorm() const;
 	/** l_1 norm, maximum column sum */
-	podscalar oneNrom() const;
+	podscalar oneNorm() const;
 	/** infinity norm, maximum row sum */
 	podscalar infinityNorm() const;
 	//%}

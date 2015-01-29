@@ -204,9 +204,9 @@ VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTi
 	if ( num >= __rows || num < 0 )
 		throw COException("MatrixBase error: row index out of range when getting a row of the matrix!");
 	else if(__trans)
-		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
+		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->lda(),1);
 	else
-		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
+		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->lda());
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
@@ -214,9 +214,9 @@ const VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCom
 	if ( num >= __rows || num < 0 )
 		throw COException("MatrixBase error: row index out of range when getting a row of the matrix!");
 	else if(__trans)
-		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
+		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->lda(),1);
 	else
-		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
+		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->lda());
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
@@ -224,9 +224,9 @@ VectorBase<scalar,index> MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTi
 	if ( num >= __cols || num < 0 )
 		throw COException("MatrixBase error: col index out of range when getting a column of the matrix!");
 	else if(__trans)
-		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->rows());
+		return Vector(this->cols(),referred_array(),this->dataPtr()+num,this->lda());
 	else
-		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->rows(),1);
+		return Vector(this->rows(),referred_array(),this->dataPtr()+num*this->lda(),1);
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
