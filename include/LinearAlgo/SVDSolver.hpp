@@ -62,7 +62,7 @@ SVD<Matrix>::SVD()
 template<class Matrix>
 SVD<Matrix>::SVD(const Matrix& mat)
 	:
-	__a(nullptr)
+	__a(NULL)
 {
 	this->compute(mat);
 }

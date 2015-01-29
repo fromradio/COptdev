@@ -140,6 +140,12 @@ bin/svd: obj/svd.o
 obj/svd.o: test/svd.cpp
 	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
 
+lowrank: bin/lowrank
+bin/lowrank: obj/lowrank.o
+	$(CXX) obj/lowrank.o -L$(DIR_LIB) -o $@ $(LIB)
+obj/lowrank.o: test/lowrank.cpp include/Algorithms/LowRank.hpp
+	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
+
 help: $(TEST_BIN) 
 	
 $(TEST_BIN): $(TEST_OBJ)

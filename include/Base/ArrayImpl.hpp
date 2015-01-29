@@ -251,14 +251,15 @@ void Array<scalar,index,SizeAtCompileTime>::reset(const index size,const index i
 			__size = size;
 			__inter = inter;
 			__data_ptr = new scalar[__size*__inter];
-			for ( index i = 0 ; i < __size ; ++ i )
-				__data_ptr[i*__inter] = static_cast<scalar>(0.0);
 		}
-		else{
-			for ( index i = 0 ; i < __size ; ++ i )
-				__data_ptr[i*__inter] = static_cast<scalar>(0.0);
-		}
+		this->setZeros();
 	}
+}
+
+template<class scalar,class index,int SizeAtCompileTime>
+void Array<scalar,index,SizeAtCompileTime>::setZeros()
+{
+	std::for_each(this->begin(),this->end(),[](scalar& s){s=0.0;});
 }
 
 template<class scalar,class index,int SizeAtCompileTime>

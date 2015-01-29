@@ -30,7 +30,7 @@ namespace COPT{
  *			The solver contains general information like max iteration 
  *			number, final iteration number, threshold, estimated error
  */	
-template<class kernel , class Time=NoTimeStatistics>
+template<class kernel,class Time=NoTimeStatistics,class ResultType=typename kernel::Vector>
 class GeneralSolver
 	:
 	public COPTObject,
@@ -111,14 +111,14 @@ public:
 	/** compute the objective function */
 	virtual podscalar objective() const = 0;
 	/** get the result */
-	virtual const Vector& result() const = 0;
+	virtual const ResultType& result() const = 0;
 	//%}
 };
 
 /*************Implementation of 'GeneralSolver'***************/
 
-template<class kernel,class Time>
-GeneralSolver<kernel,Time>::GeneralSolver(
+template<class kernel,class Time,class ResultType>
+GeneralSolver<kernel,Time,ResultType>::GeneralSolver(
 	const index maxiteration,
 	const podscalar thresh)
 	:
@@ -131,8 +131,8 @@ GeneralSolver<kernel,Time>::GeneralSolver(
 {
 }
 
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::doSolve()
+template<class kernel,class Time,class ResultType>
+void GeneralSolver<kernel,Time,ResultType>::doSolve()
 {
 	__iter_num = 0;
 	do
@@ -148,14 +148,14 @@ void GeneralSolver<kernel,Time>::doSolve()
 		__terminal_type = Optimal;
 }
 
-template<class kernel,class Time>
-bool GeneralSolver<kernel,Time>::terminalSatisfied() const
+template<class kernel,class Time,class ResultType>
+bool GeneralSolver<kernel,Time,ResultType>::terminalSatisfied() const
 {
 	return __estimated_error<__thresh;
 }
 
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::compute()
+template<class kernel,class Time,class ResultType>
+void GeneralSolver<kernel,Time,ResultType>::compute()
 {
 	__time.computationBegin();
 	this->doCompute();
@@ -164,8 +164,8 @@ void GeneralSolver<kernel,Time>::compute()
 	__terminal_type = NotBeginYet;
 }
 
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::solve()
+template<class kernel,class Time,class ResultType>
+void GeneralSolver<kernel,Time,ResultType>::solve()
 {
 	this->solvingBegin();
 	__time.solvingBegin();
@@ -175,8 +175,8 @@ void GeneralSolver<kernel,Time>::solve()
 	__time.printTimeInfo();
 }
 
-template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::podscalar GeneralSolver<kernel,Time>::oneIteration()
+template<class kernel,class Time,class ResultType>
+typename GeneralSolver<kernel,Time,ResultType>::podscalar GeneralSolver<kernel,Time,ResultType>::oneIteration()
 {
 	__journal.iterationBegin();
 	podscalar e = this->doOneIteration();
@@ -184,50 +184,50 @@ typename GeneralSolver<kernel,Time>::podscalar GeneralSolver<kernel,Time>::oneIt
 	return e;
 }
 
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::setMaxIteration( const index maxiteration)
+template<class kernel,class Time,class ResultType>
+void GeneralSolver<kernel,Time,ResultType>::setMaxIteration( const index maxiteration)
 {
 	__max_iteration = maxiteration;
 }
 
-template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::index GeneralSolver<kernel,Time>::maxIterationNumber() const
+template<class kernel,class Time,class ResultType>
+typename GeneralSolver<kernel,Time,ResultType>::index GeneralSolver<kernel,Time,ResultType>::maxIterationNumber() const
 {
 	return __max_iteration;
 }
 
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::setIterationNumber( const index iter )
+template<class kernel,class Time,class ResultType>
+void GeneralSolver<kernel,Time,ResultType>::setIterationNumber( const index iter )
 {
 	__iter_num = iter;
 }
 
-template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::index GeneralSolver<kernel,Time>::iterationNumber() const
+template<class kernel,class Time,class ResultType>
+typename GeneralSolver<kernel,Time,ResultType>::index GeneralSolver<kernel,Time,ResultType>::iterationNumber() const
 {
 	return __iter_num;
 }
 
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::setThreshold( const podscalar thresh )
+template<class kernel,class Time,class ResultType>
+void GeneralSolver<kernel,Time,ResultType>::setThreshold( const podscalar thresh )
 {
 	__thresh = thresh;
 }
 
-template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::podscalar GeneralSolver<kernel,Time>::threshold() const
+template<class kernel,class Time,class ResultType>
+typename GeneralSolver<kernel,Time,ResultType>::podscalar GeneralSolver<kernel,Time,ResultType>::threshold() const
 {
 	return __thresh;
 }
 
-template<class kernel,class Time>
-void GeneralSolver<kernel,Time>::setEstimatedError(const podscalar error )
+template<class kernel,class Time,class ResultType>
+void GeneralSolver<kernel,Time,ResultType>::setEstimatedError(const podscalar error )
 {
 	__estimated_error = error;
 }
 
-template<class kernel,class Time>
-typename GeneralSolver<kernel,Time>::podscalar GeneralSolver<kernel,Time>::estimatedError() const
+template<class kernel,class Time,class ResultType>
+typename GeneralSolver<kernel,Time,ResultType>::podscalar GeneralSolver<kernel,Time,ResultType>::estimatedError() const
 {
 	return __estimated_error;
 }
