@@ -128,7 +128,21 @@ template<class scalar,class index,int SizeAtCompileTime>
 VectorBase<scalar,index,SizeAtCompileTime>& VectorBase<scalar,index,SizeAtCompileTime>::operator= ( const VectorBase& vec )
 {
 	if (vec.isReferred()){
-		this->setReferredArray(vec.size(),const_cast<scalar*>(vec.dataPtr()),vec.interval());
+		this->setReferredArray(vec.dimension(),const_cast<scalar*>(vec.dataPtr()),vec.interval());
+	}
+	else if(this->isReferred())
+	{
+		if(this->dimension() == vec.dimension())
+		{
+			for(index i = 0 ; i < vec.dimension() ; ++i )
+			{
+				this->operator()(i)=vec(i);
+			}
+		}
+		else
+		{
+			throw COException("Referred vector can only be assigned by a vector with equal size!");
+		}
 	}
 	else{
 		this->setArray(vec.size(),vec.dataPtr(),vec.interval());

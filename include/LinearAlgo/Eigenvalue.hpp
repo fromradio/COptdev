@@ -35,6 +35,8 @@ private:
 	char 			__uplo;
 	/** the dimension of symmetric matrix */
 	index 			__n;
+	/** the A */
+	scalar 			*__a;
 	/** the diagonal elements */
 	podscalar 		*__d;
 	/** the sub-diagonal elements */
@@ -57,9 +59,52 @@ public:
 	/** getter */
 	//%{
 	index n() const;
+	const podscalar* a() const;
 	const podscalar* d() const;
 	const podscalar* e() const;
+	const scalar* tau() const;
 	//%}
+};
+
+template<class Matrix>
+class EigenSolver
+{
+
+private:
+
+	typedef typename Matrix::Kernel 			kernel;
+	typedef typename Matrix::index 				index;
+	typedef typename Matrix::scalar 			scalar;
+	typedef typename kernel::podscalar 			podscalar;
+	typedef SymmetricToTridiagonal<Matrix>		tri_generator;
+	typedef typename Matrix::DVector 			DVector;
+	typedef typename Matrix::DMatrix 			DMatrix;
+
+	/** the triagonal */
+	tri_generator 		__tri;
+	/** the dimension of the matrix */
+	index 				__dim;
+	/** eigenvalue */
+	DVector 			__eigenvalue;
+	/** eigenvector */
+	DMatrix 			__eigenvector;
+	/** information */
+	index 				__info;
+	/** whether is solved */
+	bool 				__is_solved;
+	/** isuppz */
+	index 				*__isuppz;
+
+public:
+
+	EigenSolver();
+	EigenSolver( const Matrix& mat );
+	~EigenSolver( );
+
+	void compute(const Matrix& mat);
+
+	const DMatrix& eigenVector() const;
+	const DVector& eigenValue() const;
 };
 
 /*			'ParitialEigenSolver' can partially compute the eigenvalues of a dense
@@ -119,6 +164,7 @@ template<class Matrix>
 SymmetricToTridiagonal<Matrix>::SymmetricToTridiagonal()
 	:
 	__uplo('U'),
+	__a(nullptr),
 	__d(NULL),
 	__e(NULL),
 	__tau(NULL)
@@ -129,6 +175,7 @@ template<class Matrix>
 SymmetricToTridiagonal<Matrix>::SymmetricToTridiagonal( const Matrix& mat )
 	:
 	__uplo('U'),
+	__a(nullptr),
 	__d(NULL),
 	__e(NULL),
 	__tau(NULL)
@@ -145,13 +192,16 @@ void SymmetricToTridiagonal<Matrix>::compute(const Matrix& mat)
 	SAFE_DELETE_ARRAY(__d);
 	SAFE_DELETE_ARRAY(__e);
 	SAFE_DELETE_ARRAY(__tau);
+	SAFE_DELETE_ARRAY(__a);
 	__d = new podscalar[__n];
 	__e = new podscalar[__n-1];
 	__tau = new scalar[__n-1];
+	__a = new scalar[mat.size()];
+	blas::copt_blas_copy(mat.size(),mat.dataPtr(),1,__a,1);
 	if ( is_real<scalar>::value )
-		copt_lapack_sytrd(__uplo,__n,const_cast<scalar*>(mat.dataPtr()),mat.rows(),__d,__e,__tau,&__info);
+		copt_lapack_sytrd(__uplo,__n,__a,mat.lda(),__d,__e,__tau,&__info);
 	else if( is_complex<scalar>::value )
-		copt_lapack_hetrd(__uplo,__n,const_cast<scalar*>(mat.dataPtr()),mat.rows(),__d,__e,__tau,&__info);
+		copt_lapack_hetrd(__uplo,__n,__a,mat.lda(),__d,__e,__tau,&__info);
 	else
 		throw COException("Unknown scalar type for symmetric matrix calculation!");
 }
@@ -161,12 +211,20 @@ SymmetricToTridiagonal<Matrix>::~SymmetricToTridiagonal()
 {
 	SAFE_DELETE_ARRAY(__d);
 	SAFE_DELETE_ARRAY(__e);
+	SAFE_DELETE_ARRAY(__tau);
+	SAFE_DELETE_ARRAY(__a);
 }
 
 template<class Matrix>
 typename SymmetricToTridiagonal<Matrix>::index SymmetricToTridiagonal<Matrix>::n() const
 {
 	return __n;
+}
+
+template<class Matrix>
+const typename SymmetricToTridiagonal<Matrix>::podscalar* SymmetricToTridiagonal<Matrix>::a() const
+{
+	return __a;
 }
 
 template<class Matrix>
@@ -180,9 +238,65 @@ const typename SymmetricToTridiagonal<Matrix>::podscalar* SymmetricToTridiagonal
 {
 	return __e;
 }
+
+template<class Matrix>
+const typename SymmetricToTridiagonal<Matrix>::scalar* SymmetricToTridiagonal<Matrix>::tau() const
+{
+	return __tau;
+}
 //////////////End of implementation of 'SymmetricToTridiagonal'
 
+/*********************Implementation of 'EigenSolver'***********************/
+template<class Matrix>
+EigenSolver<Matrix>::EigenSolver()
+	:
+	__isuppz(nullptr)
+{}
 
+template<class Matrix>
+EigenSolver<Matrix>::EigenSolver(const Matrix& mat)
+	:
+	__isuppz(nullptr)
+{
+	this->compute(mat);
+}
+
+template<class Matrix>
+EigenSolver<Matrix>::~EigenSolver()
+{
+	SAFE_DELETE_ARRAY(__isuppz);
+}
+
+template<class Matrix>
+void EigenSolver<Matrix>::compute(const Matrix& mat)
+{
+	if(!mat.isSymmetric())
+		std::cerr<<" SymmetricToTridiagonal Warning: Please make sure that whether the input matrix is symmetric or not!"<<std::endl;
+	__dim = mat.rows();
+	__tri.compute(mat);
+	std::cout<<"here"<<std::endl;
+	SAFE_DELETE_ARRAY(__isuppz);
+	__isuppz = new index[2*__dim];
+	__eigenvalue.setArray(__dim,__tri.d());
+	__eigenvector.resize(__dim,__dim);
+	blas::copt_blas_copy(__eigenvector.size(),__tri.a(),1,__eigenvector.dataPtr(),1);
+	std::cout<<"here"<<std::endl;
+	copt_lapack_orgtr('U',__dim,__eigenvector.dataPtr(),__eigenvector.lda(),const_cast<scalar*>(__tri.tau()),&__info);
+	copt_lapack_steqr('V',__dim,__eigenvalue.dataPtr(),const_cast<scalar*>(__tri.e()),__eigenvector.dataPtr(),__eigenvector.lda(),&__info);
+	// copt_lapack_stegr('V','A',__dim,const_cast<scalar*>(__tri.d()),const_cast<scalar*>(__tri.e()),0.0,0.0,0,0,0.0,__dim,__eigenvalue.dataPtr(),__eigenvector.dataPtr(),__eigenvector.lda(),__isuppz,&__info);
+}
+
+template<class Matrix>
+const typename EigenSolver<Matrix>::DVector& EigenSolver<Matrix>::eigenValue() const
+{
+	return __eigenvalue;
+}
+
+template<class Matrix>
+const typename EigenSolver<Matrix>::DMatrix& EigenSolver<Matrix>::eigenVector() const
+{
+	return __eigenvector;
+}
 
 /*********************Implementation of 'PartialEigenSolver'****************/ 
 template<class Matrix>

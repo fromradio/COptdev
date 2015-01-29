@@ -227,6 +227,102 @@ inline int copt_lapack_hetrd(char uplo, int n, std::complex<double> *a, int lda,
 	return status;
 }
 
+/** orthogonal matrix */
+inline int copt_lapack_orgtr(char uplo, int n, float *a,
+			int lda, float *tau, int *info)
+{
+	float *work = new float[1];
+	int lwork = -1;
+	sorgtr_(&uplo,&n,a,&lda,tau,work,&lwork,info);
+	lwork = static_cast<int>(work[0]);
+	delete[]work;
+	work = new float[lwork];
+	int status = sorgtr_(&uplo,&n,a,&lda,tau,work,&lwork,info);
+	delete[]work;
+	return status;
+}
+
+inline int copt_lapack_orgtr(char uplo, int n, double *a,
+			int lda, double *tau, int *info)
+{
+	double *work = new double[1];
+	int lwork = -1;
+	dorgtr_(&uplo,&n,a,&lda,tau,work,&lwork,info);
+	lwork = static_cast<int>(work[0]);
+	delete[]work;
+	work = new double[lwork];
+	int status = dorgtr_(&uplo,&n,a,&lda,tau,work,&lwork,info);
+	delete[]work;
+	return status;
+}
+
+/** steqr for eigenvalue problem */
+inline int copt_lapack_steqr(char compz, int n,
+			float *d, float *e, float *z, int ldz,
+			int *info)
+{
+	float *work = new float[std::max(1,2*n-2)];
+	int status = ssteqr_(&compz,&n,d,e,z,&ldz,work,info);
+	delete[]work;
+	return status;
+}
+
+inline int copt_lapack_steqr(char compz, int n,
+			double *d, double *e, double *z, int ldz,
+			int *info)
+{
+	double *work = new double[std::max(1,2*n-2)];
+	int status = dsteqr_(&compz,&n,d,e,z,&ldz,work,info);
+	delete[]work;
+	return status;
+}
+/** stegr for eigenvalue problem */
+
+inline int copt_lapack_stegr(char jobz, char range,
+			int n, float *d, float *e, float vl, float vu,
+			int il, int iu, float abstol, int m, float *w, 
+			float *z, int ldz, int *isuppz, int *info)
+{
+	float *work = new float [1];
+	int lwork = -1;
+	int *iwork = new int[1];
+	int liwork = -1;
+	sstegr_(&jobz,&range,&n,d,e,&vl,&vu,&il,&iu,&abstol,&m,w,z,&ldz,isuppz,work,&lwork,iwork,&liwork,info);
+	lwork = static_cast<int>(work[0]);
+	liwork = static_cast<int>(iwork[0]);
+	delete[]work;
+	delete[]iwork;
+	work = new float[lwork];
+	iwork = new int[liwork];
+	int status = sstegr_(&jobz,&range,&n,d,e,&vl,&vu,&il,&iu,&abstol,&m,w,z,&ldz,isuppz,work,&lwork,iwork,&liwork,info);
+	delete[] work;
+	delete[] iwork;
+	return status;
+}
+
+inline int copt_lapack_stegr(char jobz, char range,
+			int n, double *d, double *e, double vl, double vu,
+			int il, int iu, double abstol, int m, double *w, 
+			double *z, int ldz, int *isuppz, int *info)
+{
+	double *work = new double [1];
+	int lwork = -1;
+	int *iwork = new int[1];
+	int liwork = -1;
+
+	dstegr_(&jobz,&range,&n,d,e,&vl,&vu,&il,&iu,&abstol,&m,w,z,&ldz,isuppz,work,&lwork,iwork,&liwork,info);
+	lwork = static_cast<int>(work[0]);
+	liwork = static_cast<int>(iwork[0]);
+	delete[]work;
+	delete[]iwork;
+	work = new double[lwork];
+	iwork = new int[liwork];
+	int status = dstegr_(&jobz,&range,&n,d,e,&vl,&vu,&il,&iu,&abstol,&m,w,z,&ldz,isuppz,work,&lwork,iwork,&liwork,info);
+	delete[] work;
+	delete[] iwork;
+	return status;
+}
+
 /** stebz */
 template<class index,class scalar>
 inline int copt_lapack_stebz(char range,char order,index n,scalar vl,scalar vu,index il,index iu,scalar abstol, scalar* d, scalar *e , index *m , index *nsplit , scalar *w , index *iblock , index *isplit , scalar *work , index *iwork , index *info )

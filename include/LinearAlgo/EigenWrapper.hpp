@@ -28,28 +28,28 @@ namespace COPT
  *			The ldlt solver is chosen since it is the fastest one due to
  *			the description of 'Eigen'.
  */
-template<class Matrix>
-class EigenSolver
-	:
-	public LinearSolver<Matrix>
-{
-private:
-	typedef typename Matrix::scalar 				scalar;
-	typedef typename Matrix::index 					index;
-	typedef VectorBase<scalar,index>				Vector;
+// template<class Matrix>
+// class EigenSolver
+// 	:
+// 	public LinearSolver<Matrix>
+// {
+// private:
+// 	typedef typename Matrix::scalar 				scalar;
+// 	typedef typename Matrix::index 					index;
+// 	typedef VectorBase<scalar,index>				Vector;
 
 
-	void doCompute(const Matrix& mat){}
-	Vector doSolve( const Vector& b ){return Vector();}
-	Matrix doSolve( const Matrix& b ){return Matrix();}
+// 	void doCompute(const Matrix& mat){}
+// 	Vector doSolve( const Vector& b ){return Vector();}
+// 	Matrix doSolve( const Matrix& b ){return Matrix();}
 
-public:
+// public:
 	
-	EigenSolver(){}
-	~EigenSolver(){}
+// 	EigenSolver(){}
+// 	~EigenSolver(){}
 
-	void clear(){}
-};
+// 	void clear(){}
+// };
 
 
 }
