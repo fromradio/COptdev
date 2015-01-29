@@ -814,7 +814,7 @@ inline int copt_lapack_gesvd(char jobu,char jobvt,int m,int n,
 }
 
 /** norm of matrix */
-inline float copt_lapack_dlange(char norm, int m, int n, 
+inline float copt_lapack_lange(char norm, int m, int n, 
 				float *a, int lda)
 {
 	int lwork = block_size("slange","U",m,n,-1,-1);
@@ -824,7 +824,7 @@ inline float copt_lapack_dlange(char norm, int m, int n,
 	return e;
 }
 
-inline double copt_lapack_dlange(char norm, int m, int n, 
+inline double copt_lapack_lange(char norm, int m, int n, 
 				double *a, int lda)
 {
 	int lwork = block_size("dlange","U",m,n,-1,-1);

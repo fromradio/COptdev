@@ -428,6 +428,12 @@ public:
 	podscalar operationNorm() const;
 	/** frobenius norm */
 	podscalar frobeniusNorm() const;
+	/** max element, actually not a norm */
+	podscalar maxNorm() const;
+	/** l_1 norm, maximum column sum */
+	podscalar oneNrom() const;
+	/** infinity norm, maximum row sum */
+	podscalar infinityNorm() const;
 	//%}
 
 };// End of class MatrixBase
