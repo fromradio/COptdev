@@ -102,6 +102,27 @@ typename VectorIterator::value_type mean(VectorIterator begin,VectorIterator end
 	return vec;
 }
 
+
+template<class T>
+T sgn(const T& t)
+{
+	typedef typename T::scalar scalar;
+	T result(t);
+	for_each(t.begin(),t.end(),[](scalar& s){s=(s<0)?-1:(s>0?1:0);});
+}
+
+/** add sparse noise */
+template<class T,class S,class I>
+void addSparseNoise(T& t,const I sp,const S n)
+{
+	std::vector<int> tt(t.size());
+	for ( int i = 0 ; i < tt.size() ; ++i ) tt[i]=i;
+	std::random_shuffle(tt.begin(),tt.end());
+	std::uniform_real_distribution<typename T::podscalar> unif(-1.0,1.0);
+	for ( int i = 0 ; i < sp ; ++ i ) t[i]+=n*unif(copt_rand_eng);
+}
+
+
 }
 
 #endif
