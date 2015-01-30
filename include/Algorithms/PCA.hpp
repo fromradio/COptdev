@@ -10,7 +10,9 @@ class RedesignedSolver
 private:
 	virtual void doCompute(const InputType&) = 0;
 	virtual OutputType doSolve(const InputType&) = 0;
+
 public:
+
 	virtual void compute(const InputType& input){
 		this->doCompute(input);
 	}
@@ -49,11 +51,14 @@ private:
 	DVector 			__val;
 	DMatrix 			__v;
 	index 				__r;
+	DMatrix 			__x;
 
 	void doCompute(const Matrix& mat);
 	DMatrix doSolve(const Matrix& mat);
 public:
 	PCA(const Matrix& m,const index r=1);
+
+	const DMatrix& result() const;
 };
 
 template<class Matrix>
@@ -72,9 +77,7 @@ void PCA<Matrix>::doCompute(const Matrix& mat)
 	if(__dir == Row)
 	{
 		DVector __mean = mean(__m.rowBegin(),__m.rowEnd());
-		std::cout<<"mean vector is "<<__mean<<std::endl;
 		std::for_each(__m.rowBegin(),__m.rowEnd(),[&__mean](DVector& v){v=v-__mean;});
-		std::cout<<"done"<<std::endl;
 	}
 	else if(__dir == Col)
 	{
@@ -88,9 +91,7 @@ typename Matrix::DMatrix PCA<Matrix>::doSolve(const Matrix& mat)
 {
 	DMatrix mtm;
 	__m.mtm(mtm);
-	std::cout<<mtm<<std::endl;
 	EigenSolver<Matrix> es(mtm);
-	std::cout<<"eigen value "<<es.eigenValue();
 	index dim = es.eigenValue().dimension();
 	__val.resize(dim);
 	for ( index i = 0; i < __r ; ++ i )
@@ -98,7 +99,14 @@ typename Matrix::DMatrix PCA<Matrix>::doSolve(const Matrix& mat)
 		__val(dim-i-1) = es.eigenValue()(dim-i-1);
 	}
 	__v = es.eigenVector();
-	return __v*DMatrix::diag(dim,dim,__val)*__v.transpose();
+	__x = __v*DMatrix::diag(dim,dim,__val)*__v.transpose();
+	return __x;
+}
+
+template<class Matrix>
+const typename Matrix::DMatrix& PCA<Matrix>::result() const
+{
+	return __x;
 }
 
 } // End of namespace COPT

@@ -22,6 +22,14 @@
 
 namespace COPT
 {
+
+/** 		Reduce symmetric matrix to tridiagonal matrix.
+  *			As introduced in 'Lapack', in order to solve the eigenproblem
+  *			of a symmetric matrix the matrix is first reducd to a tridiagonal
+  *			matrix consisting of diagonal and sub-diagonal elements.
+  *			And the orthogonal matrix Q is also stored in '__a' and '__tau'.
+  *			All routines are derived from 'Lapack'.
+  */
 template<class Matrix>
 class SymmetricToTridiagonal
 {
@@ -59,13 +67,17 @@ public:
 	/** getter */
 	//%{
 	index n() const;
-	const podscalar* a() const;
-	const podscalar* d() const;
-	const podscalar* e() const;
-	const scalar* tau() const;
+	podscalar* a();
+	podscalar* d();
+	podscalar* e();
+	scalar* tau();
 	//%}
 };
 
+/**			EigenSolver solves eigenproblem of a general symmetric
+  * 		matrix. 'Lapack' routine is used.
+  *
+  */
 template<class Matrix>
 class EigenSolver
 {
@@ -101,9 +113,11 @@ public:
 	EigenSolver( const Matrix& mat );
 	~EigenSolver( );
 
+	/** compute the symmetric matrix */
 	void compute(const Matrix& mat);
-
+	/** get the eigen vector */
 	const DMatrix& eigenVector() const;
+	/** get the eigen value */
 	const DVector& eigenValue() const;
 };
 
@@ -222,25 +236,25 @@ typename SymmetricToTridiagonal<Matrix>::index SymmetricToTridiagonal<Matrix>::n
 }
 
 template<class Matrix>
-const typename SymmetricToTridiagonal<Matrix>::podscalar* SymmetricToTridiagonal<Matrix>::a() const
+typename SymmetricToTridiagonal<Matrix>::podscalar* SymmetricToTridiagonal<Matrix>::a()
 {
 	return __a;
 }
 
 template<class Matrix>
-const typename SymmetricToTridiagonal<Matrix>::podscalar* SymmetricToTridiagonal<Matrix>::d() const
+typename SymmetricToTridiagonal<Matrix>::podscalar* SymmetricToTridiagonal<Matrix>::d()
 {
 	return __d;
 }
 
 template<class Matrix>
-const typename SymmetricToTridiagonal<Matrix>::podscalar* SymmetricToTridiagonal<Matrix>::e() const
+typename SymmetricToTridiagonal<Matrix>::podscalar* SymmetricToTridiagonal<Matrix>::e()
 {
 	return __e;
 }
 
 template<class Matrix>
-const typename SymmetricToTridiagonal<Matrix>::scalar* SymmetricToTridiagonal<Matrix>::tau() const
+typename SymmetricToTridiagonal<Matrix>::scalar* SymmetricToTridiagonal<Matrix>::tau()
 {
 	return __tau;
 }
