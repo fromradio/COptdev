@@ -14,6 +14,7 @@ CXX = g++
 # Flags for compilers
 #----------------------------------------------------- 
 
+
 CFLAGS 		= -g -Wall
 CXXFLAGS 	= -g -Wall -O3 -std=c++11
 

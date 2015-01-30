@@ -93,6 +93,7 @@
 #include "Algorithms/NonLinearSquare.hpp"
 #include "Algorithms/LeastSquares.hpp"
 #include "Algorithms/LowRank.hpp"
+#include "Algorithms/PCA.hpp"
 
 /** Problems */
 #include "Problems/LPProblem.hpp"

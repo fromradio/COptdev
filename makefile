@@ -146,6 +146,12 @@ bin/lowrank: obj/lowrank.o
 obj/lowrank.o: test/lowrank.cpp include/Algorithms/LowRank.hpp
 	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
 
+pca: bin/pca
+bin/pca: obj/pca.o
+	$(CXX) obj/pca.o -L$(DIR_LIB) -o $@ $(LIB)
+obj/pca.o: test/pca.cpp include/Algorithms/PCA.hpp
+	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
+
 help: $(TEST_BIN) 
 	
 $(TEST_BIN): $(TEST_OBJ)

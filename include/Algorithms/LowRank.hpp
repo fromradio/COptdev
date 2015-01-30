@@ -439,6 +439,160 @@ const typename APGLSolver<kernel>::Matrix& APGLSolver<kernel>::result() const
 	return __x;
 }
 
+
+/** 		Augmented Langrange Method for low rank problem
+  * 		The problem is formulated as
+  *				min \|A\|_*+\lambda\|E\|_1
+  *				subject to D=A+E
+  *
+  */
+template<class Matrix>
+class LowRankALM
+	:
+	public GeneralSolver<typename Matrix::Kernel,NoTimeStatistics,typename Matrix::DMatrix>
+{
+public:
+	typedef typename Matrix::DMatrix 		OutputType;
+
+private:
+	typedef typename Matrix::scalar 		scalar;
+	typedef typename Matrix::index 			index;
+	typedef typename Matrix::DMatrix 		DMatrix;
+
+	/** reference to input matrix d */
+	const Matrix& 		__d;
+	/** lambda */
+	scalar 				__lambda;
+	/** the current mu */
+	scalar 				__mu;
+	/** the scaling factor */
+	scalar 				__rho;
+	/** the size of d */
+	MSize<index> 		__s;
+	/** Langrange multiplier Y */
+	OutputType 			__y;
+	/** low rank part A */
+	OutputType 			__a;
+	/** sparse part E */
+	OutputType 			__e;
+	/** final result */
+	OutputType 			__x;
+	/** the norm of d */
+	scalar 				__nd;
+
+	/** compute part */
+	void doCompute();
+	/** the begin of solving */
+	void solvingBegin();
+	/** solving procedure */
+	// void doSolve();
+	/** one iteration */
+	scalar doOneIteration();
+
+	scalar j(const Matrix& m);
+
+	template<class T>
+	void softThreshold(T& t,const scalar mu);
+
+public:
+
+	LowRankALM(const Matrix&d,const scalar lambda, const scalar mu=0.0);
+
+	const OutputType& result() const;
+
+	const OutputType& A() const;
+	const OutputType& E() const;
+
+	scalar objective() const;
+};
+
+/***********************Implementation of LowRankALM***********************/
+template<class Matrix>
+LowRankALM<Matrix>::LowRankALM(
+	const Matrix& d,
+	const scalar lambda,
+	const scalar mu)
+	:
+	__d(d),
+	__lambda(lambda),
+	__mu(mu),
+	__s(d)
+{
+	this->compute();
+}
+
+template<class Matrix>
+typename LowRankALM<Matrix>::scalar LowRankALM<Matrix>::j(const Matrix& m)
+{
+	return std::max(m.operationNorm(),(1.0/__mu)*m.maxNorm());
+}
+
+template<class Matrix>
+template<class T>
+void LowRankALM<Matrix>::softThreshold(T& t,const scalar mu)
+{
+	std::for_each(t.begin(),t.end(),[&mu](scalar& s){s=(s>mu)?(s-mu):((s<-mu)?(s+mu):0);});
+}
+
+template<class Matrix>
+void LowRankALM<Matrix>::doCompute()
+{
+	__nd = __d.frobeniusNorm();
+}
+
+template<class Matrix>
+void LowRankALM<Matrix>::solvingBegin()
+{
+	__a.resize(__s);
+	__e.resize(__s);
+	scalar n2 = __d.operationNorm();
+	__y = __d*(1.0/(std::max(n2,__d.maxNorm())));
+	__mu = 1.25/n2;
+	__rho = 1.5;
+}
+
+template<class Matrix>
+typename LowRankALM<Matrix>::scalar LowRankALM<Matrix>::doOneIteration()
+{
+	/** compute A_k */
+	SVD<Matrix> svd(__d-__e+(1.0/__mu)*__y);
+	DMatrix sigma = svd.S();
+	softThreshold(sigma,1.0/__mu);
+	__a = svd.U()*sigma*svd.VT();
+	/** compute E_k */
+	__e = __d-__a+__y*(1.0/__mu);
+	softThreshold(__e,__lambda/__mu);
+	/** update of y */
+	__y = __y + __mu*(__d-__a-__e);
+	__mu = __mu*__rho;
+	__x = __a+__e;
+	return (__d-__a-__e).frobeniusNorm()/__nd;
+}
+
+template<class Matrix>
+const typename LowRankALM<Matrix>::OutputType& LowRankALM<Matrix>::result() const
+{
+	return __x;
+}
+
+template<class Matrix>
+const typename LowRankALM<Matrix>::OutputType& LowRankALM<Matrix>::A() const
+{
+	return __a;
+}
+
+template<class Matrix>
+const typename LowRankALM<Matrix>::OutputType& LowRankALM<Matrix>::E() const
+{
+	return __e;
+}
+
+template<class Matrix>
+typename LowRankALM<Matrix>::scalar LowRankALM<Matrix>::objective() const
+{
+	return (__d-__a-__e).frobeniusNorm()/__nd;
+}
+
 }
 
 #endif

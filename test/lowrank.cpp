@@ -4,6 +4,7 @@ typedef COPT::KernelTrait<double> 		kernel;
 typedef kernel::SpMatrix 				SpMatrix;
 typedef SpMatrix::Triplet 				Triplet;
 
+
 typedef kernel::Matrix 				Matrix;
 typedef kernel::Vector 				Vector;
 typedef COPT::APGSolver<kernel, COPT::SolverTimeStatistics> APGSolver;
@@ -20,6 +21,13 @@ int main(int argc, char* argv[])
 	// U = kernel::Matrix::random(m,r);
 	// V = kernel::Matrix::random(r,n);
 	// kernel::Matrix T = U*V;
+	// addSparseNoise(T,s,0.01);
+	// std::cout<<T<<std::endl;
+	// COPT::LowRankALM<kernel::Matrix> alm(T,0.5);
+	// alm.solve();
+	// std::cout<<"A is "<<std::endl<<alm.A()<<std::endl;
+	// std::cout<<"E is "<<std::endl<<alm.E()<<std::endl;
+
 	// std::vector<int> tt(m*n);
 	// for ( int i = 0 ; i < tt.size() ; ++i ) tt[i]=i;
 	// std::random_shuffle(tt.begin(),tt.end());
@@ -86,4 +94,5 @@ int main(int argc, char* argv[])
 	// std::cout<<"resultE:"<<std::endl;
 	// std::cout<<apg.result_E()<<std::endl;
 }
+
 

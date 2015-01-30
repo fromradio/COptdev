@@ -97,9 +97,9 @@ public:
 	typedef VectorBase<scalar,index,Dynamic> 			DVector;
 	/** the corresponding Abstract Matrix */
 
-	/** the Abstract Matrix */
+
 	typedef COPT::AbstractMatrix<FT,I> 						AbstractMatrix;
-	/** the Abstract Vector */
+
 	typedef COPT::AbstractVector<FT,I>						AbstractVector;
 
 private:
@@ -369,6 +369,8 @@ public:
 	void resize (index m, index n);
 	/** resize for one dimension fixed matrix */
 	void resize (index m);
+	/** resize the matrix */
+	void resize (const MSize<index>& s);
 
 	/** set the matrix to be symmetric */
 	void setSymmetricFlag(bool sym);
@@ -389,11 +391,11 @@ public:
 	/** Mathematical operations */
 	/** summation */
 	template<class Mat>
-	DMatrix operator+ (const Mat& mat);
+	DMatrix operator+ (const Mat& mat) const;
 
 	/** subtraction */
 	template<class Mat>
-	DMatrix operator- (const Mat& mat);
+	DMatrix operator- (const Mat& mat) const;
 
 	/** matrix multiplications */
 	template<class T>

@@ -38,6 +38,8 @@ public:
 	virtual scalar *dataPtr() = 0;
 	virtual const scalar *dataPtr() const = 0;
 };
+
+
 /*		class Array describes a base class for basic dense data types used in COPT
  *		like vector and matrix. The array can be referred to another array or independent 
  *		array. 
