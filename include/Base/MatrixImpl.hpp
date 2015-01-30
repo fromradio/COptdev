@@ -320,6 +320,12 @@ void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::resize(index m,
 }
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::resize(const MSize<index>& s)
+{
+	this->resize(s.m(),s.n());
+}
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 template<class Mat>
 void MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::binaryCheck(const Mat&mat) const
 {
@@ -378,7 +384,7 @@ MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>& MatrixBase<scalar,in
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 template<class Mat>
-typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator+(const Mat& mat )
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator+(const Mat& mat ) const
 {
 	binaryCheck(mat);
 	if ( __rows != mat.rows() || __cols != mat.cols() )
@@ -392,7 +398,7 @@ typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix Mat
 
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 template<class Mat>
-typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator-(const Mat& mat )
+typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::operator-(const Mat& mat ) const
 {
 	binaryCheck(mat);
 	if ( __rows != mat.rows() || __cols != mat.cols() )
