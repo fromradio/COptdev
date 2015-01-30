@@ -23,6 +23,8 @@ private:
 public:
 	MSize():__m(0),__n(0){}
 	MSize(int m,int n):__m(m),__n(n){}
+	template<class Matrix>
+	MSize(const Matrix& mat):__m(mat.rows()),__n(mat.cols()){}
 
 	int m() const {return __m;}
 	int n() const {return __n;}
@@ -40,6 +42,8 @@ private:
 public:
 	MSize():__m(0),__n(0){}
 	MSize(long m,long n):__m(m),__n(n){}
+	template<class Matrix>
+	MSize(const Matrix& mat):__m(mat.rows()),__n(mat.cols()){}
 
 	long m() const {return __m;}
 	long n() const {return __n;}
