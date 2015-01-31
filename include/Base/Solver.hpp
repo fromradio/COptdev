@@ -25,6 +25,100 @@
 */
 namespace COPT{
 
+/** 		Description for objective function. 
+  * 		Simple use case:
+  *			double func(const Matrix& mat){return mat.frobeniusNorm();}
+  *			ObjectiveFunction f = func;
+  *			Matrix m = Matrix::identity(4,4);
+  *			std::cout<<f(m); // 2.0;
+  */
+template<class Scalar,class ArgType>
+using ObjectiveFunction = Scalar(*)(const ArgType&);
+
+template<class Scalar,class ArgType>
+using OneIteration = Scalar(*)(ArgType&);
+
+// template<class Scalar,class ArgType,ObjectiveFunction<Scalar,ArgType> ObFunc>
+// class Solver
+// {
+// private:
+// 	/** the result */
+// 	ArgType 		__x;
+// public:
+// 	Scalar objective() const;
+// 	static Scalar objective(const ArgType& x);
+// };
+
+// template<class Scalar,class ArgType,ObjectiveFunction<Scalar,ArgType> ObFunc>
+// Scalar Solver<Scalar,ArgType,ObFunc>::objective()const
+// {
+// 	return ObFunc(__x);
+// }
+
+// template<class Scalar,class ArgType,ObjectiveFunction<Scalar,ArgType> ObFunc>
+// Scalar Solver<Scalar,ArgType,ObFunc>::objective(const ArgType& x)
+// {
+// 	return ObFunc(x);
+// }
+
+
+template<class Scalar,class ArgType,class OutputType=ArgType>
+class Solver
+{
+private:
+
+	typedef ObjectiveFunction<Scalar,ArgType> 		ObjectiveFunction;
+	ArgType 				__x;
+	OutputType 				__result;
+	ObjectiveFunction 		__ob_func;
+public:
+
+	Solver(ObjectiveFunction func = nullptr);
+
+
+	OutputType result() const;
+	/** set the objective function */
+	void setObjectiveFunction(ObjectiveFunction func);
+	/** return the current objective value */
+	Scalar objective() const;
+	/** how to compute objective function */
+	Scalar objective(const ArgType& x) const;
+
+	void setIterationFunction()
+};
+
+template<class Scalar,class ArgType,class OutputType>
+Solver<Scalar,ArgType,OutputType>::Solver(ObjectiveFunction func)
+	:
+	__ob_func(func)
+{
+}
+
+template<class Scalar,class ArgType,class OutputType>
+OutputType Solver<Scalar,ArgType,OutputType>::result() const
+{
+	return __result;
+}
+
+template<class Scalar,class ArgType,class OutputType>
+void Solver<Scalar,ArgType,OutputType>::setObjectiveFunction(ObjectiveFunction func)
+{
+	__ob_func = func;
+}
+
+template<class Scalar,class ArgType,class OutputType>
+Scalar Solver<Scalar,ArgType,OutputType>::objective() const
+{
+	return __ob_func(__x);
+}
+
+template<class Scalar,class ArgType,class OutputType>
+Scalar Solver<Scalar,ArgType,OutputType>::objective(const ArgType& x) const
+{
+	return __ob_func(x);
+}
+
+
 /*			A general design for solver. The solver derives from a Time
  *			Stastistics class to help it compute time cost of the solver.
  *			The solver contains general information like max iteration 

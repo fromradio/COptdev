@@ -4,10 +4,10 @@ typedef COPT::KernelTrait<double> 		kernel;
 typedef kernel::SpMatrix 				SpMatrix;
 typedef SpMatrix::Triplet 				Triplet;
 
-const int m = 5;
-const int r = 2;
-const int n = 7;
-const int s = 5; // random element size
+const int m = 500;
+const int r = 20;
+const int n = 700;
+const int s = 500; // random element size
 
 int main(int argc, char* argv[])
 {
