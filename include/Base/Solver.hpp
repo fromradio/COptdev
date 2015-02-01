@@ -35,10 +35,10 @@ namespace COPT{
 template<class Scalar,class ArgType>
 using ObjectiveFunction = Scalar(*)(const ArgType&);
 
-template<class Scalar,class ArgType>
-using OneIteration = Scalar(*)(ArgType&);
+template<class Scalar,class ArgType,class Option,class Para>
+using OneIteration = Scalar(*)(ArgType&,Option&,Para&);
 
-template<class Scalar,class ArgType,class Option>
+template<class ArgType,class Option>
 using CheckTermination = bool(*)(const ArgType&,const Option&);
 
 // template<class Scalar,class ArgType,ObjectiveFunction<Scalar,ArgType> ObFunc>
@@ -64,6 +64,15 @@ using CheckTermination = bool(*)(const ArgType&,const Option&);
 // 	return ObFunc(x);
 // }
 
+/** types of final termination */
+enum TerminalType
+{
+	C, 		// converged
+	U,		// Unbound
+	N,		// not feasible
+	M 		// maximum iteration is reached
+};
+
 template<class Scalar>
 struct BasicOption
 {
@@ -82,7 +91,11 @@ struct BasicParameter
 	Scalar 					Error;
 	/** the computation time */
 	double 					ComputationTime;
+	/** the terminal type */
+	TerminalType 			Termination;
 };
+
+
 
 template<class Scalar,class ArgType,class OutputType=ArgType,class Option=BasicOption<Scalar>,class Parameter = BasicParameter<Scalar> >
 class Solver
@@ -90,7 +103,8 @@ class Solver
 private:
 
 	typedef ObjectiveFunction<Scalar,ArgType> 		ObjectiveFunction;
-	typedef OneIteration<Scalar,ArgType> 			IterationFunction;
+	typedef OneIteration<Scalar,ArgType,Option,Parameter> 			IterationFunction;
+	typedef CheckTermination
 	
 
 	ArgType 				__x;
@@ -98,6 +112,8 @@ private:
 	OutputType 				__result;
 	/** the option of the solver */
 	Option 					__op;
+	/** the parameter */
+	Parameter 				__para;
 	/** the call for objective function */
 	ObjectiveFunction 		__ob_func;
 	/** the iteration for the solver */
@@ -122,6 +138,12 @@ public:
 
 	/** set the iteration function */
 	void setIterationFunction(IterationFunction func);
+
+	/** get the option */
+	void Option& option() const;
+
+	/** get the parameter */
+	const Parameter& parameter() const;
 };
 
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
@@ -147,16 +169,19 @@ void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setObjectiveFunction(Ob
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
 Scalar Solver<Scalar,ArgType,OutputType,Option,Parameter>::objective() const
 {
-	return __ob_func(__x);
+	if (__ob_func)
+		return __ob_func(__x);
+	else
+		throw COException("Solver error: Objective Function is not defined yet!");
 }
 
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
 Scalar Solver<Scalar,ArgType,OutputType,Option,Parameter>::objective(const ArgType& x) const
 {
-	if (objective)
+	if (__ob_func)
 		return __ob_func(x);
 	else
-		throw COException("Solver error: Objective Function is not set yet!");
+		throw COException("Solver error: Objective Function is not defined yet!");
 }
 
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
@@ -168,7 +193,28 @@ void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setIterationFunction(It
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
 void Solver<Scalar,ArgType,OutputType,Option,Parameter>::doSolve()
 {
+	clock_t b,e;
+	b = clock();
+	for(int i=0; i<__op.MaxIter; ++i)
+	{
+		__iter_func(__x,__op,__para);
+	}
+	e = clock();
+	if(i==__op.MaxIter) 
+		__para.Termination = M; // max iteration number
 
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+const Option& Solver<Scalar,ArgType,OutputType,Option,Parameter>::option() const
+{
+	return __op;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+const Parameter& Solver<Scalar,ArgType,OutputType,Option,Parameter>::parameter() const
+{
+	return __para;
 }
 
 

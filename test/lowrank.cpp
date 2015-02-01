@@ -11,10 +11,10 @@ typedef kernel::Vector 				Vector;
 typedef COPT::APGSolver<kernel, COPT::SolverTimeStatistics> APGSolver;
 
 
-const int m = 50;
-const int r = 2;
-const int n = 70;
-const int s = 50; // random element size
+const int m = 3;
+const int r = 1;
+const int n = 3;
+const int s = 0; // random element size
 
 int main(int argc, char* argv[])
 {
@@ -50,6 +50,7 @@ int main(int argc, char* argv[])
 	kernel::Matrix T = U*V;
 	Matrix A = T;
 	addSparseNoise(T,s,0.01);
+	std::cout<<T<<std::endl;
 	APGSolver apg(T,0.5);
 	apg.solve();
 	// std::cout<<"fucking result E:"<<std::endl;
