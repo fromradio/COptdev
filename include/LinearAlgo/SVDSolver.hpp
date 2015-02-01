@@ -55,7 +55,7 @@ public:
 template<class Matrix>
 SVD<Matrix>::SVD()
 	:
-	__a(NULL)
+	__a(nullptr)
 {
 }
 
