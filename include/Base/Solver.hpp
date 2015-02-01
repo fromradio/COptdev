@@ -38,6 +38,9 @@ using ObjectiveFunction = Scalar(*)(const ArgType&);
 template<class Scalar,class ArgType>
 using OneIteration = Scalar(*)(ArgType&);
 
+template<class Scalar,class ArgType,class Option>
+using CheckTermination = bool(*)(const ArgType&,const Option&);
+
 // template<class Scalar,class ArgType,ObjectiveFunction<Scalar,ArgType> ObFunc>
 // class Solver
 // {
@@ -61,22 +64,55 @@ using OneIteration = Scalar(*)(ArgType&);
 // 	return ObFunc(x);
 // }
 
+template<class Scalar>
+struct BasicOption
+{
+	/** the maximum iteration number */
+	int 					MaxIter;
+	/** the error threshold */
+	Scalar 					Threshold;
+};
 
-template<class Scalar,class ArgType,class OutputType=ArgType>
+template<class Scalar>
+struct BasicParameter
+{
+	/** the iteration number */
+	int 					IterNum;
+	/** the iterative error */
+	Scalar 					Error;
+	/** the computation time */
+	double 					ComputationTime;
+};
+
+template<class Scalar,class ArgType,class OutputType=ArgType,class Option=BasicOption<Scalar>,class Parameter = BasicParameter<Scalar> >
 class Solver
 {
 private:
 
 	typedef ObjectiveFunction<Scalar,ArgType> 		ObjectiveFunction;
+	typedef OneIteration<Scalar,ArgType> 			IterationFunction;
+	
+
 	ArgType 				__x;
+	/** the result */
 	OutputType 				__result;
+	/** the option of the solver */
+	Option 					__op;
+	/** the call for objective function */
 	ObjectiveFunction 		__ob_func;
+	/** the iteration for the solver */
+	IterationFunction 		__iter_func;
+
+	virtual void doSolve();
+
 public:
 
-	Solver(ObjectiveFunction func = nullptr);
+	Solver(ObjectiveFunction obfunc = nullptr,IterationFunction iterfunc = nullptr);
 
-
+	/** return the result of the solver */
 	OutputType result() const;
+
+
 	/** set the objective function */
 	void setObjectiveFunction(ObjectiveFunction func);
 	/** return the current objective value */
@@ -84,38 +120,55 @@ public:
 	/** how to compute objective function */
 	Scalar objective(const ArgType& x) const;
 
-	void setIterationFunction()
+	/** set the iteration function */
+	void setIterationFunction(IterationFunction func);
 };
 
-template<class Scalar,class ArgType,class OutputType>
-Solver<Scalar,ArgType,OutputType>::Solver(ObjectiveFunction func)
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+Solver<Scalar,ArgType,OutputType,Option,Parameter>::Solver(ObjectiveFunction obfunc,IterationFunction iterfunc)
 	:
-	__ob_func(func)
+	__ob_func(obfunc),
+	__iter_func(iterfunc)
 {
 }
 
-template<class Scalar,class ArgType,class OutputType>
-OutputType Solver<Scalar,ArgType,OutputType>::result() const
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+OutputType Solver<Scalar,ArgType,OutputType,Option,Parameter>::result() const
 {
 	return __result;
 }
 
-template<class Scalar,class ArgType,class OutputType>
-void Solver<Scalar,ArgType,OutputType>::setObjectiveFunction(ObjectiveFunction func)
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setObjectiveFunction(ObjectiveFunction func)
 {
 	__ob_func = func;
 }
 
-template<class Scalar,class ArgType,class OutputType>
-Scalar Solver<Scalar,ArgType,OutputType>::objective() const
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+Scalar Solver<Scalar,ArgType,OutputType,Option,Parameter>::objective() const
 {
 	return __ob_func(__x);
 }
 
-template<class Scalar,class ArgType,class OutputType>
-Scalar Solver<Scalar,ArgType,OutputType>::objective(const ArgType& x) const
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+Scalar Solver<Scalar,ArgType,OutputType,Option,Parameter>::objective(const ArgType& x) const
 {
-	return __ob_func(x);
+	if (objective)
+		return __ob_func(x);
+	else
+		throw COException("Solver error: Objective Function is not set yet!");
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setIterationFunction(IterationFunction func)
+{
+	__iter_func = func;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+void Solver<Scalar,ArgType,OutputType,Option,Parameter>::doSolve()
+{
+
 }
 
 
