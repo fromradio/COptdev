@@ -34,22 +34,37 @@ private:
 	typedef typename kernel::Vector 		Vector;
 	typedef typename kernel::Matrix 		Matrix;
 
+    /** input matrix */
 	const Matrix&        __D;
+	/** input positive weighting parameter */
 	const scalar         __lam;
+	/** input max iteration number, 10000 as default */
 	index                __maxiteration;
 
+    /** row number of __D */
 	index                __dr;
+	/** column number of __D */
 	index                __dc;
 
+    /** mu */
 	scalar               __mu;
+	/** mu_bar */
 	scalar               __mu_bar;
+	/** delta */
 	scalar               __delta;
+	/** eta */
 	scalar               __eta;
+	/** t_{k-1} */
 	scalar               __t_forward;
+	/** t_k */
 	scalar               __t;
+	/** A_{k-1} */
 	Matrix               __A_forward;
+	/** A_k */
 	Matrix               __A;
+	/** E_{k-1} */
 	Matrix               __E_forward;
+	/** E_k */
 	Matrix               __E;
 
 	APGSolver();
@@ -78,11 +93,7 @@ void APGSolver<kernel, Time>::doCompute()
 {
 	this->__max_iteration = __maxiteration;
     __mu = 0.99*__D.operationNorm();
-
-    // std::cout<<"original mu:"<<std::endl;
-    // std::cout<<__mu<<std::endl;
-
-    __delta = 1e-9;
+    __delta = 1e-5;
     __mu_bar = __delta*__mu;
     __dr = __D.rows();
     __dc = __D.cols();
@@ -156,19 +167,9 @@ typename APGSolver<kernel, Time>::scalar APGSolver<kernel, Time>::doOneIteration
 	COPT::SVD<Matrix> svd(__GA);
 	__A_forward = __A;
     tempS = svd.S();
-
-    // std::cout<<"svd.s"<<std::endl;
-    // std::cout<<tempS<<std::endl;
-
     funcS(__mu/2,tempS);
-
- //    std::cout<<"ep"<<std::endl;
-	// std::cout<<__mu/2<<std::endl;
-	// std::cout<<"shit!"<<std::endl;
-	// std::cout<<tempS<<std::endl;
-
 	__A = svd.U()*tempS*svd.VT();
-
+	
 	__GE = __YE - 0.5*(__YA + __YE - __D);
 	__E_forward = __E;
 	funcS(__lam*__mu/2,__GE);
@@ -176,26 +177,11 @@ typename APGSolver<kernel, Time>::scalar APGSolver<kernel, Time>::doOneIteration
 
 	__t_forward = __t;
 	__t = (1 + sqrt(1 + 4*__t*__t))/2;
-
-    // std::cout<<"why?"<<std::endl;
-    // std::cout<<__eta*__mu<<std::endl;
-    // std::cout<<__mu_bar<<std::endl;
-
 	__mu = max(__eta*__mu, __mu_bar);
-
-
-	// std::cout<<"fucking mu?"<<std::endl;
-	// std::cout<<__mu<<std::endl;
 
 	__SA = 2*(__YA - __A) + (__A + __E - __YA - __YE);
 	__SE = 2*(__YE - __E) + (__A + __E - __YA - __YE);
 	s = sqrt(pow(__SA.frobeniusNorm(),2) + pow(__SE.frobeniusNorm(),2));
-
-	// std::cout<<"thresh?"<<std::endl;
-	// std::cout<<this->__thresh<<std::endl;
-	// std::cout<<"WTF!"<<std::endl;
-	// std::cout<<s<<std::endl;
-
 	return s;
 }
 
