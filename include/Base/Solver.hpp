@@ -32,37 +32,24 @@ namespace COPT{
   *			Matrix m = Matrix::identity(4,4);
   *			std::cout<<f(m); // 2.0;
   */
-template<class Scalar,class ArgType>
-using ObjectiveFunction = Scalar(*)(const ArgType&);
+template<class Scalar,class ArgType,class Para>
+using ObjectiveFunction = Scalar(*)(const ArgType&,const Para&);
 
+/** one iteration function */
 template<class Scalar,class ArgType,class Option,class Para>
 using OneIteration = Scalar(*)(ArgType&,Option&,Para&);
 
-template<class ArgType,class Option>
-using CheckTermination = bool(*)(const ArgType&,const Option&);
+/** check whether termination is reached */
+template<class ArgType,class Option,class Parameter>
+using CheckTermination = bool(*)(const ArgType&,const Option&,const Parameter&);
 
-// template<class Scalar,class ArgType,ObjectiveFunction<Scalar,ArgType> ObFunc>
-// class Solver
-// {
-// private:
-// 	/** the result */
-// 	ArgType 		__x;
-// public:
-// 	Scalar objective() const;
-// 	static Scalar objective(const ArgType& x);
-// };
+/** initialization function */
+template<class ArgType,class Parameter>
+using SolverInitialization = void(*)(ArgType&, Parameter& );
 
-// template<class Scalar,class ArgType,ObjectiveFunction<Scalar,ArgType> ObFunc>
-// Scalar Solver<Scalar,ArgType,ObFunc>::objective()const
-// {
-// 	return ObFunc(__x);
-// }
-
-// template<class Scalar,class ArgType,ObjectiveFunction<Scalar,ArgType> ObFunc>
-// Scalar Solver<Scalar,ArgType,ObFunc>::objective(const ArgType& x)
-// {
-// 	return ObFunc(x);
-// }
+/** get the result from ArgType */
+template<class ArgType,class OutputType>
+using GetResult = void(*)(const ArgType&,OutputType&);
 
 /** types of final termination */
 enum TerminalType
@@ -80,6 +67,8 @@ struct BasicOption
 	int 					MaxIter;
 	/** the error threshold */
 	Scalar 					Threshold;
+
+	BasicOption():MaxIter(1000),Threshold(1e-7){}
 };
 
 template<class Scalar>
@@ -93,20 +82,63 @@ struct BasicParameter
 	double 					ComputationTime;
 	/** the terminal type */
 	TerminalType 			Termination;
+
+	BasicParameter():IterNum(0),Error(static_cast<Scalar>(0.0)),ComputationTime(0.0),Termination(N){}
 };
 
+class Timer
+{
+private:
+	clock_t 	__begin;
+	clock_t	 	__end;
 
+	bool 		__is_begined;
+	bool		__is_ended;
+	double 		__time;
+
+public:
+
+	/** default constructor */
+	Timer():__is_begined(false),__is_ended(false),__time(0.0){}
+
+	void tic(){ 
+		__begin = clock();
+		__is_begined = true; 
+		__is_ended = false;
+	}
+
+	void toc(){ 
+		__end = clock(); 
+		__time = static_cast<double>(__end-__begin)/CLOCKS_PER_SEC;
+		if(!__is_begined) std::cerr<<"COPT Timer Warning: the timer ends without beginning!"<<std::endl;
+	}
+
+	void end(){
+		__is_begined = false;
+		__is_ended = true;
+	}
+
+	friend std::ostream& operator<<(std::ostream& os,const Timer& timer){
+		os<<"Time elapsed "<<timer.__time<<" seconds"<<std::endl;
+		return os;
+	}
+
+	double time() const{
+		return __time;
+	}
+};
 
 template<class Scalar,class ArgType,class OutputType=ArgType,class Option=BasicOption<Scalar>,class Parameter = BasicParameter<Scalar> >
 class Solver
 {
 private:
 
-	typedef ObjectiveFunction<Scalar,ArgType> 		ObjectiveFunction;
-	typedef OneIteration<Scalar,ArgType,Option,Parameter> 			IterationFunction;
-	typedef CheckTermination
+	typedef COPT::ObjectiveFunction<Scalar,ArgType,Parameter> 			ObjectiveFunction;
+	typedef COPT::OneIteration<Scalar,ArgType,Option,Parameter> 		IterationFunction;
+	typedef COPT::CheckTermination<ArgType,Option,Parameter> 			TerminationFunction;
+	typedef COPT::SolverInitialization<ArgType,Parameter> 				InitializationFunction;
 	
-
+	/** the argument x */
 	ArgType 				__x;
 	/** the result */
 	OutputType 				__result;
@@ -118,16 +150,28 @@ private:
 	ObjectiveFunction 		__ob_func;
 	/** the iteration for the solver */
 	IterationFunction 		__iter_func;
+	/** initialization function */
+	InitializationFunction	__init_func;
+	/** the determination of the terminal condition */
+	TerminationFunction 	__ter_func;
 
 	virtual void doSolve();
 
 public:
 
-	Solver(ObjectiveFunction obfunc = nullptr,IterationFunction iterfunc = nullptr);
+	/** constructor */
+	Solver(
+		const Parameter& para,									// the input parameter has be been given
+		ObjectiveFunction obfunc = nullptr, 					
+		InitializationFunction initfunc=nullptr,
+		IterationFunction iterfunc = nullptr,
+		TerminationFunction terfunc = nullptr);
+
+	/** solve the problem */
+	void solve();
 
 	/** return the result of the solver */
 	OutputType result() const;
-
 
 	/** set the objective function */
 	void setObjectiveFunction(ObjectiveFunction func);
@@ -140,18 +184,32 @@ public:
 	void setIterationFunction(IterationFunction func);
 
 	/** get the option */
-	void Option& option() const;
+	const Option& option() const;
 
 	/** get the parameter */
 	const Parameter& parameter() const;
 };
 
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
-Solver<Scalar,ArgType,OutputType,Option,Parameter>::Solver(ObjectiveFunction obfunc,IterationFunction iterfunc)
+Solver<Scalar,ArgType,OutputType,Option,Parameter>::Solver(
+		const Parameter& para,
+		ObjectiveFunction obfunc, 					
+		InitializationFunction initfunc,
+		IterationFunction iterfunc,
+		TerminationFunction terfunc)
 	:
+	__para(para),
 	__ob_func(obfunc),
-	__iter_func(iterfunc)
+	__init_func(initfunc),
+	__iter_func(iterfunc),
+	__ter_func(terfunc)
 {
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+void Solver<Scalar,ArgType,OutputType,Option,Parameter>::solve()
+{
+	this->doSolve();
 }
 
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
@@ -193,15 +251,24 @@ void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setIterationFunction(It
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
 void Solver<Scalar,ArgType,OutputType,Option,Parameter>::doSolve()
 {
-	clock_t b,e;
-	b = clock();
-	for(int i=0; i<__op.MaxIter; ++i)
+	Timer timer;
+	timer.tic();
+	__init_func(__x,__para);
+	int i;
+	for(i=0; i<__op.MaxIter; ++i)
 	{
-		__iter_func(__x,__op,__para);
+		__para.Error = __iter_func(__x,__op,__para);
+		__para.IterNum ++;
+		if(__ter_func(__x,__op,__para))
+			break;
 	}
-	e = clock();
+	timer.toc();
+	std::cout<<timer.time()<<std::endl;
 	if(i==__op.MaxIter) 
 		__para.Termination = M; // max iteration number
+
+	__para.ComputationTime = timer.time();
+	__result = __x;
 
 }
 
