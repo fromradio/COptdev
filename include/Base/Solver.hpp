@@ -21,14 +21,24 @@
 #define SOLVER_HPP__
 
 /**		A procedural-based framework for optimization solver.
-  *
+  * 	Since Optimization is currently a foundamental and widely-used mathematical tool 
+  * 	in many academic and industrial applications, it is an important problem to develop
+  * 	and validate optimization solvers in a short time. Thus it is one of our core interests to 
+  * 	propose an easy-to-validate framework for researchers to test their own algorithms.
+  * 	In this header file, we introduce an easy-to-use procedural-based solver system.
+  * 	Users can write their own functions that compute the objective function, how the solver
+  * 	iterates, when the solver terminates and so on. Then then can easily separate an
+  * 	optimization problem into several module which is a nice property of optimization solver
+  * 	
   */
 namespace COPT{
 
 /** 		Description for objective function. 
+  *
   * 		Input:
   * 			const ArgType& 		x:		Input argument of the objective function.
-  * 			const Parameter& 	para: 	Input parameter. 
+  * 			const Parameter& 	para: 	Input parameter which contains necessary
+  *			parameters in an optimization solver.
   * 		Simple use case:
   * 			consider a simple objective function that computes the Frobenius
   * 		norm a given matrix.
