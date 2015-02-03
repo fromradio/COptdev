@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <limits>
 #include <cassert>
+#include <iomanip>
 
 /** third party libraries */
 #include "ThirdParty/cblas.h"
@@ -48,9 +49,6 @@
 #include "Base/Traits.hpp"
 #include "Base/COException.hpp"
 #include "Base/Object.hpp"
-#include "Base/TimeStatistics.hpp"
-#include "Base/JournalList.hpp"
-#include "Base/Printer.hpp"
 #include "Base/CBlasWrapper.hpp"
 #include "Base/LapackWrapper.hpp"
 #include "Base/UMFPackWrapper.hpp"
@@ -67,8 +65,6 @@
 #include "Base/NumDifferential.hpp"
 #include "Base/Function.hpp"
 #include "Base/Solver.hpp"
-#include "Base/Problem.hpp"
-#include "FunctionRepository/FuncRepository.hpp"
 
 /** Linear Algorithms */
 #include "LinearAlgo/LinearSolver.hpp"
@@ -78,26 +74,6 @@
 #include "LinearAlgo/QRSolver.hpp"
 #include "LinearAlgo/EigenWrapper.hpp"
 #include "LinearAlgo/SVDSolver.hpp"
-
-/** Algorithms */
-#include "Algorithms/Conjugate.hpp"
-#include "Algorithms/LineSearch.hpp"
-#include "Algorithms/BFGS.hpp"
-#include "Algorithms/AlternatingDirectionMethodOfMultipliers.hpp"
-#include "Algorithms/NonLinearSolver.hpp"
-#include "Algorithms/NonLinearSolverImpl.hpp"
-#include "Algorithms/Simplex.hpp"
-#include "Algorithms/omp.hpp"
-#include "Algorithms/ProximalOperator.hpp"
-#include "Algorithms/Lasso.hpp"
-#include "Algorithms/NonLinearSquare.hpp"
-#include "Algorithms/LeastSquares.hpp"
-#include "Algorithms/LowRank.hpp"
-#include "Algorithms/PCA.hpp"
-
-/** Problems */
-#include "Problems/LPProblem.hpp"
-#include "Problems/BPProblem.hpp"
 
 
 #endif

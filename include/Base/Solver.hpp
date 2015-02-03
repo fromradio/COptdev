@@ -20,13 +20,19 @@
 #ifndef SOLVER_HPP__
 #define SOLVER_HPP__
 
-/*
-	A framework for a general Solver class
-*/
+/**		A procedural-based framework for optimization solver.
+  *
+  */
 namespace COPT{
 
 /** 		Description for objective function. 
+  * 		Input:
+  * 			const ArgType& 		x:		Input argument of the objective function.
+  * 			const Parameter& 	para: 	Input parameter. 
   * 		Simple use case:
+  * 			consider a simple objective function that computes the Frobenius
+  * 		norm a given matrix.
+  *
   *			double func(const Matrix& mat){return mat.frobeniusNorm();}
   *			ObjectiveFunction f = func;
   *			Matrix m = Matrix::identity(4,4);
@@ -35,9 +41,16 @@ namespace COPT{
 template<class Scalar,class ArgType,class Para>
 using ObjectiveFunction = Scalar(*)(const ArgType&,const Para&);
 
-/** one iteration function */
-template<class Scalar,class ArgType,class Option,class Para>
-using OneIteration = Scalar(*)(ArgType&,Option&,Para&);
+/** 		Iteration function for one iteration.
+  *			Input and Output:
+  * 			ArgType& 	x: 		Main argument that is used and updated in the 
+  * 		iteration.
+  * 			Parameter& 	para:	Parameter in an optimization solver. 
+  * 		Simple use case:
+  * 			consider that 
+  */
+template<class Scalar,class ArgType,class Para>
+using OneIteration = Scalar(*)(ArgType& x,Para& para);
 
 /** check whether termination is reached */
 template<class ArgType,class Option,class Parameter>
@@ -50,6 +63,16 @@ using SolverInitialization = void(*)(ArgType&, Parameter& );
 /** get the result from ArgType */
 template<class ArgType,class OutputType>
 using GetResult = void(*)(const ArgType&,OutputType&);
+
+/** normal print function */
+using NormalPrintFunction = void(*)(int,std::ostream&);
+
+/** print function for the solver, can be modified */
+template<class ArgType,class Option,class Parameter>
+using PrintFunction = void(*)(const ArgType&, const Option&, const Parameter&, int level, std::ostream& );
+
+template<class ArgType,class OutputType>
+using ArgToResult = void(*)(const ArgType&,OutputType&);
 
 /** types of final termination */
 enum TerminalType
@@ -78,12 +101,21 @@ struct BasicParameter
 	int 					IterNum;
 	/** the iterative error */
 	Scalar 					Error;
+	/** current objective value */
+	Scalar 					Object;
 	/** the computation time */
 	double 					ComputationTime;
 	/** the terminal type */
 	TerminalType 			Termination;
 
-	BasicParameter():IterNum(0),Error(static_cast<Scalar>(0.0)),ComputationTime(0.0),Termination(N){}
+	BasicParameter()
+		:
+		IterNum(0),
+		Error(static_cast<Scalar>(0.0)),
+		Object(static_cast<Scalar>(0.0)),
+		ComputationTime(0.0),
+		Termination(N)
+	{}
 };
 
 class Timer
@@ -128,15 +160,86 @@ public:
 	}
 };
 
+void solverBeginPrint(int level,std::ostream& os)
+{
+	if(level>0){
+		os<<std::fixed<<std::setw(8)<<"Iters"<<"\t"<<std::setw(12)<<"Objective"<<"\t"<<std::setw(12)<<"Error"<<std::endl;
+	}
+}
+
+template<class ArgType,class Option,class Parameter>
+void iterationPrint(const ArgType& x, const Option& o, const Parameter& para, int level, std::ostream& os)
+{
+	if(level==0) // nothing will be printed
+		return;
+	else if(level==1)
+	{
+		os<<std::fixed<<std::setw(8)<<para.IterNum<<"\t";
+		os<<std::setw(12)<<std::setprecision(4)<<std::scientific<<para.Object<<"\t";
+		os<<std::setw(12)<<para.Error<<std::endl;
+		os<<std::defaultfloat;
+	}
+}
+
+template<class ArgType,class Option,class Parameter>
+void solverEndPrint(const ArgType& x, const Option& o, const Parameter& para, int level, std::ostream& os)
+{
+	if(level==0)
+		return;
+	else if(level==1)
+	{
+		switch(para.Termination)
+		{
+			case C:
+			{
+				os<<"Solver successfully converges."<<std::endl;
+			}
+			break;
+			case U:
+			{
+				os<<"The problem is unbounded."<<std::endl;
+			}
+			break;
+			case N:
+			{
+				os<<"The problem is not feasible."<<std::endl;
+			}
+			break;
+			case M:
+			{
+				os<<"Maximum itreation number is reached."<<std::endl;
+			}
+			break;
+			default:
+			{
+				os<<"Unknown terminal type for the solver."<<std::endl;
+			}
+			break;
+		}
+		os<<"The whole solver costs "<<para.ComputationTime<<" s."<<std::endl;
+		os<<"The final objective value is "<<para.Object<<"."<<std::endl;
+		os<<para.IterNum<<" iterations are used."<<std::endl;
+	}
+}
+
+template<class ArgType,class OutputType>
+void argEqualToResult(const ArgType& x, OutputType& result)
+{
+	result = x;
+}
+
+
 template<class Scalar,class ArgType,class OutputType=ArgType,class Option=BasicOption<Scalar>,class Parameter = BasicParameter<Scalar> >
 class Solver
 {
 private:
 
 	typedef COPT::ObjectiveFunction<Scalar,ArgType,Parameter> 			ObjectiveFunction;
-	typedef COPT::OneIteration<Scalar,ArgType,Option,Parameter> 		IterationFunction;
+	typedef COPT::OneIteration<Scalar,ArgType,Parameter> 				IterationFunction;
 	typedef COPT::CheckTermination<ArgType,Option,Parameter> 			TerminationFunction;
 	typedef COPT::SolverInitialization<ArgType,Parameter> 				InitializationFunction;
+	typedef COPT::ArgToResult<ArgType,OutputType> 						ArgToResultFunction;
+	typedef COPT::PrintFunction<ArgType,Option,Parameter> 				PrintFunction;
 	
 	/** the argument x */
 	ArgType 				__x;
@@ -146,14 +249,26 @@ private:
 	Option 					__op;
 	/** the parameter */
 	Parameter 				__para;
+	/** print level of the solver */
+	int 					__print_level;
 	/** the call for objective function */
 	ObjectiveFunction 		__ob_func;
-	/** the iteration for the solver */
-	IterationFunction 		__iter_func;
 	/** initialization function */
 	InitializationFunction	__init_func;
+	/** the iteration for the solver */
+	IterationFunction 		__iter_func;
 	/** the determination of the terminal condition */
 	TerminationFunction 	__ter_func;
+	/** function describing how argument is transformed into result */
+	ArgToResultFunction 	__arg_to_re_func;
+	/** the output stream */
+	std::ostream& 			__ostream;
+	/** print functions when the solver begins */
+	NormalPrintFunction		__begin_print_func;
+	/** print function for iteration */
+	PrintFunction 			__iter_print_func;
+	/** print function at the end */
+	PrintFunction 			__end_print_func;
 
 	virtual void doSolve();
 
@@ -165,7 +280,8 @@ public:
 		ObjectiveFunction obfunc = nullptr, 					
 		InitializationFunction initfunc=nullptr,
 		IterationFunction iterfunc = nullptr,
-		TerminationFunction terfunc = nullptr);
+		TerminationFunction terfunc = nullptr,
+		int printlevel = 1);
 
 	/** solve the problem */
 	void solve();
@@ -173,15 +289,41 @@ public:
 	/** return the result of the solver */
 	OutputType result() const;
 
+	/** validate the solver */
+	bool validation() const;
+
+	/** setter and getter */
+	//%{
+	/** 	Set the print level of the solver.
+	  * 	The print level of the solver determines what information will be
+	  * 	printed. 
+	  */
+	void setPrintLevel(int printlevel);
 	/** set the objective function */
 	void setObjectiveFunction(ObjectiveFunction func);
 	/** return the current objective value */
 	Scalar objective() const;
 	/** how to compute objective function */
-	Scalar objective(const ArgType& x) const;
-
+	ObjectiveFunction objectiveFunction() const;
+	/** set the initialization function */
+	void setInitializationFunction(InitializationFunction func);
+	/** obtain the initialization function */
+	InitializationFunction initializationFunction() const;
 	/** set the iteration function */
 	void setIterationFunction(IterationFunction func);
+	/** obtain the iteration function */
+	IterationFunction iterationFunction() const;
+	/** set the terminal function */
+	void setTerminationFunction(TerminationFunction func);
+	/** obtain the terminal function */
+	TerminationFunction terminationFunction() const;
+	/** set the argument to result function */
+	void setArgToResultFunction(ArgToResultFunction func);
+	/** set the print function for the begining */
+	void setBeginningPrintFunction(NormalPrintFunction func);
+	/** set the iterative print function */
+	void setIterationPrintFunction(PrintFunction func);
+	//%}
 
 	/** get the option */
 	const Option& option() const;
@@ -196,13 +338,20 @@ Solver<Scalar,ArgType,OutputType,Option,Parameter>::Solver(
 		ObjectiveFunction obfunc, 					
 		InitializationFunction initfunc,
 		IterationFunction iterfunc,
-		TerminationFunction terfunc)
+		TerminationFunction terfunc,
+		int printlevel)
 	:
 	__para(para),
+	__print_level(printlevel),
 	__ob_func(obfunc),
 	__init_func(initfunc),
 	__iter_func(iterfunc),
-	__ter_func(terfunc)
+	__ter_func(terfunc),
+	__arg_to_re_func(argEqualToResult<ArgType,OutputType>),
+	__ostream(std::cout),
+	__begin_print_func(&solverBeginPrint),
+	__iter_print_func(&iterationPrint<ArgType,Option,Parameter>),
+	__end_print_func(&solverEndPrint<ArgType,Option,Parameter>)
 {
 }
 
@@ -219,6 +368,18 @@ OutputType Solver<Scalar,ArgType,OutputType,Option,Parameter>::result() const
 }
 
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+bool Solver<Scalar,ArgType,OutputType,Option,Parameter>::validation() const
+{
+	return __ob_func&&__iter_func&&__init_func&&__iter_func;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setPrintLevel(int printlevel)
+{
+	__print_level = printlevel;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
 void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setObjectiveFunction(ObjectiveFunction func)
 {
 	__ob_func = func;
@@ -228,18 +389,27 @@ template<class Scalar,class ArgType,class OutputType,class Option,class Paramete
 Scalar Solver<Scalar,ArgType,OutputType,Option,Parameter>::objective() const
 {
 	if (__ob_func)
-		return __ob_func(__x);
+		return __ob_func(__x,__para);
 	else
 		throw COException("Solver error: Objective Function is not defined yet!");
 }
 
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
-Scalar Solver<Scalar,ArgType,OutputType,Option,Parameter>::objective(const ArgType& x) const
+typename Solver<Scalar,ArgType,OutputType,Option,Parameter>::ObjectiveFunction Solver<Scalar,ArgType,OutputType,Option,Parameter>::objectiveFunction() const
 {
-	if (__ob_func)
-		return __ob_func(x);
-	else
-		throw COException("Solver error: Objective Function is not defined yet!");
+	return __ob_func;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setInitializationFunction(InitializationFunction func)
+{
+	__init_func = func;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+typename Solver<Scalar,ArgType,OutputType,Option,Parameter>::InitializationFunction Solver<Scalar,ArgType,OutputType,Option,Parameter>::initializationFunction() const
+{
+	return __init_func;
 }
 
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
@@ -249,27 +419,78 @@ void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setIterationFunction(It
 }
 
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+typename Solver<Scalar,ArgType,OutputType,Option,Parameter>::IterationFunction Solver<Scalar,ArgType,OutputType,Option,Parameter>::iterationFunction() const
+{
+	return __iter_func;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setTerminationFunction(TerminationFunction func)
+{
+	__ter_func = func;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+typename Solver<Scalar,ArgType,OutputType,Option,Parameter>::TerminationFunction Solver<Scalar,ArgType,OutputType,Option,Parameter>::terminationFunction() const
+{
+	return __ter_func;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setArgToResultFunction(ArgToResultFunction func)
+{
+	__arg_to_re_func = func;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setBeginningPrintFunction(NormalPrintFunction func)
+{
+	__begin_print_func = func;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+void Solver<Scalar,ArgType,OutputType,Option,Parameter>::setIterationPrintFunction(PrintFunction func)
+{
+	__iter_print_func = func;
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
 void Solver<Scalar,ArgType,OutputType,Option,Parameter>::doSolve()
 {
+	if(!this->validation())
+	{
+		std::cerr<<"The solver is not valid in current state. Please make sure that every function needed is set."<<std::endl;
+		return;
+	}
+	// the beginning of copt solver
+	__ostream<<"*******************COPT solver begins*******************"<<std::endl;
+	__begin_print_func(__print_level,__ostream);
 	Timer timer;
 	timer.tic();
 	__init_func(__x,__para);
 	int i;
 	for(i=0; i<__op.MaxIter; ++i)
 	{
-		__para.Error = __iter_func(__x,__op,__para);
+		__para.Error = __iter_func(__x,__para);
 		__para.IterNum ++;
+		if(__print_level>0)
+			__para.Object = __ob_func(__x,__para);
+		__iter_print_func(__x,__op,__para,__print_level,__ostream);
 		if(__ter_func(__x,__op,__para))
+		{
+			__para.Termination = C;
 			break;
+		}
 	}
+	// operations when solver ends
+	__arg_to_re_func(__x,__result);
 	timer.toc();
-	std::cout<<timer.time()<<std::endl;
 	if(i==__op.MaxIter) 
 		__para.Termination = M; // max iteration number
-
 	__para.ComputationTime = timer.time();
-	__result = __x;
-
+	// print the end of the solver
+	__end_print_func(__x,__op,__para,__print_level,__ostream);
+	__ostream<<"********************COPT solver ends********************"<<std::endl;
 }
 
 template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
@@ -283,216 +504,6 @@ const Parameter& Solver<Scalar,ArgType,OutputType,Option,Parameter>::parameter()
 {
 	return __para;
 }
-
-
-/*			A general design for solver. The solver derives from a Time
- *			Stastistics class to help it compute time cost of the solver.
- *			The solver contains general information like max iteration 
- *			number, final iteration number, threshold, estimated error
- */	
-template<class kernel,class Time=NoTimeStatistics,class ResultType=typename kernel::Vector>
-class GeneralSolver
-	:
-	public COPTObject,
-	public noncopyable
-{
-public:
-	enum TerminalType{
-		NotBeginYet,
-		Optimal,
-		MaxIteration,
-		Unbound,
-		NotFeasible
-	};
-protected:
-
-	typedef typename kernel::index 				index;
-	typedef typename kernel::scalar 			scalar;
-	typedef typename kernel::podscalar 			podscalar;
-	typedef typename kernel::Vector 			Vector;
-
-	/** the journal list of solver */
-	SolverJournal<GeneralSolver> 		__journal;
-	/** Time computation */
-	Time 								__time;
-	/** max iteration number */
-	index 				__max_iteration;
-	/** final iteration number */
-	index 				__iter_num;
-	/** error threshold */
-	podscalar			__thresh;
-	/** final estimated error */
-	podscalar 			__estimated_error;
-	/** the terminal type of solver */
-	TerminalType 		__terminal_type;
-
-protected:
-	/** vritual function that has to be implemented by derived classes */
-	/** something happens in the beginning of solving */
-	virtual void solvingBegin() = 0;
-	/** the real solving part */
-	virtual void doSolve();
-	/** the real computation part */
-	virtual void doCompute() = 0;
-	/** whether the terminal satisfied */
-	virtual bool terminalSatisfied() const;
-	
-	/** an iteration 
-	 *  the estimated error is returned for iteration
-	 */
-	virtual podscalar doOneIteration() = 0;
-
-public:
-	typedef solver_object 				ObjectCategory;
-	/** default constructor */
-	GeneralSolver(
-		const index maxiteration = 1000,
-		const podscalar thresh = 1e-8);
-	/** virtual deconstructor */
-	virtual ~GeneralSolver(){}
-	/** one single iteration */
-	podscalar oneIteration();
-	/** kernel function: solve the problem */
-	void solve();
-	/** kernel function: compute or initialize the problem */
-	void compute();
-	/** */
-
-	/** getter and setter */
-	//%{
-	void 		setMaxIteration(const index maxiteration);
-	index 		maxIterationNumber() const;
-	void 		setIterationNumber(const index iter);
-	index 		iterationNumber() const;
-	void 		setThreshold( const podscalar thresh);
-	podscalar 	threshold() const;
-	void 		setEstimatedError(const podscalar error);
-	podscalar 	estimatedError() const;
-	/** compute the objective function */
-	virtual podscalar objective() const = 0;
-	/** get the result */
-	virtual const ResultType& result() const = 0;
-	//%}
-};
-
-/*************Implementation of 'GeneralSolver'***************/
-
-template<class kernel,class Time,class ResultType>
-GeneralSolver<kernel,Time,ResultType>::GeneralSolver(
-	const index maxiteration,
-	const podscalar thresh)
-	:
-	__journal(*this),
-	__max_iteration(maxiteration),
-	__iter_num(0),
-	__thresh(thresh),
-	__estimated_error(0.0),
-	__terminal_type(NotBeginYet)
-{
-}
-
-template<class kernel,class Time,class ResultType>
-void GeneralSolver<kernel,Time,ResultType>::doSolve()
-{
-	__iter_num = 0;
-	do
-	{
-		__estimated_error = this->oneIteration();
-		if(++__iter_num>=__max_iteration)
-		{
-			__terminal_type = MaxIteration;
-			break;
-		}
-	}while(__estimated_error>__thresh);
-	if(__estimated_error<=__thresh)
-		__terminal_type = Optimal;
-}
-
-template<class kernel,class Time,class ResultType>
-bool GeneralSolver<kernel,Time,ResultType>::terminalSatisfied() const
-{
-	return __estimated_error<__thresh;
-}
-
-template<class kernel,class Time,class ResultType>
-void GeneralSolver<kernel,Time,ResultType>::compute()
-{
-	__time.computationBegin();
-	this->doCompute();
-	__time.computationEnd();
-	// after computation, the problem has not begun
-	__terminal_type = NotBeginYet;
-}
-
-template<class kernel,class Time,class ResultType>
-void GeneralSolver<kernel,Time,ResultType>::solve()
-{
-	this->solvingBegin();
-	__time.solvingBegin();
-	this->doSolve();
-	__time.solvingEnd();
-	__journal.solveEnd();
-	__time.printTimeInfo();
-}
-
-template<class kernel,class Time,class ResultType>
-typename GeneralSolver<kernel,Time,ResultType>::podscalar GeneralSolver<kernel,Time,ResultType>::oneIteration()
-{
-	__journal.iterationBegin();
-	podscalar e = this->doOneIteration();
-	__journal.iterationEnd();
-	return e;
-}
-
-template<class kernel,class Time,class ResultType>
-void GeneralSolver<kernel,Time,ResultType>::setMaxIteration( const index maxiteration)
-{
-	__max_iteration = maxiteration;
-}
-
-template<class kernel,class Time,class ResultType>
-typename GeneralSolver<kernel,Time,ResultType>::index GeneralSolver<kernel,Time,ResultType>::maxIterationNumber() const
-{
-	return __max_iteration;
-}
-
-template<class kernel,class Time,class ResultType>
-void GeneralSolver<kernel,Time,ResultType>::setIterationNumber( const index iter )
-{
-	__iter_num = iter;
-}
-
-template<class kernel,class Time,class ResultType>
-typename GeneralSolver<kernel,Time,ResultType>::index GeneralSolver<kernel,Time,ResultType>::iterationNumber() const
-{
-	return __iter_num;
-}
-
-template<class kernel,class Time,class ResultType>
-void GeneralSolver<kernel,Time,ResultType>::setThreshold( const podscalar thresh )
-{
-	__thresh = thresh;
-}
-
-template<class kernel,class Time,class ResultType>
-typename GeneralSolver<kernel,Time,ResultType>::podscalar GeneralSolver<kernel,Time,ResultType>::threshold() const
-{
-	return __thresh;
-}
-
-template<class kernel,class Time,class ResultType>
-void GeneralSolver<kernel,Time,ResultType>::setEstimatedError(const podscalar error )
-{
-	__estimated_error = error;
-}
-
-template<class kernel,class Time,class ResultType>
-typename GeneralSolver<kernel,Time,ResultType>::podscalar GeneralSolver<kernel,Time,ResultType>::estimatedError() const
-{
-	return __estimated_error;
-}
-
-//////////////////End of impelementation of 'GeneralSolver'
 
 };
 
