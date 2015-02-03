@@ -1,2 +1,0 @@
-mex lu_copt.cpp  -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -llapack -lcblas -lblas -I/usr/local/include -I/usr/local/include/eigen3
-mex qr_copt.cpp  -lumfpack -lamd -lsuitesparseconfig -lcholmod -lcolamd -llapack -lcblas -lblas -I/usr/local/include -I/usr/local/include/eigen3
