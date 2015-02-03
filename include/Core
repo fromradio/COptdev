@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <limits>
 #include <cassert>
+#include <iomanip>
 
 /** third party libraries */
 #include "ThirdParty/cblas.h"
