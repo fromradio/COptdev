@@ -23,67 +23,150 @@
 namespace COPT
 {
 
-/** check the dimension of two vectors */
-template<class Vector>
-void checkDimension(const Vector &v1, const Vector &v2)
+/** 		This header file introduces basic arithmetic operations like distance computation,
+  *  		norm computation, computing mean vector and so on  for mathematical types
+  * 		in open source library COPT.
+  */
+
+/** 		Check the dimension of two mathematical types */
+template<class T1,class T2>
+void checkDimension(const T1& t1, const T2& t2)
 {
-	if(v1.size()!=v2.size())
+	checkDimension(t1,t2,typename T1::ObjectCategory(),typename T2::ObjectCategory());
+}
+
+/** 		Assert if the dimension of two vectors are not the same
+  */
+template<class V1,class V2>
+void checkDimension(const V1& v1, const V2& v2, const vector_object&, const vector_object& )
+{
+	if(v1.dimension()!=v2.dimension())
 		throw COException("COPT error: The size of two vectors are not consistent!");
 }
 
-/** compute the norm */
-template<class T>
-typename T::podscalar norm(const T& t,int l)
+template<class M1,class M2>
+void checkDimension(const M1& m1, const M2& m2, const matrix_object&, const matrix_object& )
 {
-	return norm(t,l,typename T::ObjectCategory());
+	if(m1.rows()!=m2.rows()||m1.cols()!=m2.cols())
+		throw COException("COPT error: The size of two matrices are not consistent!");
 }
 
-/** compute norm of a vector */
-template<class Vector>
-typename Vector::podscalar norm(const Vector& vec, int l, const vector_object&)
+/** 		Computation of the norm of a mathematical types including vector and matrix.
+  */
+template<class T>
+typename T::podscalar norm(const T& t, char c)
 {
-	typedef typename Vector::index ind;
-	typedef typename Vector::podscalar podscalar;
-	switch(l)
+	return norm(t,c,typename T::ObjectCategory());
+}
+
+/** 		Norm computation of a vector.
+  */
+template<class Vector>
+typename Vector::podscalar norm(const Vector& vec, char c, const vector_object&)
+{
+	typedef typename Vector::index 		ind;
+	typedef typename Vector::scalar 	scalar;
+	typedef typename Vector::podscalar 	podscalar;
+	switch (c)
 	{
-		case 0:
+		// l0-norm
+		case '0':
 		{
-			ind s = vec.size();
-			podscalar norm=0;
-			for ( ind i = 0 ; i<s ; ++i )
-			{
-				norm += (IS_ZERO(vec[i]))?0:1;
-			}
+			podscalar norm = 0.0;
+			std::for_each(vec.begin(),vec.end(),[&norm](const scalar& s){norm+=(IS_ZERO(s)?0.0:1.0);});
 			return norm;
 		}
 		break;
-		case 1:
+		// l1-norm
+		case '1':
 		{
 			return vec.absNorm();
 		}
 		break;
-		case 2:
+		// l2-norm
+		case '2':
 		{
 			return vec.norm();
 		}
 		break;
+		// max-norm
+		case 'm':
+		case 'M':
+		{
+			podscalar norm = -1.0;
+			std::for_each(vec.begin(),vec.end(),[&norm](const scalar& s){podscalar as=std::abs(s); if(norm<as) norm=as;});
+			return norm;
+		}
+		break;
 		default:
 		{
-			throw COException("Unsupported type of norm operation");
-			return 0;
+			throw COException("Unknown type of norm!");
+			return 0.0;
 		}
 		break;
 	}
 }
 
-/** compute a general norm of a vector */
-template<class Vector>
-typename Vector::podscalar norm(const Vector &vec, typename Vector::podscalar l, const vector_object&)
+/** 		Norm computation of a matrix 
+  */
+template<class Matrix>
+typename Matrix::podscalar norm(const Matrix& mat, char c, const matrix_object& )
 {
-	
+	typedef typename Matrix::scalar 	scalar;
+	typedef typename Matrix::podscalar 	podscalar;
+	switch(c)
+	{
+		// l1-norm, max column sum
+		case '1':
+		{
+			return mat.oneNorm();
+		}
+		break;
+		// l2-norm, max singular value
+		case '2':
+		{
+			return mat.operationNorm();
+		}
+		break;
+		// max norm, max abs element
+		case 'm':
+		case 'M':
+		{
+			return mat.maxNorm();
+		}
+		break;
+		// frobenium norm
+		case 'f':
+		case 'F':
+		{
+			return mat.frobeniusNorm();
+		}
+		break;
+		// infinity norm, maximum row sum
+		case 'i':
+		case 'I':
+		{
+			return mat.infinityNorm();
+		}
+		break;
+		default:
+		{
+			throw COException("Unknown type of matrix norm");
+		}
+		break;
+	}
 }
 
-/** compute the distance between two vectors */
+/** 		Compute the distance between two vectors 
+  */
+template<class T1,class T2>
+typename T1::podscalar distance(const T1& t1, const T2& t2)
+{
+	return distance(t1,t2,typename T1::ObjectCategory(),typename T2::ObjectCategory());
+}
+
+/** 		Distance between two vectors.
+  */
 template<class Vector>
 typename Vector::podscalar distance(const Vector &v1, const Vector &v2)
 {
@@ -91,7 +174,8 @@ typename Vector::podscalar distance(const Vector &v1, const Vector &v2)
 	return (v1-v2).norm();
 }
 
-/** compute the mean vector of a set of given vector */
+/** 		Compute the mean vector of a set of vectors 
+  */
 template<class VectorIterator>
 typename VectorIterator::value_type mean(VectorIterator begin,VectorIterator end)
 {
@@ -102,7 +186,8 @@ typename VectorIterator::value_type mean(VectorIterator begin,VectorIterator end
 	return vec;
 }
 
-
+/** 		Compute the sgn of a given type 
+  */
 template<class T>
 T sgn(const T& t)
 {
@@ -111,7 +196,8 @@ T sgn(const T& t)
 	for_each(t.begin(),t.end(),[](scalar& s){s=(s<0)?-1:(s>0?1:0);});
 }
 
-/** add sparse noise */
+/** 		Add sparse noise 
+  */
 template<class T,class S,class I>
 void addSparseNoise(T& t,const I sp,const S n)
 {
