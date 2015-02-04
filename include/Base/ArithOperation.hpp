@@ -119,7 +119,7 @@ void addSparseNoise(T& t,const I sp,const S n)
 	for ( int i = 0 ; i < tt.size() ; ++i ) tt[i]=i;
 	std::random_shuffle(tt.begin(),tt.end());
 	std::uniform_real_distribution<typename T::podscalar> unif(-1.0,1.0);
-	for ( int i = 0 ; i < sp ; ++ i ) t[i]+=n*unif(copt_rand_eng);
+	for ( int i = 0 ; i < sp ; ++ i ) t[tt[i]]+=n*unif(copt_rand_eng);
 }
 
 
