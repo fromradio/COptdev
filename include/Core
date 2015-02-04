@@ -72,7 +72,6 @@
 #include "LinearAlgo/LUSolver.hpp"
 #include "LinearAlgo/CholeskySolver.hpp"
 #include "LinearAlgo/QRSolver.hpp"
-#include "LinearAlgo/EigenWrapper.hpp"
 #include "LinearAlgo/SVDSolver.hpp"
 
 
