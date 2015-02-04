@@ -70,8 +70,10 @@ private:
 	APGSolver();
 	void solvingBegin();
 	void doCompute();
-	void funcS(const scalar, Matrix&);
-	scalar max(scalar, scalar);
+
+	template<class T>
+	void softThreshold(T& t,const scalar mu);
+
 	scalar doOneIteration();
 
 public:
@@ -125,26 +127,10 @@ void APGSolver<kernel, Time>::solvingBegin()
 }
 
 template<class kernel, class Time>
-void APGSolver<kernel, Time>::funcS(const scalar ep, Matrix& S)
+template<class T>
+void APGSolver<kernel, Time>::softThreshold(T& t,const scalar mu)
 {
-	index r = S.rows(), c = S.cols();
-	for(int i = 0; i < r; i++)
-		for(int j = 0; j < c; j++)
-			if(S(i,j) > ep)
-			    S(i,j) = S(i,j) - ep;
-			else if(S(i,j) < -ep)
-				S(i,j) = S(i,j) + ep;
-			else
-				S(i,j) = 0;
-}
-
-template<class kernel, class Time>
-typename APGSolver<kernel, Time>::scalar APGSolver<kernel, Time>::max(scalar x, scalar y)
-{
-	if(x >= y)
-		return x;
-	else
-		return y;
+	std::for_each(t.begin(),t.end(),[&mu](scalar& s){s=(s>mu)?(s-mu):((s<-mu)?(s+mu):0);});
 }
 
 template<class kernel, class Time>
@@ -167,17 +153,17 @@ typename APGSolver<kernel, Time>::scalar APGSolver<kernel, Time>::doOneIteration
 	COPT::SVD<Matrix> svd(__GA);
 	__A_forward = __A;
     tempS = svd.S();
-    funcS(__mu/2,tempS);
+    softThreshold(tempS, __mu/2);
 	__A = svd.U()*tempS*svd.VT();
 	
 	__GE = __YE - 0.5*(__YA + __YE - __D);
 	__E_forward = __E;
-	funcS(__lam*__mu/2,__GE);
+	softThreshold(__GE,__lam*__mu/2);
 	__E = __GE;
 
 	__t_forward = __t;
 	__t = (1 + sqrt(1 + 4*__t*__t))/2;
-	__mu = max(__eta*__mu, __mu_bar);
+	__mu = std::max(__eta*__mu, __mu_bar);
 
 	__SA = 2*(__YA - __A) + (__A + __E - __YA - __YE);
 	__SE = 2*(__YE - __E) + (__A + __E - __YA - __YE);
@@ -203,7 +189,6 @@ typename APGSolver<kernel, Time>::scalar APGSolver<kernel, Time>::objective() co
 	// return (__A + __E - __D).operationNorm();
 	return 0;
 }
-
 
 
 template<class InputType,class OutputType = InputType,class ConjugateType = InputType>
