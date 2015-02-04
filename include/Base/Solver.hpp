@@ -20,7 +20,8 @@
 #ifndef SOLVER_HPP__
 #define SOLVER_HPP__
 
-/**		A procedural-based framework for optimization solver.
+/**		"""
+  *		A procedural-based framework for optimization solver.
   * 	Since Optimization is currently a foundamental and widely-used mathematical tool 
   * 	in many academic and industrial applications, it is an important problem to develop
   * 	and validate optimization solvers in a short time. Thus it is one of our core interests to 
@@ -28,8 +29,9 @@
   * 	In this header file, we introduce an easy-to-use procedural-based solver system.
   * 	Users can write their own functions that compute the objective function, how the solver
   * 	iterates, when the solver terminates and so on. Then then can easily separate an
-  * 	optimization problem into several module which is a nice property of optimization solver
-  * 	
+  * 	optimization problem into several module which is a nice property of optimization problem.
+  * 	This design helps researchers focus on the problem not how to code and debug. 
+  * 	"""
   */
 namespace COPT{
 
@@ -39,14 +41,23 @@ namespace COPT{
   * 			const ArgType& 		x:		Input argument of the objective function.
   * 			const Parameter& 	para: 	Input parameter which contains necessary
   *			parameters in an optimization solver.
+  *
   * 		Simple use case:
   * 			consider a simple objective function that computes the Frobenius
-  * 		norm a given matrix.
+  * 		norm of a given matrix A and the input argument x.
   *
-  *			double func(const Matrix& mat){return mat.frobeniusNorm();}
+  * 		struct Parameter:public BasicParameter
+  * 		{
+  *				Matrix A;
+  *			};
+  *			double func(const Matrix& x,const Parameter&p){
+  *				return (p.A*mat).frobeniusNorm();
+  * 		}
   *			ObjectiveFunction f = func;
   *			Matrix m = Matrix::identity(4,4);
-  *			std::cout<<f(m); // 2.0;
+  * 		Parameter p;
+  * 		p.A = Matrix::identity(4.4);
+  *			std::cout<<f(m,para); // 2.0;
   */
 template<class Scalar,class ArgType,class Para>
 using ObjectiveFunction = Scalar(*)(const ArgType&,const Para&);
@@ -55,36 +66,67 @@ using ObjectiveFunction = Scalar(*)(const ArgType&,const Para&);
   *			Input and Output:
   * 			ArgType& 	x: 		Main argument that is used and updated in the 
   * 		iteration.
-  * 			Parameter& 	para:	Parameter in an optimization solver. 
-  * 		Simple use case:
-  * 			consider that 
+  * 			Parameter& 	para:	Parameter in an optimization solver.
   */
 template<class Scalar,class ArgType,class Para>
 using OneIteration = Scalar(*)(ArgType& x,Para& para);
 
-/** check whether termination is reached */
-template<class ArgType,class Option,class Parameter>
-using CheckTermination = bool(*)(const ArgType&,const Option&,const Parameter&);
-
-/** initialization function */
+/** 		Initialization function for a solver. You can set the initial parameters,
+  * 		prepare for solving the problem etc.
+  * 		Input and Output:
+  *				ArgType& 	x: 		Main argument that is initialized and will be used
+  * 		in the whole procedure.
+  * 			Para& 		para: 	Parameter that is initialized.
+  */
 template<class ArgType,class Parameter>
-using SolverInitialization = void(*)(ArgType&, Parameter& );
+using SolverInitialization = void(*)(ArgType& x, Parameter& para);
 
-/** get the result from ArgType */
-template<class ArgType,class OutputType>
-using GetResult = void(*)(const ArgType&,OutputType&);
-
-/** normal print function */
-using NormalPrintFunction = void(*)(int,std::ostream&);
-
-/** print function for the solver, can be modified */
+/** 		Check whether the solver is terminated.
+  * 		Input:
+  * 			const ArgType& 		x: 		The argument that is used in iterations
+  * 			const Option& 		opt:	The option of the problem like maximum iteration
+  *			number, error threshold and so on.
+  * 			const Parameter& 	para:	The parameters of the solver
+  */
 template<class ArgType,class Option,class Parameter>
-using PrintFunction = void(*)(const ArgType&, const Option&, const Parameter&, int level, std::ostream& );
+using CheckTermination = bool(*)(const ArgType& x, const Option& opt, const Parameter& para);
 
+
+/** 		Obtain the result from argument 
+  * 		Input:
+  * 			const ArgType& 	x:		The solved x.
+  * 		Output:
+  * 			OutputType& 	result: The result.
+  *
+  * 		Generally, you do not need to overload this function. But sometimes, one might add
+  * 		redundent information in 'ArgType'. Then you will need to extract the result from x. 
+  */
 template<class ArgType,class OutputType>
-using ArgToResult = void(*)(const ArgType&,OutputType&);
+using GetResult = void(*)(const ArgType& x, OutputType& result);
 
-/** types of final termination */
+/** 		Normal print function for solver which can be modified.
+  * 		Input: 
+  * 			int 			level: 	The print level.
+  * 		Input and Output
+  * 			std::ostream 	os:		The output stream
+  */
+using NormalPrintFunction = void(*)(int level,std::ostream& os);
+
+/** 		Print function for the solver, can be modified
+  * 		Input:
+  * 			const ArgType& 		x: 		The argument
+  * 			const Option& 		opt: 	The option
+  * 			const Parameter&	para:	The parameter
+  * 			int 				level:	Print level
+  *			Input and Output:
+  * 			std::ostream& 		os: 	Output stream
+  */
+template<class ArgType,class Option,class Parameter>
+using PrintFunction = void(*)(const ArgType& x, const Option& opt, const Parameter& para, int level, std::ostream& os);
+
+
+/** 		Types of termination 
+  */
 enum TerminalType
 {
 	C, 		// converged
@@ -93,6 +135,11 @@ enum TerminalType
 	M 		// maximum iteration is reached
 };
 
+/** 		Basic option structure.
+  * 		One might define their own option structure by inheriting from this structure.
+  * 		Note that the default maximum iteration number is 1000 and the default
+  * 		threshold is set as 1e-7.
+  */
 template<class Scalar>
 struct BasicOption
 {
@@ -104,6 +151,11 @@ struct BasicOption
 	BasicOption():MaxIter(1000),Threshold(1e-7){}
 };
 
+/**			Basic parameter structure.
+  * 		One might define their own parameter structure by inheriting from the following
+  * 		structure. At least there must be iteration number, current estimated error, current
+  * 		objective value, computation time and termination type.
+  */
 template<class Scalar>
 struct BasicParameter
 {
@@ -170,6 +222,7 @@ public:
 	}
 };
 
+/** default print function at the beginning of a solver */
 void solverBeginPrint(int level,std::ostream& os)
 {
 	if(level>0){
@@ -177,6 +230,7 @@ void solverBeginPrint(int level,std::ostream& os)
 	}
 }
 
+/** default print function for iteration */
 template<class ArgType,class Option,class Parameter>
 void iterationPrint(const ArgType& x, const Option& o, const Parameter& para, int level, std::ostream& os)
 {
@@ -191,6 +245,7 @@ void iterationPrint(const ArgType& x, const Option& o, const Parameter& para, in
 	}
 }
 
+/** default print function at the end of solving the problem */
 template<class ArgType,class Option,class Parameter>
 void solverEndPrint(const ArgType& x, const Option& o, const Parameter& para, int level, std::ostream& os)
 {
@@ -238,7 +293,14 @@ void argEqualToResult(const ArgType& x, OutputType& result)
 	result = x;
 }
 
-
+/** 		The main class for this header file. A procedural-based framework for 
+  *			optimization problems. The solver is used by setting different functions
+  * 		that is used. In another word, we separate an optimization problem into
+  * 		simple parts. We design a framework like this is because that when we are
+  * 		doing optimization research and writing optimization codes we find that there
+  * 		are a lot of repeative works and we want to avoid it.
+  * 		
+  */
 template<class Scalar,class ArgType,class OutputType=ArgType,class Option=BasicOption<Scalar>,class Parameter = BasicParameter<Scalar> >
 class Solver
 {
@@ -248,7 +310,7 @@ private:
 	typedef COPT::OneIteration<Scalar,ArgType,Parameter> 				IterationFunction;
 	typedef COPT::CheckTermination<ArgType,Option,Parameter> 			TerminationFunction;
 	typedef COPT::SolverInitialization<ArgType,Parameter> 				InitializationFunction;
-	typedef COPT::ArgToResult<ArgType,OutputType> 						ArgToResultFunction;
+	typedef COPT::Getresult<ArgType,OutputType> 						ArgToResultFunction;
 	typedef COPT::PrintFunction<ArgType,Option,Parameter> 				PrintFunction;
 	
 	/** the argument x */
@@ -478,6 +540,7 @@ void Solver<Scalar,ArgType,OutputType,Option,Parameter>::doSolve()
 	Timer timer;
 	timer.tic();
 	__init_func(__x,__para);
+	__para.IterNum = 0;
 	int i;
 	for(i=0; i<__op.MaxIter; ++i)
 	{
