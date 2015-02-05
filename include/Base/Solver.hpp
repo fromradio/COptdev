@@ -310,7 +310,7 @@ private:
 	typedef COPT::OneIteration<Scalar,ArgType,Parameter> 				IterationFunction;
 	typedef COPT::CheckTermination<ArgType,Option,Parameter> 			TerminationFunction;
 	typedef COPT::SolverInitialization<ArgType,Parameter> 				InitializationFunction;
-	typedef COPT::Getresult<ArgType,OutputType> 						ArgToResultFunction;
+	typedef COPT::GetResult<ArgType,OutputType> 						ArgToResultFunction;
 	typedef COPT::PrintFunction<ArgType,Option,Parameter> 				PrintFunction;
 	
 	/** the argument x */

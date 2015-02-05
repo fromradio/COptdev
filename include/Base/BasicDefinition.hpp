@@ -47,8 +47,6 @@ const int    MAX_SEARCH = 10000;				// default maximum number of search
 const double	DEFAULT_CONVERGE_ERROR = 1e-5; 	// default converge error
 const double 	DEFAULT_STEP_FOR_DIFFERENTIAL = 1e-5;
 
-const double INFTY = 1e10;
-
 template<class T>
 struct Infty{
 	static inline T maximal(){
@@ -151,7 +149,6 @@ enum LinearSolverType
 LUSolver,				// LU solver for matrices (lapack)
 QRSolver,				// QR solver for matrices (lapack)
 CholeskySolver,			// Cholesky solver for symmetric semidefine matrix (lapack)
-EigenWrap				// Eigen solver from third party eigen might be used
 };
 
 } // End of namespace COPT

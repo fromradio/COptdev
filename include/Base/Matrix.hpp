@@ -401,14 +401,10 @@ public:
 	template<class T>
 	typename T::DType operator* (const T &vec) const;
 
-	// /** matrix and matrix multiplication */
-	// template<class Mat>
-	// DMatrix operator* (const Mat &mat) const;
-
 	/** multiplication with a scalar */
 	DMatrix operator* (const scalar s) const;
 
-	// multiplication between a scalar and a matrix
+	/** multiplication between a scalar and a matrix */
 	friend DMatrix operator* (const scalar s, const MatrixBase& mat)
 	{
 		DMatrix result(mat.rows(),mat.cols());
@@ -418,13 +414,7 @@ public:
 		return result;
 	}
 
-	// // multiplication between a scalar and a matrix
-	// friend MatrixBase operator* (const MatrixBase& mat, const scalar s)
-	// {
-	// 	return s*mat;
-	// }
-
-	// transpose
+	/** transpose */
 	DMatrix transpose() const;
 
 	/** transpose muliplication */
@@ -448,30 +438,9 @@ public:
 		}
 		return os;
 	}
-
-	/*				solve linear system
-	 *
-	 */
-	 Vector lapackSolve(const Vector& vec){
-		if (__rows != __cols )
-			throw COException("Solving Error: the matrix is not square!");
-		if (__rows != vec.size() )
-			throw COException("Solving Error: the size of right hand vector is wrong!");
-		Vector v(vec);
-		int pivot[__rows], c2 = 1,info;
-		scalar* a = new scalar[__rows*__cols];
-		blas::copt_blas_copy(__rows*__cols,this->dataPtr(),1,a,1);
-		copt_lapack_gesv(&__rows,&c2,a,
-			&__rows,pivot,v.dataPtr(),
-			&__rows,
-			&info);
-		delete[] a; // delete the temporaray array
-		return v;
-	}
 	
-	Vector solve(const Vector& vec){
-		return lapackSolve(vec);
-	}
+	template<class Vec>
+	typename Vec::DType solve(const Vec& vec);
 
 	Vector leastSquareSolve(const Vector& vec){
 		if( __cols != vec.size() )

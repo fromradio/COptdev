@@ -23,10 +23,11 @@
 namespace COPT
 {
 
-/*			LU solver of a general linear system. This is actually a wrapper of famous library lapack. The solver aims to factorize any input matrix A with A=LU. 
- *
- *
- */
+/**			LU solver of a general linear system. This is actually a wrapper of famous library 
+  *			lapack. The solver aims to factorize any input matrix A with A=LU. 
+  *
+  *
+  */
 template<class Matrix>
 class LU
 	:
@@ -65,9 +66,6 @@ public:
 	LU ( const Matrix& mat );
 	~LU();
 	//%}
-
-	/** square validation before solving */
-	// void squareValidation() const;
 
 	/** inverse matrix */
 	DMatrix inverse ( );

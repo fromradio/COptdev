@@ -535,6 +535,17 @@ typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix Mat
 	return result;
 }
 
+template<class Matrix>
+class LU;
+
+template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
+template<class Vec>
+typename Vec::DType MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::solve(const Vec& vec)
+{
+	LU<MatrixBase> lu(*this);
+	return lu.solve(vec);
+}
+
 template<class scalar,class index,int RowAtCompileTime,int ColAtCompileTime>
 typename MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::DMatrix MatrixBase<scalar,index,RowAtCompileTime,ColAtCompileTime>::identity(
 	index m,
