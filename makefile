@@ -152,6 +152,13 @@ bin/pca: obj/pca.o
 obj/pca.o: test/pca.cpp include/Algorithms/PCA.hpp
 	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
 
+debug: bin/debug
+bin/debug: obj/debug.o
+	$(CXX) obj/debug.o -L$(DIR_LIB) -o $@ $(LIB)
+obj/debug.o: test/Debug.cpp
+	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
+
+
 help: $(TEST_BIN) 
 	
 $(TEST_BIN): $(TEST_OBJ)

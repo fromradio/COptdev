@@ -278,7 +278,7 @@ void Array<scalar,index,SizeAtCompileTime>::setArray(const index size, const sca
 	else{
 		if(SizeAtCompileTime==Dynamic) reset(size,inter);
 		if(data)
-			blas::copt_blas_copy(__size,data,1,__data_ptr,__inter);
+			blas::copt_blas_copy(__size,data,inter,__data_ptr,__inter);
 	}
 }
 
