@@ -16,14 +16,12 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #ifndef FUNCTION_HPP__
 #define FUNCTION_HPP__
 /*
-	Second version of 'Functions' classes
-*/
-namespace COPT{
-
+ Second version of 'Functions' classes
+ */
+namespace COPT {
 
 /*
  *	Scalar function
@@ -34,22 +32,24 @@ namespace COPT{
  *
  */
 template<class T>
-class ScalarFunction{
+class ScalarFunction {
 protected:
 
 public:
-	typedef 		T 				ScalarType;
-	typedef 		T 			 	FT;
-	ScalarFunction (  ){}
+	typedef T ScalarType;
+	typedef T FT;
+	ScalarFunction() {
+	}
 	// the deconstructor
-	virtual ~ScalarFunction() {}
+	virtual ~ScalarFunction() {
+	}
 	// basic operation computing the value of the function
-	virtual FT operator() 	( FT x ) const = 0;
+	virtual FT operator()(FT x) const = 0;
 	// basic operation computing the differential of the function
-	virtual FT diff  		( FT x ) const {
+	virtual FT diff(FT x) const {
 		return ScalarDifferential<ScalarFunction>(*this).diff(x);
 	}
-	virtual FT sDiff 		( FT x ) const {
+	virtual FT sDiff(FT x) const {
 		return ScalarDifferential<ScalarFunction>(*this).sDiff(x);
 	}
 };
@@ -68,34 +68,38 @@ public:
  *			Returns the Hessian matrix of the function
  */
 template<class VT>
-class VectorFunction{
+class VectorFunction {
 protected:
 	// the dimension of the problem
-	int 		__dim;
+	int __dim;
 public:
-	typedef 			VT 								Vector;
-	typedef typename 	Vector::ScalarType 				ScalarType;
-	typedef 			MatrixBase<ScalarType>			Matrix;
-	typedef typename 	Vector::ScalarType 				FT;
+	typedef VT Vector;
+	typedef typename Vector::ScalarType ScalarType;
+	typedef MatrixBase<ScalarType> Matrix;
+	typedef typename Vector::ScalarType FT;
 
-	VectorFunction ( ):__dim(0) {}
+	VectorFunction() :
+			__dim(0) {
+	}
 
-	virtual ~VectorFunction() {}
+	virtual ~VectorFunction() {
+	}
 
-	int 				dimension () {return __dim;}
+	int dimension() {
+		return __dim;
+	}
 
-	virtual FT 			operator() (const Vector& vec ) const = 0;
+	virtual FT operator()(const Vector& vec) const = 0;
 
-	virtual Vector 		gradient (const Vector& vec ) const{
+	virtual Vector gradient(const Vector& vec) const {
 		return VectorDifferential<VectorFunction>(*this).gradient(vec);
 	}
 
-	virtual Matrix 	hessian (const Vector& vec ) const {
+	virtual Matrix hessian(const Vector& vec) const {
 		return VectorDifferential<VectorFunction>(*this).hessian(vec);
 	}
 };
 
 } // End of namespace COPT
-
 
 #endif

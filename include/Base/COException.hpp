@@ -16,7 +16,6 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #ifndef COEXCEPTION_HPP__
 #define COEXCEPTION_HPP__
 
@@ -24,20 +23,22 @@
 #include <string>
 
 // the base class of the exception that is used in the library
-namespace COPT
-{
-class COException : public std::exception
-{
+namespace COPT {
+class COException: public std::exception {
 public:
-	COException(const char* str):__str("COpt Exception: "){ __str.append(str); }
-	virtual const char* what() const throw()
-	{
+	COException(const char* str) :
+			__str("COpt Exception: ") {
+		__str.append(str);
+	}
+	virtual const char* what() const throw () {
 		return __str.c_str();
 	}
-	~COException() throw(){}
+	~COException() throw () {
+	}
 private:
-	std::string			__str;
+	std::string __str;
 };
-};
+}
+;
 
 #endif

@@ -16,12 +16,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #ifndef BFGS_HPP__
 #define BFGS_HPP__
 
-namespace COPT{
-
+namespace COPT {
 
 /*				classical BFGS approach
  *				/param func:			input function
@@ -35,55 +33,51 @@ namespace COPT{
  *				/param tracknum:		the maximum number using back tracking method to find the step length
  */
 template<class VFunc>
-void BFGSMethod(
-	const VFunc& 						func,
-	const typename VFunc::ScalarType 	c1,
-	const typename VFunc::ScalarType 	c2,
-	const typename VFunc::ScalarType 	sigma,
-	typename VFunc::Vector& 			x,
-	typename VFunc::ScalarType& 		tol_error,
-	int& 								iters,
-	const typename VFunc::ScalarType 	rho = 0.7,
-	const int 							tracknum = 100
-	)
-{
-	typedef typename VFunc::ScalarType 		Scalar;
-	typedef typename VFunc::Vector 			Vector;
-	typedef typename VFunc::Matrix 			Matrix;
+void BFGSMethod(const VFunc& func, const typename VFunc::ScalarType c1,
+		const typename VFunc::ScalarType c2,
+		const typename VFunc::ScalarType sigma, typename VFunc::Vector& x,
+		typename VFunc::ScalarType& tol_error, int& iters,
+		const typename VFunc::ScalarType rho = 0.7, const int tracknum = 100) {
+	typedef typename VFunc::ScalarType Scalar;
+	typedef typename VFunc::Vector Vector;
+	typedef typename VFunc::Matrix Matrix;
 
 	// gradient;
 	Vector gradient = func.gradient(x);
 	Vector gradientformer = gradient;
 
-	Scalar tol = tol_error*tol_error;
+	Scalar tol = tol_error * tol_error;
 	tol_error = gradient.squaredNorm();
 	int maxIter = iters;
 	iters = 0;
 
-	Matrix H = Matrix::identity(x.size(),x.size(),std::sqrt(tol_error)*sigma);
-	Matrix I = Matrix::identity(x.size(),x.size());
-	while (tol_error>tol){
+	Matrix H = Matrix::identity(x.size(), x.size(),
+			std::sqrt(tol_error) * sigma);
+	Matrix I = Matrix::identity(x.size(), x.size());
+	while (tol_error > tol) {
 		int numbers = tracknum;
 		Scalar steplength = 1.0;
-		Vector direction = -(H*gradient);
-		backTrackingWithWolfeCondition(func,x,gradient,direction,rho,c1,c2,steplength,numbers);
-		Vector s = steplength*direction;
-		x = x+s;
+		Vector direction = -(H * gradient);
+		backTrackingWithWolfeCondition(func, x, gradient, direction, rho, c1,
+				c2, steplength, numbers);
+		Vector s = steplength * direction;
+		x = x + s;
 		gradientformer = gradient;
 		gradient = func.gradient(x);
-		Vector y = gradient-gradientformer;
-		Scalar rho = 1.0/(y.dot(s));
-		s = rho*s;
-		H = (I-s.mulTrans(y))*H*(I-y.mulTrans(s))+1.0/rho*(s.mulTrans(s));
+		Vector y = gradient - gradientformer;
+		Scalar rho = 1.0 / (y.dot(s));
+		s = rho * s;
+		H = (I - s.mulTrans(y)) * H * (I - y.mulTrans(s))
+				+ 1.0 / rho * (s.mulTrans(s));
 		tol_error = gradient.squaredNorm();
-		++ iters;
-		if(iters>=maxIter){
+		++iters;
+		if (iters >= maxIter) {
 			tol_error = std::sqrt(tol_error);
 			break;
 		}
 	}
 	tol_error = std::sqrt(tol_error);
 }
-}// End of namespace COPT
+} // End of namespace COPT
 
 #endif

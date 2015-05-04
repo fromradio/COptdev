@@ -16,12 +16,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #ifndef OBJECT_HPP__
 #define OBJECT_HPP__
 
-namespace COPT
-{
+namespace COPT {
 /*			The very base class of open source library 'COPT'. Actually
  *			there is nothing special in this class. Each class in COPT derives
  *			from 'COPTObject'. There are some virtual functions defined in 
@@ -37,43 +35,47 @@ namespace COPT
  *					return the brief introduction of the class.
  *	
  */
-class COPTObject
-{
+class COPTObject {
 private:
 
 	/** a brief introduction of the object */
-	ostring 		__intro;
+	ostring __intro;
 	/** a string storing the type of the object */
-	ostring			__type; 		
+	ostring __type;
 
 public:
 
 	/** the category of the object */
-	typedef copt_object 					ObjectCategory;
+	typedef copt_object ObjectCategory;
 
 	/** default constructor of COPTObject */
 	COPTObject(
-		const ostring intro=ostring("This is an object of light-weight open source library COPT."),
-		const ostring type=ostring("COPT object"))
-		:
-		__intro(intro),
-		__type(type)
-	{
+			const ostring intro =
+					ostring(
+							"This is an object of light-weight open source library COPT."),
+			const ostring type = ostring("COPT object")) :
+			__intro(intro), __type(type) {
 	}
 
-	virtual ~COPTObject(){}
+	virtual ~COPTObject() {
+	}
 
 	/** return the introduction about the COPT object */
-	const ostring& intro() const{return __intro;}
+	const ostring& intro() const {
+		return __intro;
+	}
 
 	/** the type of the object */
-	const ostring& type() const{return __type;}
+	const ostring& type() const {
+		return __type;
+	}
 
 	/*			a clear function 
 	 *			some classes of COPT might contain some pointer stuff which
 	 *			has to be released when it is necessary.
 	 */
-	virtual void clear(){}
+	virtual void clear() {
+	}
 };
 
 // const ostring& COPTObject::intro() const
@@ -90,7 +92,7 @@ public:
 // {
 // }
 
-} // End of namespace COPT
+}// End of namespace COPT
 
 #endif 
 // OBJECT_HPP__

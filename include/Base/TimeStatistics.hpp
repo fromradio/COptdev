@@ -16,72 +16,62 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #ifndef TIME_STATISTICS_HPP__
 #define TIME_STATISTICS_HPP__
 
-
-namespace COPT
-{
+namespace COPT {
 
 /** declaration */
 class TimeStatistics;
 class NoTimeStatistics;
 class SolverTimeStatistics;
 
-class TimeComputation
-{
+class TimeComputation {
 private:
-	clock_t 		__begin;
-	clock_t 		__end;
-	bool 			__is_beginned;
+	clock_t __begin;
+	clock_t __end;
+	bool __is_beginned;
 public:
-	TimeComputation()
-		:
-		__is_beginned(false)
-	{
+	TimeComputation() :
+			__is_beginned(false) {
 	}
 
 	template<class Time>
-	void timeBegin( const Time& stat)
-	{
-		timeBegin(stat,typename Time::TimeCategory());
+	void timeBegin(const Time& stat) {
+		timeBegin(stat, typename Time::TimeCategory());
 	}
 
-
-	void timeBegin( const NoTimeStatistics& , const no_time_stat_tag& )
-	{
+	void timeBegin(const NoTimeStatistics&, const no_time_stat_tag&) {
 	}
 
-	void timeBegin( const SolverTimeStatistics& , const solver_time_stat_tag& )
-	{
-		if(__is_beginned)
-			std::cerr<<"Time computation warning: last computation has not termined yet "<<std::endl;
+	void timeBegin(const SolverTimeStatistics&, const solver_time_stat_tag&) {
+		if (__is_beginned)
+			std::cerr
+					<< "Time computation warning: last computation has not termined yet "
+					<< std::endl;
 		__begin = clock();
 		__is_beginned = true;
 	}
 
 	template<class Time>
-	void timeEnd( const Time& stat )
-	{
-		timeEnd(stat,typename Time::TimeCategory());
+	void timeEnd(const Time& stat) {
+		timeEnd(stat, typename Time::TimeCategory());
 	}
 
-	void timeEnd( const NoTimeStatistics& , const no_time_stat_tag & )
-	{
+	void timeEnd(const NoTimeStatistics&, const no_time_stat_tag &) {
 	}
 
-	void timeEnd(const SolverTimeStatistics& , const solver_time_stat_tag& )
-	{
-		if(!__is_beginned)
-			std::cerr<<"Time computation warning: time computation has not beginned yet "<<std::endl;
+	void timeEnd(const SolverTimeStatistics&, const solver_time_stat_tag&) {
+		if (!__is_beginned)
+			std::cerr
+					<< "Time computation warning: time computation has not beginned yet "
+					<< std::endl;
 		__end = clock();
 		__is_beginned = false;
 	}
 
-	double currentTime()
-	{
-		return (double)(__end-__begin)/CLOCKS_PER_SEC;
+	double currentTime() {
+		return (double) (__end - __begin) / CLOCKS_PER_SEC;
 	}
 
 	// void timeBegin( const NoTimeStatistics& ,const no_time_stat_tag&);
@@ -95,13 +85,11 @@ public:
 	// double currentTime();
 };
 
-class TimeStatistics
-{
+class TimeStatistics {
 private:
-	TimeComputation 		__time_computation;
+	TimeComputation __time_computation;
 public:
-	TimeComputation& timeComputer()
-	{
+	TimeComputation& timeComputer() {
 		return __time_computation;
 	}
 
@@ -113,13 +101,10 @@ public:
 // 	return __time_computation;
 // }
 
-class NoTimeStatistics
-	:
-	public TimeStatistics
-{
+class NoTimeStatistics: public TimeStatistics {
 private:
 public:
-	typedef 	no_time_stat_tag 		TimeCategory;
+	typedef no_time_stat_tag TimeCategory;
 
 	// void computationBegin();
 	// void computationEnd();
@@ -129,29 +114,23 @@ public:
 
 	// void printTimeInfo();
 
-
-	void computationBegin()
-	{
+	void computationBegin() {
 		this->timeComputer().timeBegin(*this);
 	}
 
-	void computationEnd()
-	{
+	void computationEnd() {
 		this->timeComputer().timeEnd(*this);
 	}
 
-	void solvingBegin()
-	{
+	void solvingBegin() {
 		this->timeComputer().timeBegin(*this);
 	}
 
-	void solvingEnd()
-	{
+	void solvingEnd() {
 		this->timeComputer().timeEnd(*this);
 	}
 
-	void printTimeInfo()
-	{
+	void printTimeInfo() {
 	}
 };
 
@@ -179,66 +158,52 @@ public:
 // {
 // }
 
-class SolverTimeStatistics
-	:
-	public TimeStatistics
-{
+class SolverTimeStatistics: public TimeStatistics {
 	/** the computation time */
-	double 			__computation_time;
+	double __computation_time;
 	/** the solve time */
-	double 			__solving_time;
+	double __solving_time;
 	/** whether it is set */
-	bool 			__is_computed;
+	bool __is_computed;
 
 public:
-	typedef 	solver_time_stat_tag 	TimeCategory;
+	typedef solver_time_stat_tag TimeCategory;
 
-
-	SolverTimeStatistics()
-		:
-		__computation_time(0.0),
-		__solving_time(0.0),
-		__is_computed(false)
-	{
+	SolverTimeStatistics() :
+			__computation_time(0.0), __solving_time(0.0), __is_computed(false) {
 	}
 
-	void computationBegin()
-	{
+	void computationBegin() {
 		this->timeComputer().timeBegin(*this);
 	}
 
-	void computationEnd()
-	{
+	void computationEnd() {
 		this->timeComputer().timeEnd(*this);
 		this->setComputationTime(this->timeComputer().currentTime());
 	}
 
-	void solvingBegin()
-	{
+	void solvingBegin() {
 		this->timeComputer().timeBegin(*this);
 	}
 
-	void solvingEnd()
-	{
+	void solvingEnd() {
 		this->timeComputer().timeEnd(*this);
 		this->setSolvingTime(this->timeComputer().currentTime());
 	}
 
-	void setComputationTime( const double t )
-	{
+	void setComputationTime(const double t) {
 		__computation_time = t;
 		__is_computed = true;
 	}
 
-	void setSolvingTime( const double t )
-	{
+	void setSolvingTime(const double t) {
 		__solving_time = t;
 	}
 
-	void printTimeInfo()
-	{
-		std::cout<<"computation costs "<<__computation_time<<"s"<<std::endl;
-		std::cout<<"solving costs "<<__solving_time<<"s"<<std::endl;
+	void printTimeInfo() {
+		std::cout << "computation costs " << __computation_time << "s"
+				<< std::endl;
+		std::cout << "solving costs " << __solving_time << "s" << std::endl;
 	}
 	// SolverTimeStatistics();
 

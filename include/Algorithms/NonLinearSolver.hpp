@@ -16,12 +16,10 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #ifndef NON_LINEAR_SOLVER_HPP__
 #define NON_LINEAR_SOLVER_HPP__
 
-namespace COPT
-{
+namespace COPT {
 /*			Numerical solver for non-linear problems
  *			Currently, three methods are contained:
  *			Steepest descent method
@@ -29,63 +27,54 @@ namespace COPT
  *			BFGS method
  */
 template<class VFunc>
-class NonLinearSolver
-{
+class NonLinearSolver {
 public:
-	enum SolverType{
+	enum SolverType {
 		SDM,		// steepest descent method
 		NM,			// Newton's method
 		BFGS		// BFGS method
 	};
 private:
-	typedef 		typename VFunc::ScalarType 		ScalarType;
-	typedef 		typename VFunc::Vector			Vector;
+	typedef typename VFunc::ScalarType ScalarType;
+	typedef typename VFunc::Vector Vector;
 	// 	the reference to target function
-	const VFunc& 			__func;
+	const VFunc& __func;
 	//	the tolerance of error
-	ScalarType				__tol;
+	ScalarType __tol;
 	//	the maximum number of iterations
-	int 					__maxiternum;
+	int __maxiternum;
 	//	the first constant for back tracking method
-	ScalarType 				__c1;
+	ScalarType __c1;
 	//	the second constant for wolfe condition judging (back tracking method)
-	ScalarType				__c2;
+	ScalarType __c2;
 	//	the ratio for back tracking method
-	ScalarType				__ratio;
+	ScalarType __ratio;
 	//	the sigma value for BFGS method
-	ScalarType				__sigma;
+	ScalarType __sigma;
 	//	the maximum number for back tracking
-	int 					__tracknum;
+	int __tracknum;
 	//	the final error
-	ScalarType				__error;
+	ScalarType __error;
 	//	the final number of iterations
-	int 					__iters;
+	int __iters;
 	//	the final result
-	Vector 					__x;
+	Vector __x;
 	//	the status of solver, true for converged and false for un-converged
-	bool					__status;
+	bool __status;
 	//	the type of the solver, SDM as default
-	SolverType 				__type;
-
-
+	SolverType __type;
 
 	/*
-					 	private functions
-	*/
+	 private functions
+	 */
 	//	the main algorithm
-	bool		doSolve();
+	bool doSolve();
 public:
-	NonLinearSolver(
-		const VFunc& func,
-		const ScalarType tol = 1e-5,
-		const ScalarType maxiternum = 1000,
-		const ScalarType c1 = 1e-3,
-		const ScalarType c2 = 0.5,
-		const ScalarType ratio = 0.7,
-		const ScalarType sigma = 1.0,
-		const int __tracknum = 100,
-		const SolverType type = SDM
-		);
+	NonLinearSolver(const VFunc& func, const ScalarType tol = 1e-5,
+			const ScalarType maxiternum = 1000, const ScalarType c1 = 1e-3,
+			const ScalarType c2 = 0.5, const ScalarType ratio = 0.7,
+			const ScalarType sigma = 1.0, const int __tracknum = 100,
+			const SolverType type = SDM);
 
 	//		set the type of the solver: SDM, NM or BFGS
 	void setType(const SolverType type);
@@ -97,7 +86,7 @@ public:
 	void setErrorThreshold(const ScalarType tol);
 
 	//		interface for solving the problem
-	void solve( const Vector& vec);
+	void solve(const Vector& vec);
 
 	//		print the solver information
 	void printInfo();

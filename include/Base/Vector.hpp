@@ -16,28 +16,26 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #ifndef VECTOR_HPP__
 #define VECTOR_HPP__
 /*
-	basic operation that will be used in the pipeline
-*/
+ basic operation that will be used in the pipeline
+ */
 /*
-	the exception class for COPT
-*/
+ the exception class for COPT
+ */
 
-namespace COPT
-{
+namespace COPT {
 // declaration
-template <class FT,class I,int RowAtCompileTime,int ColAtCompileTime>
+template<class FT, class I, int RowAtCompileTime, int ColAtCompileTime>
 class MatrixBase;
 
-template<class FT,class I>
-class AbstractVector
-{
+template<class FT, class I>
+class AbstractVector {
 public:
 
-	virtual ~AbstractVector(){}
+	virtual ~AbstractVector() {
+	}
 	typedef FT scalar;
 	typedef I index;
 
@@ -51,60 +49,58 @@ public:
 	virtual int sizeAtCompileTime() const = 0;
 };
 
-template <class FT,class I = int,int SizeAtCompileTime=Dynamic>
-class VectorBase 
-	: 
-	public Array<FT,I>,
-	public AbstractVector<FT,I>
-{
+template<class FT, class I = int, int SizeAtCompileTime = Dynamic>
+class VectorBase: public Array<FT, I>, public AbstractVector<FT, I> {
 public:
 	/** 	scalar type 	*/
-	typedef FT										scalar;
+	typedef FT scalar;
 	/** 	the pod type of scalar */
-	typedef typename get_pod_type<scalar>::type 	podscalar;
+	typedef typename get_pod_type<scalar>::type podscalar;
 	/** 	size type 		*/
-	typedef I 										index;
+	typedef I index;
 	/**		define the category 	*/
-	typedef vector_object 							ObjectCategory;
+	typedef vector_object ObjectCategory;
 	/**		define the kernel 		*/
-	typedef KernelTrait<FT,index>					Kernel;
+	typedef KernelTrait<FT, index> Kernel;
 	/** 	the dynamic type */
-	typedef VectorBase<FT,index,Dynamic> 			DType;
+	typedef VectorBase<FT, index, Dynamic> DType;
 
 private:
 	/**		definitions used in implementation */
-	typedef COPT::Array<FT,index,SizeAtCompileTime>	Array;
+	typedef COPT::Array<FT, index, SizeAtCompileTime> Array;
 
-	typedef COPT::AbstractVector<FT,I>		 		AbstractVector;
+	typedef COPT::AbstractVector<FT, I> AbstractVector;
 
-	typedef COPT::AbstractMatrix<FT,I> 				AbstractMatrix;
+	typedef COPT::AbstractMatrix<FT, I> AbstractMatrix;
 
-	typedef COPT::MatrixBase<FT,index,Dynamic,Dynamic> 	DMatrix;
+	typedef COPT::MatrixBase<FT, index, Dynamic, Dynamic> DMatrix;
 public:
 
-	
 	/** constructors and deconstructor */
 	//%{
 	/** default constructor */
 	VectorBase();
-	
+
 	/*
-		Construct the vector with specific length
-			if data is NULL, a zero vector is constructed
-	*/
-	VectorBase(const index size, const scalar *data = nullptr, const index inter = 1);
+	 Construct the vector with specific length
+	 if data is NULL, a zero vector is constructed
+	 */
+	VectorBase(const index size, const scalar *data = nullptr,
+			const index inter = 1);
 
 	/** constructor for size-specified vector */
-	VectorBase(const scalar *data,const index inter = 1);
+	VectorBase(const scalar *data, const index inter = 1);
 
 	/** Copy assignment */
-	VectorBase (const VectorBase& vec);
+	VectorBase(const VectorBase& vec);
 
-	VectorBase (const AbstractVector& vec);
+	VectorBase(const AbstractVector& vec);
 
-	VectorBase(const index size, const referred_array& tag, scalar* data, const index inter = 1);
+	VectorBase(const index size, const referred_array& tag, scalar* data,
+			const index inter = 1);
 
-	VectorBase(const index size ,const referred_array& tag, const scalar* data, const index inter = 1);
+	VectorBase(const index size, const referred_array& tag, const scalar* data,
+			const index inter = 1);
 
 	/** API with vector in standard library */
 	VectorBase(const std::vector<scalar>& vec);
@@ -116,63 +112,75 @@ public:
 	/** get the dimension */
 	index dimension() const;
 
-	index size() const {return Array::size();}
+	index size() const {
+		return Array::size();
+	}
 
-	bool isReferred() const {return Array::isReferred();}
+	bool isReferred() const {
+		return Array::isReferred();
+	}
 
-	index interval() const {return Array::interval();}
+	index interval() const {
+		return Array::interval();
+	}
 
-	int sizeAtCompileTime() const{return SizeAtCompileTime;}
+	int sizeAtCompileTime() const {
+		return SizeAtCompileTime;
+	}
 
 	/** resize the Vector */
-	void resize(const index size, const index inter=1);
+	void resize(const index size, const index inter = 1);
 
 	/** copy operation */
-	VectorBase& operator=(const VectorBase& vec );
+	VectorBase& operator=(const VectorBase& vec);
 
 	/** Matlab-like element assignment */
-	scalar& operator()(const index i );
-	const scalar& operator()(const index i )const ;
+	scalar& operator()(const index i);
+	const scalar& operator()(const index i) const;
 
-	scalar *dataPtr() {return Array::dataPtr();}
-	const scalar *dataPtr() const {return Array::dataPtr();}
+	scalar *dataPtr() {
+		return Array::dataPtr();
+	}
+	const scalar *dataPtr() const {
+		return Array::dataPtr();
+	}
 
 	/** overload operations*/
 	//%{
 	/** operator< */
 	template<int S>
-	bool operator< (const VectorBase<scalar,index,S>& vec)const;
-	bool operator< (const scalar s)const;
+	bool operator<(const VectorBase<scalar, index, S>& vec) const;
+	bool operator<(const scalar s) const;
 
 	/** operator<= */
 	template<int S>
-	bool operator<=(const VectorBase<scalar,index,S>& vec)const;
-	bool operator<=(const scalar s)const;
+	bool operator<=(const VectorBase<scalar, index, S>& vec) const;
+	bool operator<=(const scalar s) const;
 
 	/** operator> */
 	template<int S>
-	bool operator> (const VectorBase<scalar,index,S>& vec)const;
-	bool operator> (const scalar s)const;
+	bool operator>(const VectorBase<scalar, index, S>& vec) const;
+	bool operator>(const scalar s) const;
 
 	/** operator>= */
 	template<int S>
-	bool operator>=(const VectorBase<scalar,index,S>& vec)const;
-	bool operator>=(const scalar s)const;
+	bool operator>=(const VectorBase<scalar, index, S>& vec) const;
+	bool operator>=(const scalar s) const;
 
 	/** operator== */
 	template<int S>
-	bool operator==(const VectorBase<scalar,index,S>& vec)const;
-	bool operator==(const scalar s)const;
+	bool operator==(const VectorBase<scalar, index, S>& vec) const;
+	bool operator==(const scalar s) const;
 
 	/** operator!= */
 	template<int S>
-	bool operator!=(const VectorBase<scalar,index,S>& vec)const;
-	bool operator!=(const scalar s)const;
+	bool operator!=(const VectorBase<scalar, index, S>& vec) const;
+	bool operator!=(const scalar s) const;
 	//%}
 
 	/*
-		Mathematical operations
-	*/
+	 Mathematical operations
+	 */
 	/*
 	 * 			Square norm of the VectorBase
 	 */
@@ -186,49 +194,48 @@ public:
 
 	/** normalize current vector and previous norm is returned*/
 	podscalar normalize();
-	
+
 	/** dot operation */
 	template<int S>
-	scalar dot(const VectorBase<scalar,index,S>& vec) const;
+	scalar dot(const VectorBase<scalar, index, S>& vec) const;
 
 	/** scale with a special length */
 	void scale(scalar s);
 
 	/** multiply with a scalar */
-	VectorBase operator* (scalar s);
+	VectorBase operator*(scalar s);
 
-
-	friend VectorBase operator* (scalar s, const VectorBase& vec){
+	friend VectorBase operator*(scalar s, const VectorBase& vec) {
 		VectorBase result;
-		result.setArray(vec.size(),const_cast<scalar*>(vec.dataPtr()),vec.interval());
+		result.setArray(vec.size(), const_cast<scalar*>(vec.dataPtr()),
+				vec.interval());
 		result.scale(s);
 		return result;
 	}
 
 	/** summation operation */
 	template<int S>
-	VectorBase operator+ (const VectorBase<scalar,index,S> &vec) const;
+	VectorBase operator+(const VectorBase<scalar, index, S> &vec) const;
 
 	/** subtraction operation */
 	template<int S>
-	VectorBase operator- (const VectorBase<scalar,index,S> &vec) const;
+	VectorBase operator-(const VectorBase<scalar, index, S> &vec) const;
 
 	/** */
-	VectorBase operator- () const;
+	VectorBase operator-() const;
 
 	/** overload of output stream */
-	friend std::ostream& operator<<(std::ostream& os, const VectorBase& vec){
-		if ( vec.size() == 0 )
-		{
-			os<<"[ ]";
+	friend std::ostream& operator<<(std::ostream& os, const VectorBase& vec) {
+		if (vec.size() == 0) {
+			os << "[ ]";
 			return os;
 		}
-		os<<"[ ";
-		for ( index i = 0 ; i< vec.size()-1 ; ++ i ){
-			os<<vec[i]<<" , ";
+		os << "[ ";
+		for (index i = 0; i < vec.size() - 1; ++i) {
+			os << vec[i] << " , ";
 		}
-		os<<vec[vec.size()-1];
-		os<<" ]";
+		os << vec[vec.size() - 1];
+		os << " ]";
 		return os;
 	}
 
@@ -257,14 +264,17 @@ public:
 
 	/** blocking operations */
 	//%{
-	VectorBase block(const std::set<index>& indices)const;
+	VectorBase block(const std::set<index>& indices) const;
 	VectorBase block(const std::vector<index>& indices) const;
 	template<class InputIterator>
-	VectorBase block(const index bs, InputIterator begin, InputIterator end)const;
+	VectorBase block(const index bs, InputIterator begin,
+			InputIterator end) const;
 	void blockFromVector(const VectorBase& vec, const std::set<index>& indices);
-	void blockFromVector(const VectorBase& vec, const std::vector<index>& indices);
+	void blockFromVector(const VectorBase& vec,
+			const std::vector<index>& indices);
 	template<class InputIterator>
-	void blockFromVector(const VectorBase& vec, const index bs, InputIterator begin, InputIterator end);
+	void blockFromVector(const VectorBase& vec, const index bs,
+			InputIterator begin, InputIterator end);
 	//%}
 
 	/** combination operations */
@@ -272,7 +282,8 @@ public:
 	/** combination of two vectors */
 	void combine(const VectorBase& v1, const VectorBase& v2);
 	/** combination of two vectors taking output as parameter */
-	static inline void stCombine(const VectorBase& v1, const VectorBase& v2, VectorBase& v);
+	static inline void stCombine(const VectorBase& v1, const VectorBase& v2,
+			VectorBase& v);
 	//%}
 
 	/** generate a random vector */

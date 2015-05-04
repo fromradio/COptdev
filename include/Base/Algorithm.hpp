@@ -4,28 +4,21 @@
 #ifndef ALGORITHM_HPP__
 #define ALGORITHM_HPP__
 
-namespace COPT
-{
+namespace COPT {
 /*			General algorithm in COPT. 
  *
  *
  */
 template<class kernel>
-class Algorithm
-	:
-	public COPTObject,
-	noncopyable
-{
+class Algorithm: public COPTObject, noncopyable {
 private:
-	typedef typename kernel::scalar 			scalar;
-	typedef typename kernel::podscalar 			podscalar;
-	typedef typename kernel::index 				index;
-	typedef typename kernel::Vector 			Vector;
-	typedef typename kernel::Matrix 			Matrix;
+	typedef typename kernel::scalar scalar;
+	typedef typename kernel::podscalar podscalar;
+	typedef typename kernel::index index;
+	typedef typename kernel::Vector Vector;
+	typedef typename kernel::Matrix Matrix;
 
-	
 public:
-
 	Algorithm();
 };
 }

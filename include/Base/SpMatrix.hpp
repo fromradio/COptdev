@@ -16,38 +16,33 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-
 #ifndef SP_MATRIX_HPP__
 #define SP_MATRIX_HPP__
 
-namespace COPT
-{
-
+namespace COPT {
 
 /*
  *		class Triplet for sparse matrix assignment
  */
-template<class Scalar,class I>
-struct TripletBase
-{
+template<class Scalar, class I>
+struct TripletBase {
 
 public:
-	typedef Scalar 								scalar;
-	typedef I 									index;
-	typedef KernelTrait<Scalar,I>				kernel;
-	typedef typename kernel::size 				size;
+	typedef Scalar scalar;
+	typedef I index;
+	typedef KernelTrait<Scalar, I> kernel;
+	typedef typename kernel::size size;
 private:
 	/** private variables */
 	//%{
-
 	/** row index */
-	index				__r;
+	index __r;
 
 	/** column index */
-	index 				__c;
+	index __c;
 
 	/** value */
-	Scalar 				__v;
+	Scalar __v;
 
 	//%}
 
@@ -60,19 +55,14 @@ public:
 
 	/** constructor and deconstructor */
 	//%{
-
 	/** the only constructor */
-	TripletBase(
-		const index r,
-		const index c,
-		const Scalar v);
+	TripletBase(const index r, const index c, const Scalar v);
 
 	~TripletBase();
 	//%}
 
 	/** getter (no other setter is allowed) */
 	//%{
-
 	/** row index */
 	const index& rowIndex() const;
 
@@ -88,18 +78,16 @@ public:
  *
  */
 template<class Triplet>
-struct rowComparison
-{
-	bool operator()(const Triplet& t1,const Triplet& t2);
+struct rowComparison {
+	bool operator()(const Triplet& t1, const Triplet& t2);
 };
 
 /*		compare two triplets accordSize to column index
  *
  */
 template<class Triplet>
-struct columnComparison
-{
-	bool operator()(const Triplet& t1,const Triplet& t2);
+struct columnComparison {
+	bool operator()(const Triplet& t1, const Triplet& t2);
 };
 
 /*		Sparse matrix class
@@ -109,38 +97,36 @@ struct columnComparison
 template<class SpMatrix>
 class UMFLinearSolver;
 
-template<class T,class I>
-class SpMatrixBase
-{
+template<class T, class I>
+class SpMatrixBase {
 public:
-	typedef 	T 						scalar;
-	typedef  	I 	 					index;
-	typedef 	TripletBase<T,I>		Triplet;
-	typedef 	sp_matrix_object 		ObjectCategory;
-	typedef 	KernelTrait<T,I>		kernel;
+	typedef T scalar;
+	typedef I index;
+	typedef TripletBase<T, I> Triplet;
+	typedef sp_matrix_object ObjectCategory;
+	typedef KernelTrait<T, I> kernel;
 private:
 
-	typedef 	VectorBase<T,I>			Vector;
+	typedef VectorBase<T, I> Vector;
 	/** private variables */
 	//%{
-
 	/** the number of rows */
-	index 				__rows;
+	index __rows;
 
 	/** the number of columns */
-	index 				__cols;
+	index __cols;
 
 	/** the number of elements */
-	index 				__elesize;
+	index __elesize;
 
 	/** the col poSizeers */
-	index*				__colptr;
+	index* __colptr;
 
 	/** the indices of the rows */
-	index*				__rowind;
+	index* __rowind;
 
 	/** the values */
-	scalar*		 		__vals;
+	scalar* __vals;
 
 	/** static zero */
 	static const scalar __zero;
@@ -149,7 +135,6 @@ private:
 
 	/** private functions */
 	//%{
-
 	/** judge the rationality */
 	void judgeRationality();
 
@@ -159,20 +144,13 @@ public:
 
 	/** constructor and deconstructor */
 	//%{
-
 	/** default constructor */
 	SpMatrixBase();
 
-	SpMatrixBase(
-		const index 				rows,
-		const index 				cols,
-		const index 				elesize,
-		const index*			 	colptr,
-		const index*				rowind,
-		const scalar*				vals);
+	SpMatrixBase(const index rows, const index cols, const index elesize,
+			const index* colptr, const index* rowind, const scalar* vals);
 
-	SpMatrixBase(
-		const SpMatrixBase&);
+	SpMatrixBase(const SpMatrixBase&);
 
 	/** deconstructor */
 	~SpMatrixBase();
@@ -180,40 +158,27 @@ public:
 
 	/** getter and setter */
 	//%{
-
 	/** traditional setter of sparse matrix*/
-	void setSparseMatrix(
-		const index 					rows,
-		const index 					cols,
-		const index 					elesize,
-		const index*			 		colptr,
-		const index*			 		rowind,
-		const scalar*			 		vals);
+	void setSparseMatrix(const index rows, const index cols,
+			const index elesize, const index* colptr, const index* rowind,
+			const scalar* vals);
 
 	/** overload of operator = */
-	SpMatrixBase& operator = (const SpMatrixBase& );
+	SpMatrixBase& operator =(const SpMatrixBase&);
 
 	/** set from triplets */
-	void setFromTriplets(
-		const index rows,
-		const index cols,
-		std::vector<Triplet>& triplets);
+	void setFromTriplets(const index rows, const index cols,
+			std::vector<Triplet>& triplets);
 
 	/** set from triplet iterator */
 	template<class InputIterator>
-	void setFromTriplets(
-		const index rows,
-		const index cols,
-		const InputIterator& begin,
-		const InputIterator& end);
+	void setFromTriplets(const index rows, const index cols,
+			const InputIterator& begin, const InputIterator& end);
 
 	/** fast setting from triplets iterator (like mtx file) */
 	template<class InputIterator>
-	void fastSetFromTriplets(
-		const index rows,
-		const index cols,
-		const InputIterator& begin,
-		const InputIterator& end);
+	void fastSetFromTriplets(const index rows, const index cols,
+			const InputIterator& begin, const InputIterator& end);
 
 	/** clear the data */
 	void clear();
@@ -228,7 +193,7 @@ public:
 	const index& elementSize() const;
 
 	/** get the column poSizeer */
-	const index* columnPointer() const; 
+	const index* columnPointer() const;
 
 	/** get the row indices */
 	const index* rowIndex() const;
@@ -246,17 +211,13 @@ public:
 
 	/** element access */
 	//%{
-
 	/** only const access is allowed */
-	const scalar& operator()(
-		const index i,
-		const index j) const;
+	const scalar& operator()(const index i, const index j) const;
 
 	//%}
 
 	/** operations */
 	//%{
-
 	/** summation */
 	SpMatrixBase operator+(const SpMatrixBase& mat) const;
 
@@ -276,21 +237,23 @@ public:
 	SpMatrixBase operator*(const scalar s) const;
 
 	/** transform to a dense matrix */
-	MatrixBase<scalar,index> toDenseMatrix() const;
+	MatrixBase<scalar, index> toDenseMatrix() const;
 
 	/** solve a linear system */
-	VectorBase<scalar,index> solve(const VectorBase<scalar,index>& vec);
+	VectorBase<scalar, index> solve(const VectorBase<scalar, index>& vec);
 
 	//%}
 
-}; // end of class SpMatrixBase
-
+};
+// end of class SpMatrixBase
 
 /** Sparse matrix related operator */
-template<class scalar,class index>
-SpMatrixBase<scalar,index> operator* (const scalar s, const SpMatrixBase<scalar,index>& mat);
-template<class scalar,class index,class T>
-SpMatrixBase<scalar,index> operator* (const T s, const SpMatrixBase<scalar,index>& mat);
+template<class scalar, class index>
+SpMatrixBase<scalar, index> operator*(const scalar s,
+		const SpMatrixBase<scalar, index>& mat);
+template<class scalar, class index, class T>
+SpMatrixBase<scalar, index> operator*(const T s,
+		const SpMatrixBase<scalar, index>& mat);
 
 }
 
