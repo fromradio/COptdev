@@ -22,7 +22,8 @@
 /*
  compute the differential of functions
  */
-namespace COPT {
+namespace COPT
+{
 
 /*		Fast but inaccurate method to compute differential
  *		The main thought is to use a small step length to compute differential quantities
@@ -35,7 +36,8 @@ namespace COPT {
 template<class SFunc>
 typename SFunc::ScalarType fastDifference(const SFunc& func,
 		const typename SFunc::ScalarType x,
-		const typename SFunc::ScalarType epsilon) {
+		const typename SFunc::ScalarType epsilon)
+{
 	return (func(x + epsilon) - func(x - epsilon) / (2 * epsilon));
 }
 
@@ -48,7 +50,8 @@ typename SFunc::ScalarType fastDifference(const SFunc& func,
 template<class SFunc>
 typename SFunc::ScalarType fastSecondDifference(const SFunc& func,
 		const typename SFunc::ScalarType x,
-		const typename SFunc::ScalarType epsilon) {
+		const typename SFunc::ScalarType epsilon)
+{
 	return (func(x + epsilon) + func(x - epsilon) - 2 * func(x))
 			/ (epsilon * epsilon);
 }
@@ -63,7 +66,8 @@ typename SFunc::ScalarType fastSecondDifference(const SFunc& func,
 template<class VFunc>
 typename VFunc::ScalarType fastPartialDifference(const VFunc& func, const int i,
 		const typename VFunc::Vector x,
-		const typename VFunc::ScalarType epsilon) {
+		const typename VFunc::ScalarType epsilon)
+{
 	typedef typename VFunc::Vector Vector;
 	Vector e = Vector::vecE(x.size(), i, epsilon);
 	return (func(x + e) - func(x - e)) / (2 * epsilon);
@@ -78,10 +82,12 @@ typename VFunc::ScalarType fastPartialDifference(const VFunc& func, const int i,
 template<class VFunc>
 typename VFunc::Vector fastGradient(const VFunc& func,
 		const typename VFunc::Vector x,
-		const typename VFunc::ScalarType epsilon) {
+		const typename VFunc::ScalarType epsilon)
+{
 	typedef typename VFunc::Vector Vector;
 	Vector g(x.size());
-	for (int i = 0; i < x.size(); ++i) {
+	for (int i = 0; i < x.size(); ++i)
+	{
 		g[i] = fastPartialDifference(func, i, x, epsilon);
 	}
 	return g;
@@ -93,7 +99,8 @@ typename VFunc::Vector fastGradient(const VFunc& func,
 template<class VFunc>
 typename VFunc::ScalarType fastSecondPartialDifference(const VFunc& func,
 		const int i, const int j, const typename VFunc::Vector& x,
-		const typename VFunc::ScalarType epsilon) {
+		const typename VFunc::ScalarType epsilon)
+{
 	typedef typename VFunc::Vector Vector;
 	Vector e1 = Vector::vecE(x.size(), i, epsilon);
 	Vector e2 = Vector::vecE(x.size(), j, epsilon);
@@ -104,7 +111,8 @@ typename VFunc::ScalarType fastSecondPartialDifference(const VFunc& func,
 template<class VFunc>
 typename VFunc::Matrix fastHessianMatrix(const VFunc& func,
 		const typename VFunc::Vector& x,
-		const typename VFunc::ScalarType epsilon) {
+		const typename VFunc::ScalarType epsilon)
+{
 	typedef typename VFunc::Vector Vector;
 	typedef typename VFunc::Matrix Matrix;
 	Matrix result(x.size(), x.size());
@@ -119,7 +127,8 @@ typename VFunc::Matrix fastHessianMatrix(const VFunc& func,
  *
  */
 template<class SFunc>
-class ScalarDifferential {
+class ScalarDifferential
+{
 private:
 	// the type of float number
 	typedef typename SFunc::FT FT;
@@ -138,12 +147,14 @@ private:
 	 */
 
 	// central differentce
-	FT centerDifference(FT x, FT h) {
+	FT centerDifference(FT x, FT h)
+	{
 		return (__func(x + h) - __func(x - h)) / (2 * h);
 	}
 
 	// second order differential
-	FT secondDifference(FT x, FT h) {
+	FT secondDifference(FT x, FT h)
+	{
 		return (__func(x + h) + __func(x - h) - 2 * __func(x)) / (h * h);
 	}
 
@@ -154,21 +165,25 @@ public:
 	 *		one must specify the function that is used
 	 */
 	ScalarDifferential(const SFunc& func, FT epsilon = 1e-5) :
-			__func(func), __epsilon(epsilon), __iterused(0) {
+			__func(func), __epsilon(epsilon), __iterused(0)
+	{
 	}
 
 	// compute the differential
-	FT diff(FT x, FT h = 0.01) {
+	FT diff(FT x, FT h = 0.01)
+	{
 		FT error = __epsilon + 1.0;
 		FT forwarddiff = centerDifference(x, h);
 		FT currdiff = forwarddiff;
 		__iterused = 0;
-		while (error > __epsilon) {
+		while (error > __epsilon)
+		{
 			h /= 2.0;
 			forwarddiff = currdiff;
 			currdiff = centerDifference(x, h);
 			error = fabs(currdiff - forwarddiff);
-			if (++__iterused > 20) {
+			if (++__iterused > 20)
+			{
 				std::cerr
 						<< "Reach the max iteration number, differential result might be inaccurate"
 						<< std::endl;
@@ -179,17 +194,20 @@ public:
 	}
 
 	// compute second order differential
-	FT sDiff(FT x, FT h = 0.01) {
+	FT sDiff(FT x, FT h = 0.01)
+	{
 		FT error = __epsilon + 1.0;
 		FT forwarddiff = secondDifference(x, h);
 		FT currdiff = forwarddiff;
 		__iterused = 0;
-		while (error > __epsilon) {
+		while (error > __epsilon)
+		{
 			h /= 2.0;
 			forwarddiff = currdiff;
 			currdiff = secondDifference(x, h);
 			error = fabs(currdiff - forwarddiff);
-			if (++__iterused > 20) {
+			if (++__iterused > 20)
+			{
 				std::cerr
 						<< "Reach the max iteration number, differential result might be inaccurate"
 						<< std::endl;
@@ -205,9 +223,11 @@ public:
  *
  */
 template<class VFunc>
-class VectorDifferential {
+class VectorDifferential
+{
 public:
-	enum Type {
+	enum Type
+	{
 		FAST,		// fast computation
 		ACC 		// more accurate computation
 	};
@@ -229,7 +249,8 @@ private:
 	/*
 	 *				Private Function
 	 */
-	FT centerDifference(const Vector& vec, FT h, int i) {
+	FT centerDifference(const Vector& vec, FT h, int i)
+	{
 		Vector vp(vec), vm(vec);
 		vp[i] += h;
 		vm[i] -= h;
@@ -241,17 +262,20 @@ private:
 	 *
 	 *
 	 */
-	FT computeDiff(const Vector& vec, int i, FT h = 0.01) {
+	FT computeDiff(const Vector& vec, int i, FT h = 0.01)
+	{
 		FT error = __epsilon + 1.0;
 		FT forwarddiff = centerDifference(vec, h, i);
 		FT currdiff = forwarddiff;
 		__iterused = 0;
-		while (error > __epsilon) {
+		while (error > __epsilon)
+		{
 			h /= 2.0;
 			forwarddiff = currdiff;
 			currdiff = centerDifference(vec, h, i);
 			error = fabs(currdiff - forwarddiff);
-			if (++__iterused > 20) {
+			if (++__iterused > 20)
+			{
 				std::cerr
 						<< "Reach the max iteration number, differential result might be inaccurate"
 						<< std::endl;
@@ -271,44 +295,56 @@ private:
 public:
 
 	VectorDifferential(const VFunc& func, FT epsilon = 1e-5, Type t = FAST) :
-			__vfunc(func), __epsilon(epsilon), __type(t) {
+			__vfunc(func), __epsilon(epsilon),__iterused(0), __type(t)
+	{
 	}
 	/*
 	 *			Main function, compute the gradient of '__func'
 	 */
-	Vector gradient(const Vector& vec, FT h = 1e-4) {
-		switch (__type) {
-		case FAST: {
+	Vector gradient(const Vector& vec, FT h = 1e-4)
+	{
+		switch (__type)
+		{
+		case FAST:
+		{
 			return fastGradient(__vfunc, vec, h);
 		}
 			break;
-		case ACC: {
+		case ACC:
+		{
 			Vector result(vec.size());
-			for (int i = 0; i < vec.size(); ++i) {
+			for (int i = 0; i < vec.size(); ++i)
+			{
 				result[i] = computeDiff(vec, i, h);
 			}
 			return result;
 		}
 			break;
-		default: {
+		default:
+		{
 			throw COException("Unknown type in difference computation!");
 		}
 			break;
 		}
 	}
 
-	Matrix hessian(const Vector& vec, FT h = 1e-5) {
-		switch (__type) {
-		case FAST: {
+	Matrix hessian(const Vector& vec, FT h = 1e-5)
+	{
+		switch (__type)
+		{
+		case FAST:
+		{
 			return fastHessianMatrix(__vfunc, vec, h);
 		}
 			break;
-		case ACC: {
+		case ACC:
+		{
 			throw COException(
 					"No algorithm for accurate compuation of hessian matrix yet");
 		}
 			break;
-		default: {
+		default:
+		{
 			throw COException("Unknown type in difference computation!");
 		}
 			break;

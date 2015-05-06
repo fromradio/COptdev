@@ -5,7 +5,7 @@
 
 include ./Makefile.in
 
-all: matrix simplex vecmat spmat umfpack umfpackwrapper omp ls nls eigen lapack proximal lasso eigensolver iotest lpproblem lu 
+all: matrix simplex vecmat spmat umfpack umfpackwrapper omp ls nls eigen lapack proximal lasso eigensolver iotest lpproblem lu func 
 
 vector: bin/vector
 bin/vector: obj/vector.o
@@ -152,6 +152,11 @@ bin/debug: obj/debug.o
 obj/debug.o: test/Debug.cpp
 	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
 
+func: bin/func
+bin/func: obj/func.o
+	$(CXX) obj/func.o -L$(DIR_LIB) -o $@ $(LIB)
+obj/func.o: test/func.cpp
+	$(CXX) $(CXXFLAGS) $(DIR_INC) -c $< -o $@
 
 help: $(TEST_BIN) 
 	

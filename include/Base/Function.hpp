@@ -21,7 +21,8 @@
 /*
  Second version of 'Functions' classes
  */
-namespace COPT {
+namespace COPT
+{
 
 /*
  *	Scalar function
@@ -32,24 +33,29 @@ namespace COPT {
  *
  */
 template<class T>
-class ScalarFunction {
+class ScalarFunction
+{
 protected:
 
 public:
 	typedef T ScalarType;
 	typedef T FT;
-	ScalarFunction() {
+	ScalarFunction()
+	{
 	}
 	// the deconstructor
-	virtual ~ScalarFunction() {
+	virtual ~ScalarFunction()
+	{
 	}
 	// basic operation computing the value of the function
 	virtual FT operator()(FT x) const = 0;
 	// basic operation computing the differential of the function
-	virtual FT diff(FT x) const {
+	virtual FT diff(FT x) const
+	{
 		return ScalarDifferential<ScalarFunction>(*this).diff(x);
 	}
-	virtual FT sDiff(FT x) const {
+	virtual FT sDiff(FT x) const
+	{
 		return ScalarDifferential<ScalarFunction>(*this).sDiff(x);
 	}
 };
@@ -68,7 +74,8 @@ public:
  *			Returns the Hessian matrix of the function
  */
 template<class VT>
-class VectorFunction {
+class VectorFunction
+{
 protected:
 	// the dimension of the problem
 	int __dim;
@@ -79,26 +86,138 @@ public:
 	typedef typename Vector::ScalarType FT;
 
 	VectorFunction() :
-			__dim(0) {
+			__dim(0)
+	{
 	}
 
-	virtual ~VectorFunction() {
+	virtual ~VectorFunction()
+	{
 	}
 
-	int dimension() {
+	int dimension()
+	{
 		return __dim;
 	}
 
 	virtual FT operator()(const Vector& vec) const = 0;
 
-	virtual Vector gradient(const Vector& vec) const {
+	virtual Vector gradient(const Vector& vec) const
+	{
 		return VectorDifferential<VectorFunction>(*this).gradient(vec);
 	}
 
-	virtual Matrix hessian(const Vector& vec) const {
+	virtual Matrix hessian(const Vector& vec) const
+	{
 		return VectorDifferential<VectorFunction>(*this).hessian(vec);
 	}
 };
+
+template<class InputArg, class OutputArg>
+class RFunction
+{
+public:
+	typedef std::function<OutputArg(const InputArg&)> FuncType;
+private:
+	FuncType __func;
+public:
+
+	RFunction() :
+			__func([](const InputArg&)
+			{	return OutputArg();})
+	{
+	}
+
+	RFunction(FuncType f) :
+			__func(f)
+	{
+	}
+
+	virtual ~RFunction()
+	{
+	}
+
+	virtual OutputArg operator ()(const InputArg& arg)
+	{
+		if (__func)
+		{
+			return __func(arg);
+		}
+		else
+		{
+			return OutputArg();
+		}
+	}
+
+	RFunction& operator=(FuncType f)
+	{
+		__func = f;
+		return *this;
+	}
+
+	RFunction& operator=(const RFunction& func)
+	{
+		__func = FuncType(func);
+		return *this;
+	}
+
+	// apply function, the same as map function
+	template<class InputIterator, class OutputIterator>
+	void apply(InputIterator ib, InputIterator ie, OutputIterator ob)
+	{
+		std::transform(ib, ie, ob, __func);
+	}
+
+	template<class InputContainer, class OutputContainer>
+	void apply(const InputContainer& input, OutputContainer& output)
+	{
+		output.resize(input.size());
+		this->apply(input.begin(), input.end(), output.begin());
+	}
+
+	template<class InputContainer>
+	VectorBase<OutputArg> apply(const InputContainer& input)
+	{
+		VectorBase<OutputArg> result(input.size());
+		this->apply(input.begin(),input.end(),result.begin());
+		return result;
+	}
+
+//	template<class InputContainer,class OutputContainer>
+	auto asApplyFunction()
+	{
+		return ([this](auto x){return this->apply(x);});
+	}
+
+	// no class-in filter function, one can refer to a third-party filter function
+};
+
+template<class Iterator>
+void filterFunc(const RFunction<typename Iterator::value_type, bool>& f,
+		Iterator b, Iterator e)
+{
+	std::remove_if(b, e, [&f](auto x)
+	{	return !f(x);});
+}
+
+template<class InputIterator, class OutputIterator>
+void applyFunc(
+		RFunction<typename InputIterator::value_type,
+				typename OutputIterator::value_type> f, InputIterator ib,
+		InputIterator ie, OutputIterator ob)
+{
+	std::transform(ib, ie, ob, f);
+}
+
+template<class Iterator>
+typename Iterator::vaule_type reduceFunc(
+		const RFunction<typename Iterator::value_type,
+				typename Iterator::value_type>& f, Iterator b, Iterator e)
+{
+	// no initial data is given
+	typename Iterator::value_type i;
+	std::accumulate(b, e, i, f);
+	return i;
+}
 
 } // End of namespace COPT
 

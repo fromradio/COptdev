@@ -1,21 +1,27 @@
 #ifndef PCA_HPP__
 #define PCA_HPP__
 
-namespace COPT {
+namespace COPT
+{
 
 template<class InputType, class OutputType = InputType>
-class RedesignedSolver {
+class RedesignedSolver
+{
 private:
 	virtual void doCompute(const InputType&) = 0;
 	virtual OutputType doSolve(const InputType&) = 0;
 
 public:
-
-	virtual void compute(const InputType& input) {
+	virtual ~RedesignedSolver()
+	{
+	}
+	virtual void compute(const InputType& input)
+	{
 		this->doCompute(input);
 	}
 
-	virtual OutputType solve(const InputType& input) {
+	virtual OutputType solve(const InputType& input)
+	{
 		return this->doSolve(input);
 	}
 };
@@ -27,9 +33,11 @@ public:
  * However, the approach for solving the problem is quite simple. z
  */
 template<class Matrix>
-class PCA: public RedesignedSolver<Matrix, typename Matrix::DMatrix> {
+class PCA: public RedesignedSolver<Matrix, typename Matrix::DMatrix>
+{
 public:
-	enum Direction {
+	enum Direction
+	{
 		Row, Col
 	};
 private:
@@ -57,32 +65,39 @@ public:
 
 template<class Matrix>
 PCA<Matrix>::PCA(const Matrix& m, const index r) :
-		__dir(Row), __r(r) {
+		__dir(Row), __r(r)
+{
 	this->compute(m);
 }
 
 template<class Matrix>
-void PCA<Matrix>::doCompute(const Matrix& mat) {
+void PCA<Matrix>::doCompute(const Matrix& mat)
+{
 	__m = mat;
-	if (__dir == Row) {
+	if (__dir == Row)
+	{
 		DVector __mean = mean(__m.rowBegin(), __m.rowEnd());
-		std::for_each(__m.rowBegin(), __m.rowEnd(),
-				[&__mean](DVector& v) {v=v-__mean;});
-	} else if (__dir == Col) {
+		std::for_each(__m.rowBegin(), __m.rowEnd(), [&__mean](DVector& v)
+		{	v=v-__mean;});
+	}
+	else if (__dir == Col)
+	{
 		DVector __mean = mean(__m.colBegin(), __m.colEnd());
-		std::for_each(__m.colBegin(), __m.colEnd(),
-				[&__mean](DVector& v) {v=v-__mean;});
+		std::for_each(__m.colBegin(), __m.colEnd(), [&__mean](DVector& v)
+		{	v=v-__mean;});
 	}
 }
 
 template<class Matrix>
-typename Matrix::DMatrix PCA<Matrix>::doSolve(const Matrix& mat) {
+typename Matrix::DMatrix PCA<Matrix>::doSolve(const Matrix& mat)
+{
 	DMatrix mtm;
 	__m.mtm(mtm);
 	EigenSolver<Matrix> es(mtm);
 	index dim = es.eigenValue().dimension();
 	__val.resize(dim);
-	for (index i = 0; i < __r; ++i) {
+	for (index i = 0; i < __r; ++i)
+	{
 		__val(dim - i - 1) = es.eigenValue()(dim - i - 1);
 	}
 	__v = es.eigenVector();
@@ -91,7 +106,8 @@ typename Matrix::DMatrix PCA<Matrix>::doSolve(const Matrix& mat) {
 }
 
 template<class Matrix>
-const typename Matrix::DMatrix& PCA<Matrix>::result() const {
+const typename Matrix::DMatrix& PCA<Matrix>::result() const
+{
 	return __x;
 }
 
