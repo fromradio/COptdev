@@ -2,10 +2,14 @@
 
 
 /** 
+ * BCD solver
  * 
  * 
+ * general form of the problem: 
+ *      
+ *          f(x) + sum_{i=1}^{s}r_i(x)
  * 
- * 
+ * where f(x) is differentiable while r_i(x) is not 
  * 
  */
 
@@ -27,8 +31,9 @@ using namespace std;
 typedef kernel::podscalar Float;
 
 
-// user input: 
 
+/// function F: the differentiable part
+/// need to be derived to overload the eval() and grad() method
 class FuncF
 {
 public:
@@ -38,6 +43,8 @@ public:
     inline Float operator()(const Vector& x) {return eval(x);}
 };
 
+/// function R: the non-smooth part
+/// usually in the form of 1-norm or a indicator function
 class FuncR
 {
 public: // Function type
@@ -118,16 +125,11 @@ private: // inner implement
 };
 
 
-// parameters
+/// solver parameters
 typedef struct BCDSolverParam
 {
     // objective
     Float tau;
-    
-    
-    // algorithm
-    Float ups; // factor in choosing direction
-    
     
     // iteration
     int maxIter;       // max iteration number
@@ -143,7 +145,6 @@ typedef struct BCDSolverParam
         ,   errorTol(1e-6)
         ,   xTol(1e-6)
         ,   objTol(1e-6)
-        ,   ups(0.8)
         ,   verbose(0)
         ,   tau(1.0)
     {}
@@ -207,10 +208,6 @@ private: // opt vars
     Vector m_x, m_xprev, m_xprev2;
     Vector m_gradf;
     Vector m_descent, m_descentprev;
-    Matrix m_H;
-    
-        
-//    vector<int> m_idTag;
     
     vector<int> m_block;
     int m_dim;
@@ -239,7 +236,6 @@ private: // inner tools
     void paramUpdate();
     void updateL();
     vector<Vector> m_xhat;
-    void updateLPerBlock(int kblock);
     
     // block control
     class BlockCtrl
@@ -334,13 +330,9 @@ BCDSolver::BCDSolver(BCDSolverParam param, FuncF &f, vector<FuncR> &r_vec)
     m_xprev.resize(m_dim);
     m_xprev2.resize(m_dim);
     m_gradf.resize(m_dim);
-//    m_gradfprev.resize(m_dim);
     m_descent.resize(m_dim);
     m_descentprev.resize(m_dim);
-    m_H.resize(m_dim, m_dim);
-    m_H = Matrix::identity(m_dim, m_dim);
-//    m_idTag.resize(m_dim);
-    
+
     // init value
     m_objprev = numeric_limits<Float>::max();
     Vector tx(m_dim);
@@ -430,107 +422,25 @@ void BCDSolver::paramUpdate()
             Float wt1 = (par0[i].t - 1.0) / par0[i].t;
             Float wt2 = sqrt(par0[i].L / par[i].L);
             par[i].w = min(wt1, wt2);
-        }        
+        }
     }
 }
 
 void BCDSolver::updateL()
 {
-//    Vector g = m_f.grad(m_x);
-//    int id1, id2;
-//    auto& par = m_paramAuto;
-//    for(int kb = 0; kb < m_nblock; ++kb)
-//    {
-//        m_blockCtrl.block_id_interval(kb, id1, id2);
-//        Vector gk;
-//        get_block(g, id1, id2, gk);
-//        Matrix ggt = gk.mulTrans(gk);
-//        Float maxe = ggt.frobeniusNorm();
-//        par[kb].L = 2.5 * maxe;
-//    }
-    
-    
-    
-    if (m_kIter == 0)
-    {
-        // init
-        for(int kb = 0; kb < m_nblock; ++kb)   
-        {
-            m_paramAuto[kb].L = 1.0;
-//            updateLPerBlock(kb);
-        }
-    }
-    else
-    {
-        auto& par = m_paramAuto;
-        Vector xt, xi, dxi;
-        xt = m_xprev;
-        for(int kb = 0; kb < m_nblock; ++kb)
-        {
-            // block k
-            int ia, ib;
-            m_blockCtrl.block_id_interval(kb, ia, ib);
-                        
-            // dxi
-            get_block(m_x,ia,ib, xi);
-            dxi = xi - m_xhat[kb];
-            
-            // obj
-            set_block(xt, ia, ib, m_xhat[kb]);
-            Float fval0= m_f(xt);
-            set_block(xt, ia, ib, xi);
-            Float fval = m_f(xt);
-            
-            // gi
-            Vector g = m_f.grad(xt), gi;
-            get_block(g, ia, ib, gi);
-
-            // vals
-            Float gDx = gi.dot(dxi);
-            Float dxNorm = 0.5 * dxi.dot(dxi);
-            cout << "start checking" << endl;
-            cin.get();
-            while (fval > fval0 + gDx + dxNorm * par[kb].L)
-            {
-                par[kb].L *= 2.0;
-                cout << " enlarge " << endl;
-                cin.get();
-            }
-            cout << "--------------------" << endl;
-            cout << " f  : " << fval << endl;
-            cout << " f0 : " << fval0 << endl;
-            cout << " gdx: " << gDx << endl;
-            cout << " dxn: " << dxNorm << endl;
-            cout << " L  : " << par[kb].L << endl;
-        }
-        
-        
-//        for(int kb = 0; kb < m_nblock; ++kb)
-//        {
-//            updateLPerBlock(kb);
-//        }
-
-    }
-
-}
-
-void BCDSolver::updateLPerBlock(int kblock)
-{
     Vector g = m_f.grad(m_x);
     int id1, id2;
     auto& par = m_paramAuto;
-
-    m_blockCtrl.block_id_interval(kblock, id1, id2);
-    Vector gk;
-    get_block(g, id1, id2, gk);
-    Matrix ggt = gk.mulTrans(gk);
-    Float maxe = ggt.frobeniusNorm();
-    par[kblock].L = 2.0 * maxe;
-//    cout << "maxe: " << maxe << endl;
-    // adjust per step
+    for(int kb = 0; kb < m_nblock; ++kb)
+    {
+        m_blockCtrl.block_id_interval(kb, id1, id2);
+        Vector gk;
+        get_block(g, id1, id2, gk);
+        Matrix ggt = gk.mulTrans(gk);
+        Float maxe = ggt.frobeniusNorm();
+        par[kb].L = maxe;
+    }
     
-    
-
 }
 
 
@@ -596,7 +506,6 @@ void BCDSolver::doCompute()
 kernel::podscalar BCDSolver::doOneIteration()
 {
     // preproc
-//    m_xprev2 = m_xprev;
     m_xprev  = m_x;
     m_objprev = m_obj;
 
@@ -640,10 +549,13 @@ bool BCDSolver::terminalSatisfied()const
         return true;
     
     // gradient norm
+    // ...
     
     // step length
+    // ...
     
     // relative error
+    // ...
 }
 
 kernel::podscalar BCDSolver::objective()const
@@ -663,4 +575,3 @@ void BCDSolver::print()
 
 #define BCDSOLVER
 #endif // BCDSOLVER
-
