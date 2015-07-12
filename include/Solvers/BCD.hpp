@@ -1,5 +1,5 @@
 #ifndef BCDSOLVER
-
+#define BCDSOLVER
 
 /** 
  * BCD solver
@@ -26,552 +26,429 @@ typedef COPT::BasicOption<double> 				BasicOption;
 #include <iostream>
 #include <numeric>
 #include <cmath>
+#include <functional>
 using namespace std;
 
 typedef kernel::podscalar Float;
 
 
+inline void get_vec_block(const Vector& x0, int id1, int id2, Vector& x);
+inline void set_vec_block(Vector& x0, int id1, int id2, const Vector& x);
+inline Vector get_vec_block(const Vector& x0, int id1, int id2);
+inline Float shrinkage(Float z, Float tau);
 
-/// function F: the differentiable part
-/// need to be derived to overload the eval() and grad() method
-class FuncF
+
+//////////////////////////////////////////////////////
+/// block control
+class BlockCtrl
 {
 public:
     
-    virtual Float eval(const Vector& x) = 0;
-    virtual Vector grad(const Vector& x) = 0;
-    inline Float operator()(const Vector& x) {return eval(x);}
-};
-
-/// function R: the non-smooth part
-/// usually in the form of 1-norm or a indicator function
-class FuncR
-{
-public: // Function type
-    
-    enum RType { Norm1, Indicator };
-    
-public: // interface
-    
-    FuncR(RType type = Norm1, int dim = 1)
-        :   m_type(type)
-        ,   m_dim(dim)
+    void setBlocking(const vector<int>& blocking)
     {
-        assert(type == Norm1);
-        m_funcEval = &FuncR::func_norm1;
-    }
-
-    FuncR(RType type, int dim,
-          const vector<Float>& lb, const vector<Float>& ub)
-        :   m_type(type)
-        ,   m_dim(dim)
-        ,   m_lb(lb)
-        ,   m_ub(ub)
-    {
-        assert(type == Indicator);
-        m_funcEval = &FuncR::func_indicator_rectangel;
-    }
-    
-    Float eval(const Vector& x) {return (this->*m_funcEval)(x);}
-    inline Float operator()(const Vector& x) {return eval(x); }
-    
-    int dim()const{return m_dim;}
-    RType type()const{return m_type;}
-    
-    // getter & setter
-    void set_type(RType t) { m_type = t; }
-    void set_dim(int dim) { m_dim = dim; }
-    void set_bound(const vector<Float>& lb, const vector<Float>& ub)
-    { m_lb = lb; m_ub = ub; }
-    
-    
-private: // typedef
-    
-    typedef Float (FuncR::*FUNC_EVAL)(const Vector& x);
-    
-private: // property
-    
-    RType m_type;
-    int m_dim;
-    
-
-    FUNC_EVAL m_funcEval;
-    vector<Float> m_lb, m_ub; // lower bound, upper bound
-    
-    
-private: // inner implement
-    
-    Float func_norm1(const Vector& x) { return x.absNorm(); }
-    
-    Float func_indicator_rectangel(const Vector& x)
-    {
-        assert(m_lb.size() == x.size() && m_ub.size() == x.size());
-        auto n = x.size();
-        bool inside = true;
-        for(int i = 0; i < n; ++i)
+        m_block = blocking;
+        m_nblock = m_block.size();
+        m_blockIdx.resize(m_nblock+1);
+        m_blockIdx[0] = 0;
+        for(int i = 0 ; i < m_nblock; ++i)
         {
-            if(x[i] < m_lb[i] || x[i] > m_ub[i])
-            {
-                inside = false;
-                break;
-            }
+            m_blockIdx[i+1] = m_block[i];
+            m_blockIdx[i+1] += m_blockIdx[i];
         }
-        if(inside)
-            return 0;
-        else
-            return numeric_limits<Float>::infinity();
+        is_set = true;
     }
     
+    int n_block()const {return m_nblock;}
+    int block_dim(int i)const{return m_block[i];}
+    int full_dim()const
+    {
+        int dim = 0;
+        for(const auto& t:m_block) dim += t;
+        return dim;
+    }
+    void block_id_interval(int i, int& a, int& b)const
+    {
+        a = m_blockIdx[i];
+        b = m_blockIdx[i+1];
+    }
+    
+    inline Vector get_vec_block(const Vector& x0, int kblock)const
+    {
+        assert(is_set);
+        int ia, ib;
+        block_id_interval(kblock, ia, ib);
+        return ::get_vec_block(x0, ia, ib);
+    }
+    inline void set_vec_block(Vector& x0, int kblock, const Vector& x)const
+    {
+        assert(is_set);
+        int ia, ib;
+        block_id_interval(kblock, ia, ib);
+        ::set_vec_block(x0, ia, ib, x);
+    }
+    
+    bool is_set = false;
+    
+private:
+    vector<int> m_block;
+    vector<int> m_blockIdx;
+    int m_nblock = 0;
 };
 
-
-/// solver parameters
-typedef struct BCDSolverParam
+/// solver option
+struct BCDSolverOption : public BasicOption
 {
-    // objective
-    Float tau;
+///   from base class    
+//    int   MaxIter;       // 
+//    Float Threshold;     // 
     
-    // iteration
-    int maxIter;       // max iteration number
-    Float errorTol;    // 
-    Float xTol;
-    Float objTol;
-    int verbose;
+    /// added member
+    Float xTol;     // tolerance of change in x
+    Float objTol;   // tolerance of change in objective
     
-
-    // defaults
-    BCDSolverParam()
-        :   maxIter(100)
-        ,   errorTol(1e-6)
+    BCDSolverOption()
+        :   BasicOption()
         ,   xTol(1e-6)
         ,   objTol(1e-6)
-        ,   verbose(0)
-        ,   tau(1.0)
     {}
+};
+
+// r - the non-smooth part
+struct FuncRInfo
+{
+    // type of function r
+    enum RType { Norm1, Indicator };
     
-}BCDSolverParam;
+    RType type;
+    int dim;
+    
+    FuncRInfo(RType tp = Norm1, int dm = 1)
+        :   type(tp)
+        ,   dim(dm)
+    {}
+};
 
-
-class BCDSolver : public COPT::GeneralSolver<kernel>
+/// solver parameters
+class BCDSolverParam : public BasicParameter
 {
 public:
+
+    /// objective
+    // tau
+    Float m_tau;
+    // f - the differentiable part
+    function<Float(const Vector&)>  m_fEval;
+    function<Vector(const Vector&)> m_fGrad;
+
     
-    BCDSolver(
-            BCDSolverParam param,
-            FuncF& f,
-            vector<FuncR>& r_vec);
+private:    
+    /// ri
+    // vector of ri
+    vector<FuncRInfo> m_ri;
+    // evaluation
+    Float ri_eval(const FuncRInfo& r, const Vector& x)const
+    {
+        switch(r.type)
+        {
+        case FuncRInfo::RType::Norm1:
+            return x.absNorm();
+            break;
+        case FuncRInfo::RType::Indicator:
+            return 0;
+            break;
+        }
+    }
+    
+public:
+    /// iteration
+    int verbose;
+    int kIter;
+    
+    /// intermediate variables
+    Vector xprev;
+    Float obj, objprev;
+
+    BlockCtrl m_blockCtrl;
+    
+    /// auto updated inner param
+    struct paramAuto
+    {
+        Float t, w, L;
+    };
+    vector<paramAuto> m_paramAuto, m_paramAutoPrev;
     
 public:
     
-     void   init_x(const Vector& x);
-     Float  objective(const Vector& x)const;
-     
-     /** get the result */
-     const kernel::Vector& result() const;
-     
-private: // 
-     
-    ////
-    /** vritual function that has to be implemented by derived classes */
-	/** something happens in the beginning of solving */
-    void solvingBegin();
-   
-	/** the real solving part */
-//    void doSolve();
+    /// defaults
+    BCDSolverParam()
+        :   BasicParameter()
+        ,   verbose(0)
+        ,   m_tau(1.0)
+        ,   kIter(0)
+    {}
     
-	/** the real computation part */
-    void doCompute();
-    
-	/** whether the terminal satisfied */
-    bool terminalSatisfied() const;
-	
-	/** an iteration 
-	 *  the estimated error is returned for iteration
-	 */
-    podscalar doOneIteration();
-    
-    /** compute the objective function */
-    podscalar objective() const;
-   
-    
-    
-private: // basic param
-    
-    BCDSolverParam m_param;
-    FuncF& m_f;
-    vector<FuncR>& m_rVec;
-    
-private: // opt vars
-    
-    Float m_obj, m_objprev;    
-    Float m_step;
-    Vector m_x, m_xprev, m_xprev2;
-    Vector m_gradf;
-    Vector m_descent, m_descentprev;
-    
-    vector<int> m_block;
-    int m_dim;
-    int m_nblock;
-    
-private: // iteration ctrl
-    
-    int m_kIter;
-    bool m_isInit;
-    
-private: // inner tools
-    
-    inline Float errorEst();
-    
-    void solve_subblock(int kblock);
-    
-    // auto updated parameters
-    typedef struct paramAuto
+    BCDSolverParam(
+            const function<Float(const Vector&)>& f_eval,
+            const function<Vector(const Vector&)>& f_grad,
+            const vector<FuncRInfo>& ri,
+            Float tau
+            )
+        :   BasicParameter()
+        ,   verbose(0)
+        ,   m_tau(1.0)
+        ,   kIter(0)
     {
-        Float t;
-        Float w;
-        Float L;
-    }paramAuto;
-    vector<paramAuto> m_paramAuto, m_paramAutoPrev;
-    void paramInit();
-    void paramUpdate();
-    void updateL();
-    vector<Vector> m_xhat;
+        set_f(f_eval, f_grad);
+        set_r(ri);
+        set_tau(tau);
+    }
     
-    // block control
-    class BlockCtrl
+    void set_f(
+            const function<Float(const Vector&)>& f_eval,
+            const function<Vector(const Vector&)>& f_grad)
     {
-    public:
-        
-        void setBlocking(const vector<int>& blocking)
+        this->m_fEval = f_eval;
+        this->m_fGrad = f_grad;
+    }
+    
+    void set_r(const vector<FuncRInfo>& ri)
+    {
+        this->m_ri = ri;
+        vector<int> blocking(ri.size());
+        for(int i = 0; i < ri.size(); ++i)
         {
-            m_block = blocking;
-            m_nblock = m_block.size();
-            m_blockIdx.resize(m_nblock+1);
-            m_blockIdx[0] = 0;
-            for(int i = 0 ; i < m_nblock; ++i)
-            {
-                m_blockIdx[i+1] = m_block[i];
-                m_blockIdx[i+1] += m_blockIdx[i];
-            }
+            blocking[i] = ri[i].dim;
         }
-        
-        int n_block()const {return m_nblock;}
-        int block_dim(int i)const{return m_block[i];}
-        void block_id_interval(int i, int& a, int& b)const
-        {
-            a = m_blockIdx[i];
-            b = m_blockIdx[i+1];
-        }
-        
-    private:
-        vector<int> m_block;
-        vector<int> m_blockIdx;
-        int m_nblock;
-    };
-    BlockCtrl m_blockCtrl;
-    
-    static void get_block(const Vector& x0, int id1, int id2, Vector& x)
-    {
-        x.resize(id2-id1);
-        for(int i = id1, k = 0; i < id2; ++i, ++k)
-            x[k] = x0[i];
-    }
-    static void set_block(Vector& x0, int id1, int id2, const Vector& x)
-    {
-        for(int i = id1, k = 0; i < id2; ++i, ++k)
-            x0[i] = x[k];
+        m_blockCtrl.setBlocking(blocking);
     }
     
-    Float shrinkage(Float z, Float tau)
+    void set_tau(Float tau)
     {
-        Float t = 1.0 - tau / fabs(z);
-        return t > 0.0 ? t * z : 0.0;
+        this->m_tau = tau;
     }
     
-    void print();
+    inline Float    f_eval(const Vector& x)const{return m_fEval(x);}
+    inline Vector   f_grad(const Vector& x)const{return m_fGrad(x);}
+    inline Float    r_eval(const Vector& x, int kblock)const
+    {
+        return ri_eval(m_ri[kblock], m_blockCtrl.get_vec_block(x,kblock));
+    }
     
 };
 
-///////////////////////////////////////////////////////////////////////////////////////////
-/*
- * 
- *              Implementation
- * 
- * 
- * 
- *  
- */
+void updateL(const Vector& x, BCDSolverParam& par);
+void paramInit(const Vector& x, BCDSolverParam& par);
+void paramUpdate(const Vector& x, BCDSolverParam& par);
+void solve_subblock(Vector& x, BCDSolverParam& par, int kblock);
+Float errorEst(const Vector& x, const BCDSolverParam& par);
 
-BCDSolver::BCDSolver(BCDSolverParam param, FuncF &f, vector<FuncR> &r_vec)
-    :   COPT::GeneralSolver<kernel>(param.maxIter,param.xTol)
-    ,   m_param(param)
-    ,   m_f(f)
-    ,   m_rVec(r_vec)
-    ,   m_nblock(0)
-    ,   m_dim(0)
-    ,   m_kIter(0)
-    ,   m_isInit(false)
-    
-{
-    m_nblock = r_vec.size();
-    m_block.resize(m_nblock);
-    m_paramAuto.resize(m_nblock);
-    m_dim = 0;
-    for(int i = 0; i < m_nblock; ++i)
-    {
-        m_block[i] = r_vec[i].dim();
-        m_dim += m_block[i];
-    }
-    m_blockCtrl.setBlocking(m_block);
-    m_xhat.resize(m_nblock);
-    
-    // resize
-    m_x.resize(m_dim);
-    m_xprev.resize(m_dim);
-    m_xprev2.resize(m_dim);
-    m_gradf.resize(m_dim);
-    m_descent.resize(m_dim);
-    m_descentprev.resize(m_dim);
+//////////////////////
 
-    // init value
-    m_objprev = numeric_limits<Float>::max();
-    Vector tx(m_dim);
-    for(auto& t:tx) t = 100.0 * m_param.xTol;
-    m_xprev  = m_x      + tx;
-    m_xprev2 = m_xprev  + tx;
-    
-    paramInit();
-}
-
-Float BCDSolver::objective(const Vector &x) const
+Float bcd_objective(const Vector& x, const BCDSolverParam& par)
 {
     Float obj = 0;
-    if (m_nblock == 1)
-        obj = m_rVec[0](x);
-    else
-    {
-        for(int i = 0; i < m_nblock; ++i)
-        {
-            Vector xi;
-            int ia, ib;
-            m_blockCtrl.block_id_interval(i, ia, ib);
-            get_block(x, ia, ib, xi);
-            obj += m_rVec[i](xi);
-        }  
-    }
-
-    obj *= m_param.tau;
-    obj += m_f(x);
+    // r part
+    for(int i = 0; i < par.m_blockCtrl.n_block(); ++i)
+        obj += par.r_eval(x, i);
+    // f part
+    obj += par.f_eval(x);
     return obj;
 }
 
-void BCDSolver::init_x(const Vector& x)
+///
+Float bcd_oneIteration(Vector& x, BCDSolverParam& par)
 {
-    if (x.size() == m_dim)
+    par.xprev = x;
+    par.objprev = par.obj;
+    // update x block-wise
+    auto nblock = par.m_blockCtrl.n_block();
+    for(int kb = 0; kb < nblock; ++kb)
     {
-        m_x = x;
-        m_obj = objective(m_x);
-        m_isInit = true;
-    }    
-    else
-    {
-        cout << "error in init: vector dimension inconsistent" << endl;
-        return;
-    }
-        
-    if (m_param.verbose)
-        print();
-}
-
-
-
-void BCDSolver::paramInit()
-{
-    auto& par = m_paramAuto;
-    // t
-    for(int k = 0; k < m_nblock; ++k)
-    {
-        par[k].t = 1.0;
+        solve_subblock(x, par, kb);
     }
     
-    // L 
-    updateL();
+    //
+    ++par.kIter;
+    paramUpdate(x, par);
+    par.obj = bcd_objective(x, par);
     
+    return errorEst(x, par);
 }
 
-void BCDSolver::paramUpdate()
-{
-    auto& par  = m_paramAuto;
-    auto& par0 = m_paramAutoPrev;
-    par0 = par;
-    
-    // t
-    for(int i = 0; i < m_nblock; ++i)
-    {
-        par[i].t = 0.5*sqrt(1.0+4.0*par[i].t*par[i].t);
-    }   
-    
-    // L 
-    updateL();
-    
-    // w
-    if(m_kIter > 0)
-    {
-        for(int i = 0; i < m_nblock; ++i)
-        {
-            Float wt1 = (par0[i].t - 1.0) / par0[i].t;
-            Float wt2 = sqrt(par0[i].L / par[i].L);
-            par[i].w = min(wt1, wt2);
-        }
-    }
-}
-
-void BCDSolver::updateL()
-{
-    Vector g = m_f.grad(m_x);
-    int id1, id2;
-    auto& par = m_paramAuto;
-    for(int kb = 0; kb < m_nblock; ++kb)
-    {
-        m_blockCtrl.block_id_interval(kb, id1, id2);
-        Vector gk;
-        get_block(g, id1, id2, gk);
-        Matrix ggt = gk.mulTrans(gk);
-        Float maxe = ggt.frobeniusNorm();
-        par[kb].L = maxe;
-    }
-    
-}
-
-
-void BCDSolver::solve_subblock(int kblock)
-{
-    const auto& ib = kblock;
-    const auto& par = m_paramAuto;
-    int id1, id2;
-    m_blockCtrl.block_id_interval(ib,id1,id2);
-    Vector xi;
-    get_block(m_x, id1, id2, xi);
-    if(m_kIter > 1)
-    {
-        Vector xi0;
-        get_block(m_xprev, id1, id2, xi0);
-        xi = xi + par[ib].w*(xi - xi0);
-        set_block(m_x, id1, id2, xi);
-        m_xhat[kblock] = xi;
-    }
-    
-    
-    // shrinkage for each element
-    Vector grad = m_f.grad(m_x);
-    Vector gi;
-    get_block(grad, id1, id2, gi);
-    
-    int n = id2 - id1;
-    Float tL = 1.0 / par[ib].L;
-    Vector tg = xi - tL * gi;
-    for(int i = 0; i < n; ++i)
-    {
-        xi[i] = shrinkage(tg[i], tL);
-    }
-    set_block(m_x, id1, id2, xi);
-    
-}
-
-
-void BCDSolver::solvingBegin()
-{
-    if(!m_isInit)
-    {
-        m_x.setZeros();
-        m_obj = objective(m_x);
-    }
-    
-    // init xhat (x hat)
-    for(int i = 0; i < m_nblock; ++i)
-    {
-        int ia, ib;
-        m_blockCtrl.block_id_interval(i, ia, ib);
-        Vector xi;
-        get_block(m_x, ia, ib, xi);
-        m_xhat[i] = xi;
-    }
-}
-
-void BCDSolver::doCompute()
-{
-    
-}
-
-kernel::podscalar BCDSolver::doOneIteration()
-{
-    // preproc
-    m_xprev  = m_x;
-    m_objprev = m_obj;
-
-    // solve 
-    for(int kblock = 0; kblock < m_nblock; ++kblock)
-    {
-        solve_subblock(kblock);
-    }
-    ++m_kIter;
-    paramUpdate();
-    
-    // postproc
-    m_obj = objective(m_x);
-    
-    
-    if (m_param.verbose)
-        print();
-    
-    return errorEst();
-}
-
-Float BCDSolver::errorEst()
-{
-    return (m_x - m_xprev).norm();
-}
-
-bool BCDSolver::terminalSatisfied()const
+bool bcd_terminate(const Vector& x, const BCDSolverOption& o, const BCDSolverParam& par)
 {
     // iter number
-    if (__iter_num > __max_iteration)
+    if(par.kIter > o.MaxIter)
+    {
         return true;
+    }
     
     // x change
-    Float e_x = (m_x - m_xprev).norm();
-    if (e_x > m_param.xTol)
+    Float e_x = (x - par.xprev).norm();
+    if(e_x < o.xTol)
+    {
         return true;
+    }
     
     // obj change
-    Float e_obj =  fabs(m_obj - m_objprev);
-    if (e_obj > m_param.objTol)
-        return true;
-    
-    // gradient norm
     // ...
     
-    // step length
-    // ...
+    // gradient norm, step length, relative error ...
     
-    // relative error
-    // ...
+    
+    
+    return false;
 }
 
-kernel::podscalar BCDSolver::objective()const
+void bcd_solverInit(Vector& x, BCDSolverParam& par)
 {
-    return objective(m_x);
+    int fd = par.m_blockCtrl.full_dim();
+    if (fd > 0)
+    {
+        x.resize(fd);
+        x.setZeros();
+        par.obj = bcd_objective(x, par);
+        
+        //
+        Float incr = 0.1*numeric_limits<Float>::max();
+        par.objprev = par.obj + incr;
+        par.xprev = x;
+        par.xprev[0] = incr;
+        paramInit(x, par);
+    }
+    else
+    {
+        cerr << "Invalid problem, please check param setting!" << endl;
+    }
+    
 }
 
-const kernel::Vector& BCDSolver::result() const
+typedef COPT::Solver<Float,Vector,Vector,BCDSolverOption,BCDSolverParam> tagBCDSolver;    
+class BCDSolver : public tagBCDSolver
 {
-    return m_x;
-}
+public:
+    BCDSolver(const BCDSolverParam& bcd_par,
+              const BCDSolverOption& bcd_opt)
+        :   tagBCDSolver(
+                bcd_par,
+                bcd_opt,
+                bcd_objective,
+                bcd_solverInit,
+                bcd_oneIteration,
+                bcd_terminate)
+    {}
+};
 
-void BCDSolver::print()
+
+/////////////////////////////////////////////////////////////////
+
+inline void get_vec_block(const Vector& x0, int id1, int id2, Vector& x)
 {
-    cout << "Iter: " << m_kIter << " - x: " << m_x << " - obj: " << m_obj << endl;
+    x.resize(id2-id1);
+    for(int i = id1, k = 0; i < id2; ++i, ++k)
+        x[k] = x0[i];
 }
 
-#define BCDSOLVER
+inline void set_vec_block(Vector& x0, int id1, int id2, const Vector& x)
+{
+    for(int i = id1, k = 0; i < id2; ++i, ++k)
+        x0[i] = x[k];
+}
+
+inline Vector get_vec_block(const Vector& x0, int id1, int id2)
+{
+    Vector x(id2-id1);
+    for(int i = id1, k = 0; i < id2; ++i, ++k)
+        x[k] = x0[i];
+    return x;
+}
+
+
+inline Float shrinkage(Float z, Float tau)
+{
+    Float t = 1.0 - tau / fabs(z);
+    return t > 0.0 ? t * z : 0.0;
+}
+
+void updateL(const Vector& x, BCDSolverParam& par)
+{
+    auto& tpar = par.m_paramAuto;
+    int nblock = par.m_blockCtrl.n_block();
+    Vector g = par.f_grad(x);
+    for(int i = 0; i < nblock; ++i)
+    {
+        Vector gi = par.m_blockCtrl.get_vec_block(g, i);
+        Matrix ggt = gi.mulTrans(gi);
+        Float maxe = ggt.frobeniusNorm();
+        tpar[i].L = maxe;
+    }
+}
+void paramInit(const Vector& x, BCDSolverParam& par)
+{
+    int nblock = par.m_blockCtrl.n_block();
+    par.m_paramAuto.resize(nblock);
+    // init t
+    for(int i = 0;i  < nblock; ++i)
+        par.m_paramAuto[i].t = 1.0;
+    // init L
+    updateL(x, par);
+}
+void paramUpdate(const Vector& x, BCDSolverParam& par)
+{
+    par.m_paramAutoPrev = par.m_paramAuto;
+    const auto& tpar0 = par.m_paramAutoPrev;
+    const auto nblock = par.m_blockCtrl.n_block();
+    auto& tpar = par.m_paramAuto;
+    
+    // update t
+    for(int i = 0; i < nblock; ++i)
+    {
+        auto& ti = tpar[i].t;
+        ti = 0.5*sqrt( 1.0 + 4.0*ti*ti );
+    }
+    // update L
+    updateL(x, par);
+    // update w
+    if(par.kIter > 0)
+    {
+        for(int i = 0; i < nblock; ++i)
+        {
+            Float wt1 = (tpar0[i].t - 1.0) / tpar0[i].t;
+            Float wt2 = sqrt(tpar0[i].L / tpar[i].L);
+            tpar[i].w = min(wt1, wt2);
+        }
+    }
+    
+}
+
+void solve_subblock(Vector& x, BCDSolverParam& par, int kblock)
+{
+    const auto& tpar = par.m_paramAuto;
+    
+    Vector xi = par.m_blockCtrl.get_vec_block(x, kblock);
+    if(par.kIter > 1)
+    {
+        Vector xi0 = par.m_blockCtrl.get_vec_block(par.xprev, kblock);
+        xi = xi + tpar[kblock].w*(xi - xi0);
+        par.m_blockCtrl.set_vec_block(x, kblock, xi);
+    }
+    
+    // shrinkage for each element
+    Vector g = par.f_grad(x);
+    Vector gi = par.m_blockCtrl.get_vec_block(g, kblock);
+    int dim = gi.size();
+    Float tL = 1.0 / tpar[kblock].L;
+    Vector tgi = xi - tL * gi;
+    for(int i = 0; i < dim; ++i)
+    {
+        xi[i] = shrinkage(tgi[i], tL);
+    }
+    par.m_blockCtrl.set_vec_block(x, kblock, xi);
+}
+Float errorEst(const Vector& x, const BCDSolverParam& par)
+{
+    return (x - par.xprev).norm();
+}
+
+
 #endif // BCDSOLVER
