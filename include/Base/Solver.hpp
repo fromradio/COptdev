@@ -269,6 +269,15 @@ public:
 		IterationFunction iterfunc = nullptr,
 		TerminationFunction terfunc = nullptr,
 		int printlevel = 1);
+	
+	Solver(
+		const Parameter& para,									// the input parameter has be been given
+		const Option& op,
+		ObjectiveFunction obfunc = nullptr, 					
+		InitializationFunction initfunc=nullptr,
+		IterationFunction iterfunc = nullptr,
+		TerminationFunction terfunc = nullptr,
+		int printlevel = 1);
 
 	/** solve the problem */
 	void solve();
@@ -329,6 +338,31 @@ Solver<Scalar,ArgType,OutputType,Option,Parameter>::Solver(
 		int printlevel)
 	:
 	__para(para),
+	__print_level(printlevel),
+	__ob_func(obfunc),
+	__init_func(initfunc),
+	__iter_func(iterfunc),
+	__ter_func(terfunc),
+	__arg_to_re_func(argEqualToResult<ArgType,OutputType>),
+	__ostream(std::cout),
+	__begin_print_func(&solverBeginPrint),
+	__iter_print_func(&iterationPrint<ArgType,Option,Parameter>),
+	__end_print_func(&solverEndPrint<ArgType,Option,Parameter>)
+{
+}
+
+template<class Scalar,class ArgType,class OutputType,class Option,class Parameter>
+Solver<Scalar,ArgType,OutputType,Option,Parameter>::Solver(
+		const Parameter& para,
+		const Option& op,
+		ObjectiveFunction obfunc, 					
+		InitializationFunction initfunc,
+		IterationFunction iterfunc,
+		TerminationFunction terfunc,
+		int printlevel)
+	:
+	__para(para),
+	__op(op),
 	__print_level(printlevel),
 	__ob_func(obfunc),
 	__init_func(initfunc),
