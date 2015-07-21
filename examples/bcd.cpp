@@ -24,20 +24,20 @@ using namespace std::placeholders;
 
 /// f(x)
 // parameter of f(x): A & b
-struct f_param
+struct FParam
 {
     Matrix A;
     Vector b;
 };
 // evaluation of f(x)
-Float f_eval(const Vector& x, const f_param& fpar)
+Float fEval(const Vector& x, const FParam& fpar)
 {
     Vector r = fpar.A*x - fpar.b;
     Float val = r.norm();
     return 0.5 * val * val;
 }
 // gradient of f(x)
-Vector f_grad(const Vector& x, const f_param& fpar)
+Vector fGrad(const Vector& x, const FParam& fpar)
 {
     Matrix aat = fpar.A.transMulti(fpar.A);
     Vector g = aat*x - fpar.A.transpose() * fpar.b;
@@ -46,51 +46,51 @@ Vector f_grad(const Vector& x, const f_param& fpar)
 
 /// tool functions
 // generate sparse random x of size sz with nnz nonzeros
-void gen_sp_rand_x(Vector& x, int sz, int nnz);
+void generateSparseRandomX(Vector& x, int sz, int nnz);
 // inf norm of a vector
-Float vec_inf_norm(const Vector& x);
+Float vectorInfNorm(const Vector& x);
 
 int main(int argc, char *argv[])
 {
     /// generate parameter for f
     // matrix dimention
-    int nrow = 15;
-    int ncol = 75;
-    f_param fpar;
-    fpar.A.setRandom(nrow, ncol);
+    int nRow = 15;
+    int nCol = 75;
+    FParam fpar;
+    fpar.A.setRandom(nRow, nCol);
     for(int i = 0; i < fpar.A.cols(); ++i)
         fpar.A.col(i).normalize();
     // x0, the ground truth
     Vector x0;
     Float spdensity = 0.05;
-    int nnz = max(static_cast<int>(ncol*spdensity), 5);
-    gen_sp_rand_x(x0, ncol, nnz);   
+    int nnz = max(static_cast<int>(nCol*spdensity), 5);
+    generateSparseRandomX(x0, nCol, nnz);   
     // b, the rhs
     fpar.b = fpar.A * x0;
     // bind parameter to function f
-    auto f_eval2 = std::bind(f_eval, _1, fpar);
-    auto f_grad2 = std::bind(f_grad, _1, fpar);
+    auto f_eval2 = std::bind(fEval, _1, fpar);
+    auto f_grad2 = std::bind(fGrad, _1, fpar);
     
     /// set param for r
-    vector<FuncRInfo> ri{FuncRInfo(FuncRInfo::Norm1, ncol)};
+    vector<FuncRInfo> ri{FuncRInfo(FuncRInfo::Norm1, nCol)};
     
     /// set tau
     Float tau = 0.8;       // tau should be tuned for specific problems
     
     /// set solver param
     BCDSolverParam sol_par;
-    sol_par.set_f(f_eval2, f_grad2);
-    sol_par.set_r(ri);
-    sol_par.set_tau(tau);
+    sol_par.setF(f_eval2, f_grad2);
+    sol_par.setR(ri);
+    sol_par.setTau(tau);
     
     /// set solver option
     BCDSolverOption sol_opt;
     sol_opt.MaxIter = 20000;
-    sol_opt.xTol    = 1e-6;
+    sol_opt.XTol    = 1e-6;
     
     /// set solver and solve
-    BCDSolver bcdsol(sol_par, sol_opt);
-    bcdsol.solve();
+    BCDSolver bcd_sol(sol_par, sol_opt);
+    bcd_sol.solve();
     
     /// outpout
     cout.unsetf(ios::fixed);
@@ -98,7 +98,7 @@ int main(int argc, char *argv[])
     cout << "x0: " << endl;
     cout << x0 << endl;
     cout << "result: " << endl;
-    cout << bcdsol.result() << endl;
+    cout << bcd_sol.result() << endl;
     
 }
 
@@ -111,7 +111,7 @@ int main(int argc, char *argv[])
  */
 
 
-Float vec_inf_norm(const Vector& x)
+Float vectorInfNorm(const Vector& x)
 {
     auto v = x[0];
     for(const auto& xi:x)
@@ -122,7 +122,7 @@ Float vec_inf_norm(const Vector& x)
     return v;
 }
 
-void gen_sp_rand_x(Vector& x, int sz, int nnz)
+void generateSparseRandomX(Vector& x, int sz, int nnz)
 {
     x.resize(sz);
     x.setZeros();
